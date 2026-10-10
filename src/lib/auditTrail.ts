@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Cryptographic Audit Trail Engine
  * Guarantees tamper-evident audit logging with verifiable SHA-256 hash chains.

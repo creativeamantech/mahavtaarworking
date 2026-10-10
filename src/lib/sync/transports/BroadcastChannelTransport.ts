@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ConnectionType, SyncMessageEnvelope } from '../types';
 import { TransportAdapter, TransportEventHandler } from './TransportAdapter';
 

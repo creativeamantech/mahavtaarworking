@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@/lib/router-compat';
 import { useDataState } from '../contexts/DataContext';

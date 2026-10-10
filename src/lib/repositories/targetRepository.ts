@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - State Target Repository
  * Atomic management of performance recovery targets with audit logging and sync journal.

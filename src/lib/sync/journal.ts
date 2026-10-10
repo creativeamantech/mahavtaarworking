@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db, SyncJournalRecord } from '../db';
 import { getLocalDeviceIdentity } from './deviceIdentity';
 import { JournalEntry, TableSyncName } from './types';

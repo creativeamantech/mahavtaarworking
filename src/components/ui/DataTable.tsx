@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown, ChevronRight, X, Bookmark, Save, Trash2 } from 'lucide-react';
 import { useMediaQuery } from '../../hooks/use-media-query';

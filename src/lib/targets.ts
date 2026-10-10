@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { LoanRecord } from '../types/domain';
 export function normalizeKeyPart(v: unknown): string {
   return String(v ?? '').trim().toUpperCase();

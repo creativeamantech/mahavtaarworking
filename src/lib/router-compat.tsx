@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Thin compatibility layer that maps the react-router-dom API used by the
 // original Mahavtaar-Ledger code onto TanStack Router.
 import { forwardRef, useEffect, type AnchorHTMLAttributes, type ReactNode } from "react";

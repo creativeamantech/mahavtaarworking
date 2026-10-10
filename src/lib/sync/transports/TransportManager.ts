@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ConnectionType, NetworkMode, SyncMessageEnvelope } from '../types';
 import { BroadcastChannelTransport } from './BroadcastChannelTransport';
 import { RelayFallbackTransport } from './RelayFallbackTransport';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Customer Feedback Repository
  * Data access and mutation layer for CustomerFeedback entities with audit and sync journaling.

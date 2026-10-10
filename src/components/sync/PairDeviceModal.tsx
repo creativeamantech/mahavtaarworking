@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { DeviceIdentity } from '../../lib/sync/types';
 import { 

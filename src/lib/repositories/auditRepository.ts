@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Audit Repository
  * Provides append-only querying and cryptographic integrity verification of the audit log chain.

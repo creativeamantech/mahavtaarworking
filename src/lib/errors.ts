@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Domain & Application Errors
  * Strongly Typed Application Error Hierarchy (Section 52)

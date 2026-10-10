@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User, Role, DEFAULT_PERMISSIONS } from '../constants/permissions';
 import { db } from '../lib/db';

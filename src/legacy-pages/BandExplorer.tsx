@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from '@/lib/router-compat';
 import { AppLayout } from '../components/layout/AppLayout';

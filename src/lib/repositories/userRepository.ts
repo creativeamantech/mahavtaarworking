@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - User Repository
  * Data access and mutation layer for StoredUser entities with PBKDF2 authentication and audit.

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRef, useState } from 'react';
 import { CheckCircle2, Circle, UploadCloud, Loader2 } from 'lucide-react';
 

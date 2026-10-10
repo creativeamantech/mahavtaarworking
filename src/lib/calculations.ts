@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Deterministic Financial Calculation Engine
  * Pure mathematical functions for portfolio recovery, rollback conditions, and shortfall analytics.

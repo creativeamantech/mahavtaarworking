@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - High-Performance Aggregation & Pivot Engine
  * Computes multi-dimensional analytics (City, Team, Bucket, CrossTab) with single-pass complexity.

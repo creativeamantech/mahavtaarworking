@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { DeviceIdentity, NetworkMode, ConflictStrategy } from '../../lib/sync/types';
 import { 

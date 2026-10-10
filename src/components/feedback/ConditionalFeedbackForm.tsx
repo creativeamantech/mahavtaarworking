@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useId } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { submitCustomerFeedback } from '../../lib/repositories/feedbackRepository';

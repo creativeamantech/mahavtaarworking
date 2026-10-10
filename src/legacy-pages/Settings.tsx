@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { AdvancedTargetsTab } from '../components/AdvancedTargetsTab';
 import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';

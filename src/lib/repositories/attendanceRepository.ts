@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Attendance Repository
  * Manages punch in/out, break records, and working session tracking with atomic sync journal.

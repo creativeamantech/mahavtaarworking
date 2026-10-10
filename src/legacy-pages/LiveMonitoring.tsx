@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useMemo } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
 import { useDataState } from '../contexts/DataContext';

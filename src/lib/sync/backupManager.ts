@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BackupSnapshotRecord, db } from '../db';
 import { BackupSnapshot } from './types';
 

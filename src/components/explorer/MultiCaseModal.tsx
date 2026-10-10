@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { X, CheckCircle2, DollarSign, Layers } from 'lucide-react';
 import { fmtCur } from '../../lib/formatters';

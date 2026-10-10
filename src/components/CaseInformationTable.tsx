@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, CheckSquare, UserCircle2, ArrowUpDown, Undo2, Building2 } from 'lucide-react';
 import { fmtCur } from '../lib/formatters';

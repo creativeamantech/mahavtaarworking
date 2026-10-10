@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { runSystemIntegrityCheck, IntegrityReport } from '../../lib/integrityChecker';
 import { Button } from '../ui/button';

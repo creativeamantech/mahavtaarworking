@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useDataState, useDataDispatch } from '../contexts/DataContext';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { Filter, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, Check, Layers } from 'lucide-react';

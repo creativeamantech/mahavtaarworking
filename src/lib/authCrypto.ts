@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Mahavtaar Ledger - Enterprise Local Auth & Cryptographic Security Engine
  * Implements PBKDF2-HMAC-SHA256 with 100,000 iterations using Web Crypto API

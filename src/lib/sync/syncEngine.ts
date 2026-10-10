@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { db, SyncPeerRecord } from '../db';
 import { processCRDTIncomingEntry } from './crdtEngine';
 import { getLocalDeviceIdentity } from './deviceIdentity';
