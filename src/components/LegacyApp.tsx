@@ -1,16 +1,10 @@
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { DataProvider } from "@/contexts/DataContext";
-import { SyncProvider } from "@/contexts/SyncContext";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { PermissionGate } from "@/components/PermissionGate";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { Navigate } from "@/lib/router-compat";
 
-function PageLoader() {
+type ClientMod = typeof import("./LegacyClient");
+const Ctx = createContext<ClientMod | null>(null);
+
+export function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">
       <div className="flex flex-col items-center gap-3">
@@ -21,50 +15,40 @@ function PageLoader() {
   );
 }
 
-/** The app is local-first (IndexedDB / browser storage), so it only renders after hydration. */
+/** The app is local-first (IndexedDB / browser storage), so it loads only in the browser. */
 export function LegacyApp({ children }: { children: ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return <PageLoader />;
+  const [mod, setMod] = useState<ClientMod | null>(null);
+  useEffect(() => {
+    import("./LegacyClient").then(setMod);
+  }, []);
+  if (!mod) return <PageLoader />;
+  const { LegacyProviders } = mod;
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <AuthProvider>
-        <DataProvider>
-          <SyncProvider>
-            <TooltipProvider>
-              <Sonner />
-              <ErrorBoundary>
-                <Suspense fallback={<PageLoader />}>{children}</Suspense>
-              </ErrorBoundary>
-            </TooltipProvider>
-          </SyncProvider>
-        </DataProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <Ctx.Provider value={mod}>
+      <LegacyProviders>{children}</LegacyProviders>
+    </Ctx.Provider>
   );
 }
 
-const homeFor = (role?: string) => (role === "EXECUTIVE" ? "/exec-dashboard" : "/dashboard");
+function useMod() {
+  return useContext(Ctx);
+}
 
 export function ProtectedRoute({ children, view }: { children: ReactNode; view?: string }) {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
-  if (view)
-    return (
-      <PermissionGate view={view} fallback={<Navigate to={homeFor(user.role)} replace />}>
-        {children}
-      </PermissionGate>
-    );
-  return <>{children}</>;
+  const m = useMod();
+  if (!m) return <PageLoader />;
+  return <m.ProtectedRoute view={view}>{children}</m.ProtectedRoute>;
 }
 
 export function LoginGate({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  if (user) return <Navigate to={homeFor(user.role)} replace />;
-  return <>{children}</>;
+  const m = useMod();
+  if (!m) return <PageLoader />;
+  return <m.LoginGate>{children}</m.LoginGate>;
 }
 
 export function HomeRedirect() {
-  const { user } = useAuth();
-  return <Navigate to={user ? homeFor(user.role) : "/login"} replace />;
+  const m = useMod();
+  if (!m) return <PageLoader />;
+  return <m.HomeRedirect />;
 }
+
