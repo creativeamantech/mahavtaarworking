@@ -10,33 +10,271 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssignmentRouteImport } from './routes/assignment'
+import { Route as AttendanceRouteImport } from './routes/attendance'
+import { Route as AuditRouteImport } from './routes/audit'
+import { Route as BandExplorerRouteImport } from './routes/band-explorer'
+import { Route as CityPivotRouteImport } from './routes/city-pivot'
+import { Route as ConnectivityRouteImport } from './routes/connectivity'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DataEntryRouteImport } from './routes/data-entry'
+import { Route as ExecDashboardRouteImport } from './routes/exec-dashboard'
+import { Route as ExecTeamPerfRouteImport } from './routes/exec-team-perf'
+import { Route as ExplorerRouteImport } from './routes/explorer'
+import { Route as FeedbacksRouteImport } from './routes/feedbacks'
+import { Route as LiveMonitoringRouteImport } from './routes/live-monitoring'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TeamPivotRouteImport } from './routes/team-pivot'
+import { Route as CustomerIdRouteImport } from './routes/customer.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssignmentRoute = AssignmentRouteImport.update({
+  id: '/assignment',
+  path: '/assignment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttendanceRoute = AttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BandExplorerRoute = BandExplorerRouteImport.update({
+  id: '/band-explorer',
+  path: '/band-explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CityPivotRoute = CityPivotRouteImport.update({
+  id: '/city-pivot',
+  path: '/city-pivot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectivityRoute = ConnectivityRouteImport.update({
+  id: '/connectivity',
+  path: '/connectivity',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataEntryRoute = DataEntryRouteImport.update({
+  id: '/data-entry',
+  path: '/data-entry',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecDashboardRoute = ExecDashboardRouteImport.update({
+  id: '/exec-dashboard',
+  path: '/exec-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExecTeamPerfRoute = ExecTeamPerfRouteImport.update({
+  id: '/exec-team-perf',
+  path: '/exec-team-perf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorerRoute = ExplorerRouteImport.update({
+  id: '/explorer',
+  path: '/explorer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbacksRoute = FeedbacksRouteImport.update({
+  id: '/feedbacks',
+  path: '/feedbacks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveMonitoringRoute = LiveMonitoringRouteImport.update({
+  id: '/live-monitoring',
+  path: '/live-monitoring',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamPivotRoute = TeamPivotRouteImport.update({
+  id: '/team-pivot',
+  path: '/team-pivot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomerIdRoute = CustomerIdRouteImport.update({
+  id: '/customer/$id',
+  path: '/customer/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assignment': typeof AssignmentRoute
+  '/attendance': typeof AttendanceRoute
+  '/audit': typeof AuditRoute
+  '/band-explorer': typeof BandExplorerRoute
+  '/city-pivot': typeof CityPivotRoute
+  '/connectivity': typeof ConnectivityRoute
+  '/dashboard': typeof DashboardRoute
+  '/data-entry': typeof DataEntryRoute
+  '/exec-dashboard': typeof ExecDashboardRoute
+  '/exec-team-perf': typeof ExecTeamPerfRoute
+  '/explorer': typeof ExplorerRoute
+  '/feedbacks': typeof FeedbacksRoute
+  '/live-monitoring': typeof LiveMonitoringRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/team-pivot': typeof TeamPivotRoute
+  '/customer/$id': typeof CustomerIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assignment': typeof AssignmentRoute
+  '/attendance': typeof AttendanceRoute
+  '/audit': typeof AuditRoute
+  '/band-explorer': typeof BandExplorerRoute
+  '/city-pivot': typeof CityPivotRoute
+  '/connectivity': typeof ConnectivityRoute
+  '/dashboard': typeof DashboardRoute
+  '/data-entry': typeof DataEntryRoute
+  '/exec-dashboard': typeof ExecDashboardRoute
+  '/exec-team-perf': typeof ExecTeamPerfRoute
+  '/explorer': typeof ExplorerRoute
+  '/feedbacks': typeof FeedbacksRoute
+  '/live-monitoring': typeof LiveMonitoringRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/team-pivot': typeof TeamPivotRoute
+  '/customer/$id': typeof CustomerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assignment': typeof AssignmentRoute
+  '/attendance': typeof AttendanceRoute
+  '/audit': typeof AuditRoute
+  '/band-explorer': typeof BandExplorerRoute
+  '/city-pivot': typeof CityPivotRoute
+  '/connectivity': typeof ConnectivityRoute
+  '/dashboard': typeof DashboardRoute
+  '/data-entry': typeof DataEntryRoute
+  '/exec-dashboard': typeof ExecDashboardRoute
+  '/exec-team-perf': typeof ExecTeamPerfRoute
+  '/explorer': typeof ExplorerRoute
+  '/feedbacks': typeof FeedbacksRoute
+  '/live-monitoring': typeof LiveMonitoringRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/team-pivot': typeof TeamPivotRoute
+  '/customer/$id': typeof CustomerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/assignment'
+    | '/attendance'
+    | '/audit'
+    | '/band-explorer'
+    | '/city-pivot'
+    | '/connectivity'
+    | '/dashboard'
+    | '/data-entry'
+    | '/exec-dashboard'
+    | '/exec-team-perf'
+    | '/explorer'
+    | '/feedbacks'
+    | '/live-monitoring'
+    | '/login'
+    | '/profile'
+    | '/settings'
+    | '/team-pivot'
+    | '/customer/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/assignment'
+    | '/attendance'
+    | '/audit'
+    | '/band-explorer'
+    | '/city-pivot'
+    | '/connectivity'
+    | '/dashboard'
+    | '/data-entry'
+    | '/exec-dashboard'
+    | '/exec-team-perf'
+    | '/explorer'
+    | '/feedbacks'
+    | '/live-monitoring'
+    | '/login'
+    | '/profile'
+    | '/settings'
+    | '/team-pivot'
+    | '/customer/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/assignment'
+    | '/attendance'
+    | '/audit'
+    | '/band-explorer'
+    | '/city-pivot'
+    | '/connectivity'
+    | '/dashboard'
+    | '/data-entry'
+    | '/exec-dashboard'
+    | '/exec-team-perf'
+    | '/explorer'
+    | '/feedbacks'
+    | '/live-monitoring'
+    | '/login'
+    | '/profile'
+    | '/settings'
+    | '/team-pivot'
+    | '/customer/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssignmentRoute: typeof AssignmentRoute
+  AttendanceRoute: typeof AttendanceRoute
+  AuditRoute: typeof AuditRoute
+  BandExplorerRoute: typeof BandExplorerRoute
+  CityPivotRoute: typeof CityPivotRoute
+  ConnectivityRoute: typeof ConnectivityRoute
+  DashboardRoute: typeof DashboardRoute
+  DataEntryRoute: typeof DataEntryRoute
+  ExecDashboardRoute: typeof ExecDashboardRoute
+  ExecTeamPerfRoute: typeof ExecTeamPerfRoute
+  ExplorerRoute: typeof ExplorerRoute
+  FeedbacksRoute: typeof FeedbacksRoute
+  LiveMonitoringRoute: typeof LiveMonitoringRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
+  SettingsRoute: typeof SettingsRoute
+  TeamPivotRoute: typeof TeamPivotRoute
+  CustomerIdRoute: typeof CustomerIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +286,155 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assignment': {
+      id: '/assignment'
+      path: '/assignment'
+      fullPath: '/assignment'
+      preLoaderRoute: typeof AssignmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attendance': {
+      id: '/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AttendanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/band-explorer': {
+      id: '/band-explorer'
+      path: '/band-explorer'
+      fullPath: '/band-explorer'
+      preLoaderRoute: typeof BandExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/city-pivot': {
+      id: '/city-pivot'
+      path: '/city-pivot'
+      fullPath: '/city-pivot'
+      preLoaderRoute: typeof CityPivotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connectivity': {
+      id: '/connectivity'
+      path: '/connectivity'
+      fullPath: '/connectivity'
+      preLoaderRoute: typeof ConnectivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-entry': {
+      id: '/data-entry'
+      path: '/data-entry'
+      fullPath: '/data-entry'
+      preLoaderRoute: typeof DataEntryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exec-dashboard': {
+      id: '/exec-dashboard'
+      path: '/exec-dashboard'
+      fullPath: '/exec-dashboard'
+      preLoaderRoute: typeof ExecDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exec-team-perf': {
+      id: '/exec-team-perf'
+      path: '/exec-team-perf'
+      fullPath: '/exec-team-perf'
+      preLoaderRoute: typeof ExecTeamPerfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorer': {
+      id: '/explorer'
+      path: '/explorer'
+      fullPath: '/explorer'
+      preLoaderRoute: typeof ExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedbacks': {
+      id: '/feedbacks'
+      path: '/feedbacks'
+      fullPath: '/feedbacks'
+      preLoaderRoute: typeof FeedbacksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live-monitoring': {
+      id: '/live-monitoring'
+      path: '/live-monitoring'
+      fullPath: '/live-monitoring'
+      preLoaderRoute: typeof LiveMonitoringRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/team-pivot': {
+      id: '/team-pivot'
+      path: '/team-pivot'
+      fullPath: '/team-pivot'
+      preLoaderRoute: typeof TeamPivotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customer/$id': {
+      id: '/customer/$id'
+      path: '/customer/$id'
+      fullPath: '/customer/$id'
+      preLoaderRoute: typeof CustomerIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssignmentRoute: AssignmentRoute,
+  AttendanceRoute: AttendanceRoute,
+  AuditRoute: AuditRoute,
+  BandExplorerRoute: BandExplorerRoute,
+  CityPivotRoute: CityPivotRoute,
+  ConnectivityRoute: ConnectivityRoute,
+  DashboardRoute: DashboardRoute,
+  DataEntryRoute: DataEntryRoute,
+  ExecDashboardRoute: ExecDashboardRoute,
+  ExecTeamPerfRoute: ExecTeamPerfRoute,
+  ExplorerRoute: ExplorerRoute,
+  FeedbacksRoute: FeedbacksRoute,
+  LiveMonitoringRoute: LiveMonitoringRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
+  SettingsRoute: SettingsRoute,
+  TeamPivotRoute: TeamPivotRoute,
+  CustomerIdRoute: CustomerIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
