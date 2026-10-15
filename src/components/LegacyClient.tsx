@@ -24,7 +24,7 @@ function PageLoader() {
 
 /** The app is local-first (IndexedDB / browser storage), so it only renders after hydration. */
 export function LegacyProviders({ children }: { children: ReactNode }) {
-    return (
+  return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <AuthProvider>
         <DataProvider>
@@ -45,7 +45,8 @@ export function LegacyProviders({ children }: { children: ReactNode }) {
 const homeFor = (role?: string) => (role === "EXECUTIVE" ? "/exec-dashboard" : "/dashboard");
 
 export function ProtectedRoute({ children, view }: { children: ReactNode; view?: string }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   if (view)
     return (
@@ -57,12 +58,14 @@ export function ProtectedRoute({ children, view }: { children: ReactNode; view?:
 }
 
 export function LoginGate({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
   if (user) return <Navigate to={homeFor(user.role)} replace />;
   return <>{children}</>;
 }
 
 export function HomeRedirect() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
   return <Navigate to={user ? homeFor(user.role) : "/login"} replace />;
 }
