@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AgentNotifications } from '../agent/AgentNotifications';
 import { SyncStatusIndicator } from '../sync/SyncStatusIndicator';
+import { AutoSyncBar } from '../sync/AutoSyncBar';
 
 export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean; setCollapsed?: (val: boolean | ((prev: boolean) => boolean)) => void }) {
   const { records,  } = useDataState();
@@ -179,7 +180,8 @@ export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean
       <div className="flex items-center gap-3 text-muted-foreground w-1/4 justify-end">
         
         
-        <div className="flex items-center gap-1.5 border-l border-border pl-3">
+        <div className="flex items-center gap-2 border-l border-border pl-3">
+          <AutoSyncBar compact userName={user?.name} />
           <SyncStatusIndicator />
           <ThemeToggle />
           {user?.role === 'EXECUTIVE' ? (

@@ -28,6 +28,10 @@ import {
   ChevronsRight,
   Filter,
   ArrowUpDown,
+  Eye,
+  Sparkles,
+  Phone,
+  LayoutGrid,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Checkbox } from "../components/ui/checkbox";
@@ -46,6 +50,10 @@ import { StatusBadge } from "../components/explorer/StatusBadge";
 import { ContextStrip } from "../components/explorer/ContextStrip";
 import { FilterStrip } from "../components/explorer/FilterStrip";
 import { MultiCaseModal } from "../components/explorer/MultiCaseModal";
+import { HighlightText } from "../components/explorer/HighlightText";
+import { QuickSegmentBar, QuickSegmentKey } from "../components/explorer/QuickSegmentBar";
+import { LoanQuickDrawer } from "../components/explorer/LoanQuickDrawer";
+import { AutoSyncBar } from "../components/sync/AutoSyncBar";
 import { LoanRecord } from "../types/domain";
 
 const STANDARD_KEYS = [
@@ -148,6 +156,8 @@ export default function DataExplorer() {
   });
 
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+  const [quickDrawerRecord, setQuickDrawerRecord] = useState<LoanRecord | null>(null);
+  const [quickSegment, setQuickSegment] = useState<QuickSegmentKey>("all");
   const [multiCaseModal, setMultiCaseModal] = useState<{
     name: string;
     records: LoanRecord[];
@@ -183,12 +193,64 @@ export default function DataExplorer() {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [columnPreset, setColumnPreset] = useState<"operations" | "financial" | "contact" | "all">(() => {
+    const saved = localStorage.getItem("dataExplorerColumnPreset");
+    return (saved as any) || "operations";
+  });
+
   useEffect(() => {
     if (visibleExtraColumns === null && allExtraKeys.length > 0) {
+      setVisibleExtraColumns([]);
+      localStorage.setItem("dataExplorerExtraColumns", JSON.stringify([]));
+    }
+  }, [allExtraKeys, visibleExtraColumns]);
+
+  const applyColumnPreset = (preset: "operations" | "financial" | "contact" | "all") => {
+    setColumnPreset(preset);
+    localStorage.setItem("dataExplorerColumnPreset", preset);
+    if (preset === "operations") {
+      setVisibleExtraColumns([]);
+      localStorage.setItem("dataExplorerExtraColumns", JSON.stringify([]));
+    } else if (preset === "financial") {
+      const finCols = allExtraKeys.filter((k) => {
+        const l = k.toLowerCase();
+        return (
+          l.includes("bcc") ||
+          l.includes("penal") ||
+          l.includes("charge") ||
+          l.includes("foreclos") ||
+          l.includes("due") ||
+          l.includes("interest") ||
+          l.includes("bounce") ||
+          l.includes("cbc") ||
+          l.includes("amt") ||
+          l.includes("bal")
+        );
+      });
+      const selected = finCols.length > 0 ? finCols : allExtraKeys.slice(0, 6);
+      setVisibleExtraColumns(selected);
+      localStorage.setItem("dataExplorerExtraColumns", JSON.stringify(selected));
+    } else if (preset === "contact") {
+      const contCols = allExtraKeys.filter((k) => {
+        const l = k.toLowerCase();
+        return (
+          l.includes("phone") ||
+          l.includes("mobile") ||
+          l.includes("contact") ||
+          l.includes("add") ||
+          l.includes("mail") ||
+          l.includes("pin") ||
+          l.includes("alloc")
+        );
+      });
+      const selected = contCols.length > 0 ? contCols : allExtraKeys.slice(0, 6);
+      setVisibleExtraColumns(selected);
+      localStorage.setItem("dataExplorerExtraColumns", JSON.stringify(selected));
+    } else if (preset === "all") {
       setVisibleExtraColumns(allExtraKeys);
       localStorage.setItem("dataExplorerExtraColumns", JSON.stringify(allExtraKeys));
     }
-  }, [allExtraKeys, visibleExtraColumns]);
+  };
 
   const toggleExtraColumn = (col: string) => {
     setVisibleExtraColumns((prev) => {
@@ -370,6 +432,43 @@ export default function DataExplorer() {
     return stats;
   }, [baseRecords, addressKey, contactKey]);
 
+  // Segment counts for QuickSegmentBar
+  const segmentCounts = useMemo(() => {
+    let all = baseRecords.length;
+    let unpaid = 0;
+    let paid = 0;
+    let highPos = 0;
+    let multiCase = 0;
+    let unallocated = 0;
+
+    baseRecords.forEach((r: LoanRecord) => {
+      const c = calculateRow(r);
+      if (c.mainPaid === 1) paid++;
+      else unpaid++;
+      const pos = Number(r.principal_outstanding) || 0;
+      if (pos >= 100000) highPos++;
+      const exec = String(r.executive_name || r["Executive Name"] || r.EXECUTIVE_NAME || "").trim();
+      if (!exec || exec === "UNKNOWN" || exec === "-") unallocated++;
+
+      const rawName =
+        r.customer_name ||
+        r.CUSTOMERNAME ||
+        r["Customer Name"] ||
+        r.CUSTOMER_NAME ||
+        r.customername ||
+        "";
+      const name = String(rawName).trim().toUpperCase();
+      const address = addressKey ? String(r[addressKey] || "").trim().toUpperCase() : "";
+      const contact = contactKey ? String(r[contactKey] || "").trim().toUpperCase() : "";
+      const fingerprint = `${name}||${contact}||${address}`;
+      if (name && customerStats[fingerprint] && customerStats[fingerprint].count > 1) {
+        multiCase++;
+      }
+    });
+
+    return { all, unpaid, paid, highPos, multiCase, unallocated };
+  }, [baseRecords, addressKey, contactKey, customerStats]);
+
   // Filter Pipeline
   const filteredRecords = useMemo(() => {
     return baseRecords.filter((r: LoanRecord) => {
@@ -419,7 +518,7 @@ export default function DataExplorer() {
       const execName = String(
         r.executive_name || r["Executive Name"] || r.EXECUTIVE_NAME || "",
       ).trim();
-      const isAllocated = execName.length > 0;
+      const isAllocated = execName.length > 0 && execName !== "UNKNOWN" && execName !== "-";
       if (selectedAllocation === "Allocated" && !isAllocated) return false;
       if (selectedAllocation === "Unallocated" && isAllocated) return false;
 
@@ -432,15 +531,46 @@ export default function DataExplorer() {
       if (minPos && pos < Number(minPos)) return false;
       if (maxPos && pos > Number(maxPos)) return false;
 
+      // Quick Segment Filtering
+      if (quickSegment === "unpaid" && isPaid) return false;
+      if (quickSegment === "paid" && !isPaid) return false;
+      if (quickSegment === "high_pos" && pos < 100000) return false;
+      if (quickSegment === "unallocated" && isAllocated) return false;
+      if (quickSegment === "multi_case") {
+        const rawName =
+          r.customer_name ||
+          r.CUSTOMERNAME ||
+          r["Customer Name"] ||
+          r.CUSTOMER_NAME ||
+          r.customername ||
+          "";
+        const name = String(rawName).trim().toUpperCase();
+        const address = addressKey ? String(r[addressKey] || "").trim().toUpperCase() : "";
+        const contact = contactKey ? String(r[contactKey] || "").trim().toUpperCase() : "";
+        const fingerprint = `${name}||${contact}||${address}`;
+        if (!name || !customerStats[fingerprint] || customerStats[fingerprint].count <= 1) {
+          return false;
+        }
+      }
+
+      // Multi-term Omni Search across all key fields
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        const terms = searchQuery.toLowerCase().trim().split(/\s+/).filter(Boolean);
         const name = String(
-          r.customer_name || r.CUSTOMERNAME || r["Customer Name"] || r.CUSTOMER_NAME || "",
+          r.customer_name || r.CUSTOMERNAME || r["Customer Name"] || r.CUSTOMER_NAME || r.customername || "",
         ).toLowerCase();
         const id = String(
           r.agreementid || r.agreement_no || r.AGREEMENTNO || r.AGREEMENTID || "",
         ).toLowerCase();
-        if (!name.includes(q) && !id.includes(q)) return false;
+        const city = String(r.city || r.City || "").toLowerCase();
+        const state = String(r.state || r.State || "").toLowerCase();
+        const exec = String(r.executive_name || r["Executive Name"] || r.EXECUTIVE_NAME || "").toLowerCase();
+        const contact = contactKey ? String(r[contactKey] || "").toLowerCase() : "";
+        const bkt = String(r.bom_bkt || "").toLowerCase();
+        const combined = `${id} ${name} ${city} ${state} ${exec} ${contact} bucket ${bkt}`;
+
+        const matchesAll = terms.every((term) => combined.includes(term));
+        if (!matchesAll) return false;
       }
 
       for (const col of activeCustomFilters) {
@@ -469,6 +599,8 @@ export default function DataExplorer() {
     searchQuery,
     minPos,
     maxPos,
+    quickSegment,
+    customerStats,
     activeCustomFilters,
     customFilterValues,
     exactCustomerFingerprint,
@@ -722,8 +854,9 @@ export default function DataExplorer() {
           </p>
         </div>
 
-        {/* Global Dataset KPIs */}
+        {/* Global Dataset KPIs & Auto Sync */}
         <div className="flex items-center gap-2 shrink-0">
+          <AutoSyncBar compact userName={user?.name} />
           <div className="bg-muted/40 border border-border px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs">
             <span className="text-muted-foreground">Dataset:</span>
             <span className="font-mono font-bold text-foreground">
@@ -788,6 +921,15 @@ export default function DataExplorer() {
         clearedAmount={contextMetrics.clearedAmount}
         onExport={handleExport}
       />
+
+      {/* 3.5 Quick Segment Filter Bar */}
+      <div className="mb-3">
+        <QuickSegmentBar
+          activeSegment={quickSegment}
+          onSelectSegment={setQuickSegment}
+          counts={segmentCounts}
+        />
+      </div>
 
       {/* 4. Toolbar: Presets & Controls Bar */}
       <div className="bg-card border border-border rounded-xl p-2.5 mb-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-xs">
@@ -979,6 +1121,62 @@ export default function DataExplorer() {
             </div>
           ))}
 
+          {/* Column View Presets Switcher */}
+          <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border">
+            <button
+              type="button"
+              onClick={() => applyColumnPreset("operations")}
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition-all ${
+                columnPreset === "operations"
+                  ? "bg-card text-primary shadow-xs border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Operations View: Core operational fields"
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Operations</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => applyColumnPreset("financial")}
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition-all ${
+                columnPreset === "financial"
+                  ? "bg-card text-primary shadow-xs border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Financial View: POS, EMI, BCC, Penal, DAC, ECS"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Financial</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => applyColumnPreset("contact")}
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition-all ${
+                columnPreset === "contact"
+                  ? "bg-card text-primary shadow-xs border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="Contact View: Phones, addresses, locations and field allocation"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Contact</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => applyColumnPreset("all")}
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded transition-all ${
+                columnPreset === "all"
+                  ? "bg-card text-primary shadow-xs border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              title="All Columns: All available master columns"
+            >
+              <Columns className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">All</span>
+            </button>
+          </div>
+
           {/* Density Switcher */}
           <div className="flex items-center bg-muted/60 p-0.5 rounded-lg border border-border">
             <button
@@ -1142,21 +1340,23 @@ export default function DataExplorer() {
             </PopoverContent>
           </Popover>
 
-          {/* Quick Search */}
+          {/* Omni Search with instant keyword highlighting */}
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search (Ctrl+K)..."
+              placeholder="Omni Search (Ctrl+K)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 w-44 rounded-lg bg-muted/40 border border-border pl-8 pr-2 text-xs font-medium outline-none focus:border-primary transition-colors"
+              className="h-8 w-44 sm:w-56 rounded-lg bg-muted/40 border border-border pl-8 pr-7 text-xs font-medium outline-none focus:border-primary transition-all focus:w-64"
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
+                title="Clear search"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -1427,17 +1627,35 @@ export default function DataExplorer() {
                           />
                         </td>
 
-                        {/* Frozen Col 2: Aggr No */}
+                        {/* Frozen Col 2: Aggr No with Quick 360 Preview Eye Button */}
                         <td
-                          className={`sticky left-10 z-10 bg-card border-r border-border px-3 ${tdPad} font-mono font-bold text-primary cursor-pointer hover:underline`}
-                          onClick={() => handleRowClick(r)}
+                          className={`sticky left-10 z-10 bg-card border-r border-border px-3 ${tdPad} font-mono font-bold text-primary`}
                         >
-                          {aggrId}
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span
+                              className="cursor-pointer hover:underline truncate"
+                              onClick={() => handleRowClick(r)}
+                              title={`View full customer record: ${aggrId}`}
+                            >
+                              <HighlightText text={aggrId} query={searchQuery} />
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setQuickDrawerRecord(r);
+                              }}
+                              className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-muted/70 transition-colors shrink-0"
+                              title="Quick 360° Preview"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </td>
 
                         {/* Frozen Col 3: Customer Name */}
                         <td
-                          className={`sticky left-[142px] z-10 bg-card border-r border-border px-3 ${tdPad} cursor-pointer group`}
+                          className={`sticky left-[142px] z-10 bg-card border-r border-border px-3 ${tdPad} cursor-pointer group shadow-[3px_0_6px_-2px_rgba(0,0,0,0.08)] dark:shadow-[3px_0_6px_-2px_rgba(0,0,0,0.3)]`}
                           onClick={() => {
                             const rawName =
                               r.customer_name ||
@@ -1492,12 +1710,17 @@ export default function DataExplorer() {
                         >
                           <div className="flex flex-col">
                             <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                              {r.customer_name ||
-                                r.CUSTOMERNAME ||
-                                r["Customer Name"] ||
-                                r.CUSTOMER_NAME ||
-                                r.customername ||
-                                "-"}
+                              <HighlightText
+                                text={
+                                  r.customer_name ||
+                                  r.CUSTOMERNAME ||
+                                  r["Customer Name"] ||
+                                  r.CUSTOMER_NAME ||
+                                  r.customername ||
+                                  "-"
+                                }
+                                query={searchQuery}
+                              />
                             </span>
                             {(() => {
                               const rawName =
@@ -1543,17 +1766,20 @@ export default function DataExplorer() {
 
                         {/* State */}
                         <td className={`px-2.5 ${tdPad} text-muted-foreground font-medium`}>
-                          {r.state || r.State || "-"}
+                          <HighlightText text={r.state || r.State || "-"} query={searchQuery} />
                         </td>
 
                         {/* City */}
                         <td className={`px-2.5 ${tdPad} text-muted-foreground font-medium`}>
-                          {r.city || r.City || "-"}
+                          <HighlightText text={r.city || r.City || "-"} query={searchQuery} />
                         </td>
 
                         {/* Executive */}
                         <td className={`px-2.5 ${tdPad} text-muted-foreground font-medium`}>
-                          {r.executive_name || r["Executive Name"] || "-"}
+                          <HighlightText
+                            text={r.executive_name || r["Executive Name"] || r.EXECUTIVE_NAME || "-"}
+                            query={searchQuery}
+                          />
                         </td>
 
                         {/* POS (Right aligned, Mono) */}
@@ -1740,6 +1966,15 @@ export default function DataExplorer() {
         data={multiCaseModal}
         onClose={() => setMultiCaseModal(null)}
         onSelectRecord={(r) => handleRowClick(r)}
+      />
+
+      {/* 9. Loan Quick 360 Drawer */}
+      <LoanQuickDrawer
+        record={quickDrawerRecord}
+        isOpen={!!quickDrawerRecord}
+        onClose={() => setQuickDrawerRecord(null)}
+        addressKey={addressKey}
+        contactKey={contactKey}
       />
     </AppLayout>
   );

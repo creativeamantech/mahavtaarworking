@@ -82,8 +82,8 @@ describe("Google Sheets Helper & Multi-File Merge Engine", () => {
     ];
 
     const { mergedRows, newCount, updatedCount } = mergeMainIntoRecords(
-      existingRecords as any,
-      incomingRecords as any,
+      existingRecords as unknown as LoanRecord[],
+      incomingRecords as unknown as LoanRecord[],
     );
 
     expect(newCount).toBe(1); // LN1003 is new

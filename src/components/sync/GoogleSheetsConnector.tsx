@@ -25,6 +25,7 @@ import {
   type SavedSheetPreset,
 } from "../../lib/googleSheets";
 import { toast } from "sonner";
+import { AutoSyncBar } from "./AutoSyncBar";
 
 interface GoogleSheetsConnectorProps {
   onImport: (
@@ -425,6 +426,9 @@ export function GoogleSheetsConnector({
             </div>
           </div>
         )}
+
+        {/* Background Auto-Sync Bar */}
+        <AutoSyncBar className="mt-4" userName={currentUser} />
 
         {/* Saved Sheets Presets Section */}
         {savedSheets.length > 0 && (
