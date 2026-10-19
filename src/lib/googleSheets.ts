@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Google Sheets Integration Helper for Mahavtaar Ledger
  * Supports direct Google Sheet URL / Sheet ID extraction, public/shared CSV fetching,

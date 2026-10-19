@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from '@/lib/router-compat';
-import { useAuth } from '../../contexts/AuthContext';
-import { VIEWS } from '../../constants/permissions';
+import { useAuth } from '@/contexts/AuthContext';
+import { VIEWS } from '@/constants/permissions';
 import { 
   Home, Edit3, UserPlus, TrendingUp, Target, 
   Search, Building2, GitFork, Waves, 
   MonitorPlay, MessageSquare, CalendarClock, 
   Sliders, History, LogOut, Hexagon, PanelLeftClose, PanelLeftOpen,
-  ChevronDown, ChevronRight, Network, Wifi
+  ChevronDown, ChevronRight
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
@@ -42,7 +42,6 @@ const NAV_GROUPS = [
       { label: 'Data Ingestion', icon: Edit3, path: '/data-entry', view: VIEWS.DATA_ENTRY },
       { label: 'Case Assignment', icon: UserPlus, path: '/assignment', view: VIEWS.ASSIGNMENT },
       { label: 'Attendance Logs', icon: CalendarClock, path: '/attendance', view: VIEWS.ATTENDANCE },
-      { label: 'Connectivity Hub', icon: Wifi, path: '/connectivity', view: VIEWS.CONNECTIVITY_HUB },
       { label: 'Settings', icon: Sliders, path: '/settings', view: VIEWS.SETTINGS },
       { label: 'Audit Logs', icon: History, path: '/audit', view: VIEWS.AUDIT_LOG },
     ]

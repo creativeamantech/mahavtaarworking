@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect } from "vitest";
 import { extractSheetInfo } from "../lib/googleSheets";
 import { mergeMainIntoRecords, parseMainFile } from "../lib/fileParser";

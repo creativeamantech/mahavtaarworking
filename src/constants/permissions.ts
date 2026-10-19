@@ -32,7 +32,6 @@ export const VIEW_CONFIG: { key: ViewKey; label: string; group: string; descript
   { key: VIEWS.LIVE_MONITORING, label: 'Live Monitoring', group: 'Monitoring & QA', description: 'Real-time feed of logged customer feedback and disposition updates' },
   { key: VIEWS.FEEDBACKS, label: 'Customer Feedbacks', group: 'Monitoring & QA', description: 'Audit and export history of all customer interactions' },
   { key: VIEWS.ATTENDANCE, label: 'Attendance Management', group: 'Monitoring & QA', description: 'Track executive login/logout times, breaks, and daily work logs' },
-  { key: VIEWS.CONNECTIVITY_HUB, label: 'Connectivity & P2P Sync', group: 'Administration', description: 'Multi-system P2P sync, mesh topology, peer approvals, conflict management, and live device visibility' },
   { key: VIEWS.SETTINGS, label: 'System Configuration', group: 'Administration', description: 'User management, target setting, and system backups' },
   { key: VIEWS.AUDIT_LOG, label: 'Audit Trail', group: 'Administration', description: 'Historical log of all modifications and data changes' },
 ];

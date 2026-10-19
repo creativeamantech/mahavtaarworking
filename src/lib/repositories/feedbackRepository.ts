@@ -8,6 +8,7 @@ import { db, CustomerFeedback } from '../db';
 import { incrementLamportClock } from '../sync/journal';
 import { getLocalDeviceIdentity } from '../sync/deviceIdentity';
 import { ValidationError } from '../errors';
+import { isSupabaseConfigured, getSupabaseClient } from '../supabase/client';
 
 export interface FeedbackMutationContext {
   actorUserId?: string;
@@ -76,6 +77,28 @@ export async function submitCustomerFeedback(
       hash: crypto.randomUUID(),
     });
   });
+
+  // Push to Supabase if configured
+  if (isSupabaseConfigured()) {
+    const client = getSupabaseClient();
+    if (client) {
+      client.from('customer_feedbacks').upsert({
+        id: record.id,
+        agreementid: record.agreementid,
+        contact_number: record.contactNumber || null,
+        availability: record.availability,
+        status: record.status,
+        standard_feedback: record.standardFeedback || null,
+        detailed_feedback: record.detailedFeedback || null,
+        amount_paid: Number(record.amountPaid || 0),
+        payment_mode: record.paymentMode || null,
+        ptp_date: record.ptpDate || null,
+        agent_id: record.agentId || null,
+        agent_name: record.agentName || null,
+        created_at: record.createdAt,
+      }, { onConflict: 'id' }).catch((e) => console.warn('Supabase feedback sync failed:', e));
+    }
+  }
 
   return record;
 }

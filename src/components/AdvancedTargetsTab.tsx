@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useDataState, useDataDispatch } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useWorkspaceTabs } from '@/contexts/WorkspaceTabsContext';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -30,6 +31,19 @@ export function AdvancedTargetsTab() {
   };
   const [targetDate, setTargetDate] = useState<string>(getDefaultEndOfMonth());
   const [targetPct, setTargetPct] = useState<string>('');
+  const { setTabDirty } = useWorkspaceTabs();
+
+  // Track unsaved target inputs on /settings tab
+  useEffect(() => {
+    if (targetPct && targetPct.trim().length > 0) {
+      setTabDirty('/settings', true, { label: 'Unsaved target modification', count: 1 });
+    } else {
+      setTabDirty('/settings', false);
+    }
+    return () => {
+      setTabDirty('/settings', false);
+    };
+  }, [targetPct, setTabDirty]);
 
   const buckets = useMemo(() => ['ALL', ...Array.from(new Set(records.map(r => String(r.bom_bkt || '').trim().toUpperCase()).filter(Boolean))).sort()], [records]);
   const states = useMemo(() => ['ALL', ...Array.from(new Set(records.map(r => String(r.state || r.State || '').trim().toUpperCase()).filter(Boolean))).sort()], [records]);

@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
-import { useDataState, useDataDispatch } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDataState, useDataDispatch } from '@/contexts/DataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '../ui/badge';
 import { Link } from '@/lib/router-compat';
 import { format, isToday, isFuture, parseISO } from 'date-fns';
 import { ScrollArea } from '../ui/scroll-area';
-import { db, CustomerFeedback } from '../../lib/db';
+import { db, CustomerFeedback } from '@/lib/db';
 
 export function AgentNotifications() {
   const { records } = useDataState();

@@ -8,7 +8,8 @@ import { db, LoanRecord, AuditEntry, SyncJournalRecord, UploadSession } from '..
 import { computeAuditEntryHash, GENESIS_HASH } from '../auditTrail';
 import { incrementLamportClock } from '../sync/journal';
 import { getLocalDeviceIdentity } from '../sync/deviceIdentity';
-import { User } from '../../types/domain';
+import { User } from '@/types/domain';
+import { isSupabaseConfigured, getSupabaseClient } from '../supabase/client';
 
 export interface AuditContext {
   userId?: string;
@@ -197,6 +198,18 @@ export async function atomicUpdateLoanRecord(
       }
     });
 
+    // Push mutation to Supabase if configured
+    if (isSupabaseConfigured()) {
+      const client = getSupabaseClient();
+      if (client) {
+        client.from('loan_records').upsert({
+          agreementid: agreementId,
+          ...updates,
+          updated_at: timestamp,
+        }, { onConflict: 'agreementid' }).catch((e) => console.warn('Supabase loan sync failed:', e));
+      }
+    }
+
     return {
       success: true,
       transactionId,
@@ -299,6 +312,26 @@ export async function atomicBulkUpdateLoanRecords(
         await db.sync_journal.bulkAdd(journalsToAdd);
       }
     });
+
+    // Push bulk updates to Supabase if configured
+    if (isSupabaseConfigured() && recordsToPut.length > 0) {
+      const client = getSupabaseClient();
+      if (client) {
+        const payload = recordsToPut.map((r) => ({
+          agreementid: String(r.agreementid || ''),
+          customer_name: r.customer_name ? String(r.customer_name) : null,
+          city: r.city ? String(r.city) : null,
+          state: r.state ? String(r.state) : null,
+          bom_bkt: r.bom_bkt ? String(r.bom_bkt) : null,
+          principal_outstanding: Number(r.principal_outstanding || 0),
+          amount: Number(r.amount || 0),
+          executive_name: r.executive_name ? String(r.executive_name) : null,
+          contact_number: r.contact_number ? String(r.contact_number) : null,
+          updated_at: timestamp,
+        }));
+        client.from('loan_records').upsert(payload, { onConflict: 'agreementid' }).catch((e) => console.warn('Supabase bulk loan sync failed:', e));
+      }
+    }
 
     return {
       success: true,

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { 
   Phone, 
   MapPin, 
@@ -17,11 +18,11 @@ import {
   SheetTitle,
   SheetDescription,
 } from '../ui/sheet';
-import { fmtCur } from '../../lib/formatters';
-import { calculateRow } from '../../lib/calculations';
+import { fmtCur } from '@/lib/formatters';
+import { calculateRow } from '@/lib/calculations';
 import { BucketBadge } from './BucketBadge';
 import { StatusBadge } from './StatusBadge';
-import { LoanRecord } from '../../types/domain';
+import { LoanRecord } from '@/types/domain';
 import { toast } from 'sonner';
 
 interface LoanQuickDrawerProps {

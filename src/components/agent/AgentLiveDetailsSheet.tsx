@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { LoanRecord, CustomerFeedback } from '../../lib/db';
+import { LoanRecord, CustomerFeedback } from '@/lib/db';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
 import { formatDistanceToNow, parseISO } from 'date-fns';

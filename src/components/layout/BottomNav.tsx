@@ -1,8 +1,8 @@
 
 import { Link, useLocation } from '@/lib/router-compat';
-import { LayoutDashboard, FileText, Building2, Users, MoreHorizontal, Database, Activity, Settings, ClipboardList, Wifi } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { VIEWS } from '../../constants/permissions';
+import { LayoutDashboard, FileText, Building2, Users, MoreHorizontal, Database, Activity, Settings, ClipboardList } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { VIEWS } from '@/constants/permissions';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
 
 
@@ -15,7 +15,6 @@ const BOTTOM_TABS = [
 ];
 
 const MORE_TABS = [
-  { label: 'Connectivity Hub', icon: Wifi, path: '/connectivity', view: VIEWS.CONNECTIVITY_HUB },
   { label: 'Assignment', icon: Users, path: '/assignment', view: VIEWS.ASSIGNMENT },
   { label: 'Team Perf', icon: Activity, path: '/exec-team-perf', view: VIEWS.EXEC_TEAM_PERF },
   { label: 'Data Explorer', icon: Database, path: '/explorer', view: VIEWS.DATA_EXPLORER },

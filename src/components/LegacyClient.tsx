@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { PermissionGate } from "@/components/PermissionGate";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Navigate } from "@/lib/router-compat";
+import { WorkspaceTabsProvider } from "@/contexts/WorkspaceTabsContext";
 
 function PageLoader() {
   return (
@@ -29,12 +30,14 @@ export function LegacyProviders({ children }: { children: ReactNode }) {
       <AuthProvider>
         <DataProvider>
           <SyncProvider>
-            <TooltipProvider>
-              <Sonner />
-              <ErrorBoundary>
-                <Suspense fallback={<PageLoader />}>{children}</Suspense>
-              </ErrorBoundary>
-            </TooltipProvider>
+            <WorkspaceTabsProvider>
+              <TooltipProvider>
+                <Sonner />
+                <ErrorBoundary>
+                  <Suspense fallback={<PageLoader />}>{children}</Suspense>
+                </ErrorBoundary>
+              </TooltipProvider>
+            </WorkspaceTabsProvider>
           </SyncProvider>
         </DataProvider>
       </AuthProvider>

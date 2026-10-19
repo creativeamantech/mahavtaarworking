@@ -8,6 +8,7 @@ import { db, StateTarget } from '../db';
 import { incrementLamportClock } from '../sync/journal';
 import { getLocalDeviceIdentity } from '../sync/deviceIdentity';
 import { ValidationError } from '../errors';
+import { isSupabaseConfigured, getSupabaseClient } from '../supabase/client';
 
 export async function getAllTargets(): Promise<Record<string, number>> {
   const targetsList = await db.state_targets.toArray();
@@ -67,6 +68,19 @@ export async function setTargetRecord(
       hash: crypto.randomUUID(),
     });
   });
+
+  // Push to Supabase if configured
+  if (isSupabaseConfigured()) {
+    const client = getSupabaseClient();
+    if (client) {
+      client.from('state_targets').upsert({
+        key: record.key,
+        pct: record.pct,
+        updated_by: record.updatedBy,
+        updated_at: record.updatedAt,
+      }, { onConflict: 'key' }).catch((e) => console.warn('Supabase target sync failed:', e));
+    }
+  }
 
   return record;
 }

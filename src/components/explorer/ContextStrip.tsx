@@ -1,5 +1,5 @@
 import React from 'react';
-import { fmtCur } from '../../lib/formatters';
+import { fmtCur } from '@/lib/formatters';
 import { Download } from 'lucide-react';
 
 interface ContextStripProps {

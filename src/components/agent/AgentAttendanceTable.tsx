@@ -21,8 +21,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format as formatTZ, toZonedTime } from 'date-fns-tz';
 import { parseISO, differenceInMinutes } from "date-fns";
-import { useAuth } from "../../contexts/AuthContext";
-import { db } from '../../lib/db';
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from '@/lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 
 interface AttendanceRecord {

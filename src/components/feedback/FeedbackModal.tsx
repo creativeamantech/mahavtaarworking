@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { submitCustomerFeedback } from '../../lib/repositories/feedbackRepository';
+import { useAuth } from '@/contexts/AuthContext';
+import { submitCustomerFeedback } from '@/lib/repositories/feedbackRepository';
 import { 
   AVAILABILITY_OPTIONS, 
   AvailabilityOption, 
@@ -10,8 +10,8 @@ import {
   isValidFeedbackForAvailability,
   FeedbackFormData,
   INITIAL_FEEDBACK_STATE
-} from '../../constants/feedbackConfig';
-import { CustomerFeedback } from '../../lib/db';
+} from '@/constants/feedbackConfig';
+import { CustomerFeedback } from '@/lib/db';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { CheckCircle2, PhoneCall, Layers, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';

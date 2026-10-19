@@ -8,12 +8,13 @@ import {
   subscribeAutoSync, 
   type AutoSyncStatus, 
   type AutoSyncInterval 
-} from '../../lib/autoSyncEngine';
+} from '@/lib/autoSyncEngine';
 import { toast } from 'sonner';
+import { Link } from '@/lib/router-compat';
 
 interface AutoSyncBarProps {
   className?: string;
-  userName?: string;
+  userName?: string | undefined;
   compact?: boolean;
 }
 
@@ -121,9 +122,13 @@ export function AutoSyncBar({ className = '', userName = 'User', compact = false
               Background Auto-Sync
             </span>
             <span className="text-xs text-muted-foreground">·</span>
-            <span className="text-xs text-muted-foreground">
+            <Link
+              to="/settings?tab=spreadsheets"
+              className="text-xs text-primary font-medium hover:underline inline-flex items-center gap-1"
+              title="Manage Multi-Spreadsheets"
+            >
               {status.savedSheetsCount} {status.savedSheetsCount === 1 ? 'Sheet' : 'Sheets'} configured
-            </span>
+            </Link>
             {status.interval > 0 && timeRemaining && (
               <>
                 <span className="text-xs text-muted-foreground">·</span>

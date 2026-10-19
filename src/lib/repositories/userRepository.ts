@@ -70,7 +70,7 @@ export async function createOrUpdateUser(
     assignedExecutiveName: userData.assignedExecutiveName,
     maintenanceMode: userData.maintenanceMode,
     ...(salt ? { salt, iterations } : {}),
-  } as import('../../types/domain').User;
+  } as import('@/types/domain').User;
 
   // Never store plain password
   delete (userToSave as Record<string, unknown>).plainPassword;

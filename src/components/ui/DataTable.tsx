@@ -1,9 +1,9 @@
 // @ts-nocheck
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown, ChevronRight, X, Bookmark, Save, Trash2 } from 'lucide-react';
-import { useMediaQuery } from '../../hooks/use-media-query';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { LoanRecord } from '../../types/domain';
+import { LoanRecord } from '@/types/domain';
 import {
   DropdownMenu,
   DropdownMenuTrigger,

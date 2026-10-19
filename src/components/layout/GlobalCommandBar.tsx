@@ -9,8 +9,9 @@ import {
   CommandItem,
   CommandShortcut,
 } from '@/components/ui/command';
-import { useDataState, useDataDispatch } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDataState, useDataDispatch } from '@/contexts/DataContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Building2,
@@ -24,8 +25,10 @@ import {
   CreditCard,
   Target,
   FileText,
+  RefreshCw,
+  Database,
 } from 'lucide-react';
-import { fmtCur } from '../../lib/formatters';
+import { fmtCur } from '@/lib/formatters';
 
 export function GlobalCommandBar() {
   const [open, setOpen] = useState(false);
@@ -130,62 +133,99 @@ export function GlobalCommandBar() {
           </CommandGroup>
         )}
 
-        {/* Navigation Pages */}
-        <CommandGroup heading="Navigation">
+        {/* System Quick Actions */}
+        <CommandGroup heading="Quick Actions">
           <CommandItem
-            value="dashboard global analytics overview"
+            value="sync all spreadsheets now auto sync google sheets"
+            onSelect={() => handleSelect(async () => {
+              toast.info("Triggering full spreadsheet sync...");
+              try {
+                const { syncAllLinkedModuleSheets } = await import('@/lib/multiSpreadsheetManager');
+                await syncAllLinkedModuleSheets();
+                toast.success("All Google Spreadsheets synchronized successfully!");
+              } catch (e: any) {
+                toast.error("Sync error: " + (e.message || "Failed to sync"));
+              }
+            })}
+          >
+            <RefreshCw className="mr-2 h-4 w-4 text-emerald-500 animate-spin-hover" />
+            <span>Sync All Google Spreadsheets Now</span>
+            <CommandShortcut>⌘S</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="spreadsheet management settings google sheets drive"
+            onSelect={() => handleSelect(() => navigate('/settings?tab=spreadsheets'))}
+          >
+            <Database className="mr-2 h-4 w-4 text-blue-500" />
+            <span>Open Spreadsheet Management</span>
+          </CommandItem>
+
+          <CommandItem
+            value="user management team roles settings"
+            onSelect={() => handleSelect(() => navigate('/settings?tab=users'))}
+          >
+            <Users className="mr-2 h-4 w-4 text-amber-500" />
+            <span>Manage Team Members & Access</span>
+          </CommandItem>
+        </CommandGroup>
+
+        {/* Navigation Pages */}
+        <CommandGroup heading="Navigation Pages">
+          <CommandItem
+            value="dashboard global analytics overview strategy"
             onSelect={() => handleSelect(() => navigate(isExecutive() ? '/exec-dashboard' : '/dashboard'))}
           >
             <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
-            <span>Dashboard</span>
+            <span>Admin Strategy Dashboard</span>
             <CommandShortcut>G D</CommandShortcut>
           </CommandItem>
 
           <CommandItem
-            value="city pivot matrix geographical reports"
+            value="city pivot matrix geographical reports ledger"
             onSelect={() => handleSelect(() => navigate('/city-pivot'))}
           >
             <Building2 className="mr-2 h-4 w-4 text-emerald-500" />
-            <span>City Pivot Performance</span>
+            <span>City Ledger & Pivot</span>
             <CommandShortcut>G C</CommandShortcut>
           </CommandItem>
 
           <CommandItem
-            value="team pivot executive performance rankings"
+            value="team pivot executive performance rankings ledger"
             onSelect={() => handleSelect(() => navigate('/team-pivot'))}
           >
             <Users className="mr-2 h-4 w-4 text-indigo-500" />
-            <span>Team Pivot Performance</span>
+            <span>Team Ledger & Pivot</span>
             <CommandShortcut>G T</CommandShortcut>
           </CommandItem>
 
           <CommandItem
-            value="data explorer records search filter grid"
+            value="data explorer records search filter grid cases"
             onSelect={() => handleSelect(() => navigate('/explorer'))}
           >
             <Search className="mr-2 h-4 w-4 text-blue-500" />
-            <span>Data Explorer</span>
+            <span>Data Explorer & Cases</span>
             <CommandShortcut>G E</CommandShortcut>
           </CommandItem>
 
           <CommandItem
-            value="data entry feedback update payment"
+            value="data entry feedback update payment ingestion"
             onSelect={() => handleSelect(() => navigate('/data-entry'))}
           >
             <FileSpreadsheet className="mr-2 h-4 w-4 text-amber-500" />
-            <span>Data Entry & Update</span>
+            <span>Data Ingestion & Entry</span>
           </CommandItem>
 
           <CommandItem
-            value="pos band explorer slabs"
+            value="pos band explorer slabs analysis"
             onSelect={() => handleSelect(() => navigate('/band-explorer'))}
           >
             <Layers className="mr-2 h-4 w-4 text-purple-500" />
-            <span>POS Band Explorer</span>
+            <span>POS Band Analysis</span>
           </CommandItem>
 
           <CommandItem
-            value="live monitoring real time field updates"
+            value="live field monitoring real time updates"
             onSelect={() => handleSelect(() => navigate('/live-monitoring'))}
           >
             <Activity className="mr-2 h-4 w-4 text-rose-500" />
@@ -193,15 +233,15 @@ export function GlobalCommandBar() {
           </CommandItem>
 
           <CommandItem
-            value="attendance punch daily tracking"
+            value="attendance punch daily tracking logs"
             onSelect={() => handleSelect(() => navigate('/attendance'))}
           >
             <CalendarCheck className="mr-2 h-4 w-4 text-teal-500" />
-            <span>Attendance & Punch Log</span>
+            <span>Attendance & Punch Logs</span>
           </CommandItem>
 
           <CommandItem
-            value="settings users targets configuration"
+            value="settings users targets configuration spreadsheets"
             onSelect={() => handleSelect(() => navigate('/settings'))}
           >
             <Settings className="mr-2 h-4 w-4 text-slate-500" />

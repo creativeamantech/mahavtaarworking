@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
-import { runSystemIntegrityCheck, IntegrityReport } from '../../lib/integrityChecker';
+import { runSystemIntegrityCheck, IntegrityReport } from '@/lib/integrityChecker';
 import { Button } from '../ui/button';
 import { ShieldCheck, AlertTriangle, XCircle, RefreshCw, Database, Activity, HardDrive, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';

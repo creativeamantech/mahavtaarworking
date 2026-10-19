@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState } from 'react';
-import { DeviceIdentity } from '../../lib/sync/types';
+import { DeviceIdentity } from '@/lib/sync/types';
 import { 
   Copy, Check, KeyRound, Wifi, 
   ShieldCheck, X, Network,

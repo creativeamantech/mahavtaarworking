@@ -3,7 +3,7 @@ import { Search, X, Plus, DollarSign, Filter, ChevronDown, Check } from 'lucide-
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Checkbox } from '../ui/checkbox';
 import { ScrollArea } from '../ui/scroll-area';
-import { LoanRecord } from '../../types/domain';
+import { LoanRecord } from '@/types/domain';
 
 interface FilterStripProps {
   availableStates: string[];

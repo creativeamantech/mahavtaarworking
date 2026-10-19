@@ -1,6 +1,6 @@
 import React from 'react';
 import { Target, Clock } from 'lucide-react';
-import { fmtCur } from '../../lib/formatters';
+import { fmtCur } from '@/lib/formatters';
 
 interface ProgressRingProps {
   percentage: number;

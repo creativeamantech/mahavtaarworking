@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from '@/lib/router-compat';
-import { ChevronLeft, ChevronRight, Menu, Search, UserCircle, LogOut, Wifi } from 'lucide-react';
-import { useDataState, useDataDispatch } from '../../contexts/DataContext';
+import { ChevronLeft, ChevronRight, Menu, Search, UserCircle, LogOut } from 'lucide-react';
+import { useDataState, useDataDispatch } from '@/contexts/DataContext';
 import { useMemo, useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '../ThemeToggle';
-import { SyncStatusIndicator } from '../sync/SyncStatusIndicator';
+import { AutoSyncBar } from '../sync/AutoSyncBar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +29,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/live-monitoring': 'Live Monitoring',
   '/feedbacks': 'All Feedback',
   '/attendance': 'Attendance',
-  '/connectivity': 'Connectivity Hub',
 };
 
 export function MobileHeader() {
@@ -75,7 +74,7 @@ export function MobileHeader() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <SyncStatusIndicator />
+          <AutoSyncBar compact userName={user?.name} />
           <ThemeToggle />
           
           <DropdownMenu>
@@ -94,10 +93,6 @@ export function MobileHeader() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/connectivity')} className="cursor-pointer">
-                <Wifi className="mr-2 h-4 w-4 text-primary" />
-                <span>Connectivity Hub</span>
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Profile</span>

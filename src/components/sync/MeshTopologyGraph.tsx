@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { PeerInfo, DeviceIdentity } from '../../lib/sync/types';
+import { PeerInfo, DeviceIdentity } from '@/lib/sync/types';
 import { Laptop, Monitor, Smartphone, Wifi, Globe, Shield, RefreshCw, Cpu } from 'lucide-react';
 
 interface MeshTopologyGraphProps {

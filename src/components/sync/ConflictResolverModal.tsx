@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ConflictRecord } from '../../lib/sync/types';
+import { ConflictRecord } from '@/lib/sync/types';
 import { 
   AlertTriangle, Check, ArrowRight, ShieldAlert, 
   Layers, GitMerge, FileText, CheckCircle2 

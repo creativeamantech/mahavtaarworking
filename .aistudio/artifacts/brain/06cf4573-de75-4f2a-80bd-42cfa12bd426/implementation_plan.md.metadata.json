@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan to advance the user interface with an enhanced Data Explorer grid, instant search with term highlighting, quick filter presets, sticky columns, and automated Google Sheets background sync timer.",
-  "updatedAt": "2026-10-15T03:08:57.275213739Z",
+  "summary": "Implementation plan for integrating an external Supabase PostgreSQL database into Mahavtaar Ledger using a high-performance hybrid online/offline architecture, automated data migration from IndexedDB, SQL schema definitions, and a dedicated Supabase configuration tab in Settings.",
+  "updatedAt": "2026-10-15T21:32:43.982786354Z",
   "requestFeedback": true,
   "userFacing": true
 }

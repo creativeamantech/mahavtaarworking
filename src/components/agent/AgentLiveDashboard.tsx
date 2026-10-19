@@ -1,9 +1,9 @@
 // @ts-nocheck
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "../../contexts/AuthContext";
-import { useDataState } from "../../contexts/DataContext";
-import { LoanRecord, CustomerFeedback, db } from "../../lib/db";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDataState } from "@/contexts/DataContext";
+import { LoanRecord, CustomerFeedback, db } from "@/lib/db";
 import { format, isToday, parseISO, formatDistanceToNow } from "date-fns";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";

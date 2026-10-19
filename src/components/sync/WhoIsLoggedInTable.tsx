@@ -1,5 +1,5 @@
 import React from 'react';
-import { DeviceSession } from '../../lib/sync/types';
+import { DeviceSession } from '@/lib/sync/types';
 import { Users, Monitor, Smartphone, Laptop, Clock, ShieldCheck, Activity } from 'lucide-react';
 import { StatusBadge } from '../ui/StatusBadge';
 

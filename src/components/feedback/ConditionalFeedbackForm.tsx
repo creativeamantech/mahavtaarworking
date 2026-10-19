@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useId } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { submitCustomerFeedback } from '../../lib/repositories/feedbackRepository';
+import { useAuth } from '@/contexts/AuthContext';
+import { submitCustomerFeedback } from '@/lib/repositories/feedbackRepository';
 import { 
   AVAILABILITY_OPTIONS, 
   AvailabilityOption, 
@@ -10,10 +10,12 @@ import {
   isValidFeedbackForAvailability,
   FeedbackFormData,
   INITIAL_FEEDBACK_STATE
-} from '../../constants/feedbackConfig';
-import { CustomerFeedback } from '../../lib/db';
+} from '@/constants/feedbackConfig';
+import { CustomerFeedback } from '@/lib/db';
 import { CheckCircle2, MessageSquare, PhoneCall, Layers, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLocation } from '@/lib/router-compat';
+import { useWorkspaceTabs } from '@/contexts/WorkspaceTabsContext';
 
 interface ConditionalFeedbackFormProps {
   agreementId: string;
@@ -43,6 +45,28 @@ export function ConditionalFeedbackForm({
   // Structured Feedback State: Availability, Standard Feedback, Detailed Feedback
   const [formData, setFormData] = useState<FeedbackFormData>(INITIAL_FEEDBACK_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const location = useLocation();
+  const { setTabDirty } = useWorkspaceTabs();
+
+  // Track unsaved feedback input on current customer/view tab
+  const tabKey = location?.pathname || (agreementId ? `/customer/${agreementId}` : '/feedbacks');
+  React.useEffect(() => {
+    const hasUnsavedInput = Boolean(
+      formData.availability || 
+      formData.standardFeedback || 
+      formData.detailedFeedback.trim().length > 0
+    );
+
+    if (hasUnsavedInput) {
+      setTabDirty(tabKey, true, { label: 'Unsaved feedback draft', count: 1 });
+    } else {
+      setTabDirty(tabKey, false);
+    }
+
+    return () => {
+      setTabDirty(tabKey, false);
+    };
+  }, [formData.availability, formData.standardFeedback, formData.detailedFeedback, tabKey, setTabDirty]);
 
   // Sync prop contact number if updated externally
   React.useEffect(() => {

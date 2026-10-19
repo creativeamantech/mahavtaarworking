@@ -1,11 +1,11 @@
 // @ts-nocheck
 import React from 'react';
 import { X, CheckCircle2, DollarSign, Layers } from 'lucide-react';
-import { fmtCur } from '../../lib/formatters';
-import { calculateRow } from '../../lib/calculations';
+import { fmtCur } from '@/lib/formatters';
+import { calculateRow } from '@/lib/calculations';
 import { BucketBadge } from './BucketBadge';
 import { StatusBadge } from './StatusBadge';
-import { LoanRecord } from '../../types/domain';
+import { LoanRecord } from '@/types/domain';
 
 interface MultiCaseModalProps {
   data: {

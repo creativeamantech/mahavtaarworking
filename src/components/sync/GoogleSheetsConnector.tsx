@@ -23,7 +23,7 @@ import {
   removeSheetPreset,
   type SheetPreviewResult,
   type SavedSheetPreset,
-} from "../../lib/googleSheets";
+} from "@/lib/googleSheets";
 import { toast } from "sonner";
 import { AutoSyncBar } from "./AutoSyncBar";
 

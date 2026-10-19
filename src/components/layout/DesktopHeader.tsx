@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Search, Bell, UserCircle, Menu, LogOut } from "lucide-react";
 import { useLocation, useNavigate, Link } from '@/lib/router-compat';
-import { useDataState, useDataDispatch } from '../../contexts/DataContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDataState, useDataDispatch } from '@/contexts/DataContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { ThemeToggle } from '../ThemeToggle';
 import {
@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AgentNotifications } from '../agent/AgentNotifications';
-import { SyncStatusIndicator } from '../sync/SyncStatusIndicator';
 import { AutoSyncBar } from '../sync/AutoSyncBar';
 
 export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean; setCollapsed?: (val: boolean | ((prev: boolean) => boolean)) => void }) {
@@ -182,7 +181,6 @@ export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean
         
         <div className="flex items-center gap-2 border-l border-border pl-3">
           <AutoSyncBar compact userName={user?.name} />
-          <SyncStatusIndicator />
           <ThemeToggle />
           {user?.role === 'EXECUTIVE' ? (
             <AgentNotifications />

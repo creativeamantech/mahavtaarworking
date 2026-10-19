@@ -4,8 +4,9 @@ import { MobileHeader } from "./MobileHeader";
 import { DesktopHeader } from "./DesktopHeader";
 import { BottomNav } from "./BottomNav";
 import { GlobalCommandBar } from "./GlobalCommandBar";
-import { useMediaQuery } from "../../hooks/use-media-query";
-import { useAuth } from "../../contexts/AuthContext";
+import { WorkspaceTabStrip } from "./WorkspaceTabStrip";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface AppLayoutProps {
@@ -78,6 +79,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       >
         <MobileHeader />
         <DesktopHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+        <WorkspaceTabStrip />
         <main className="mobile-main-content flex-1 pb-16 md:pb-0 animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out fill-mode-both">
           <div className="mx-auto max-w-[1600px] p-4 sm:p-5 lg:p-8">{children}</div>
         </main>

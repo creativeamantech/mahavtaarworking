@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PeerInfo } from '../../lib/sync/types';
+import { PeerInfo } from '@/lib/sync/types';
 import { 
   Check, X, Power, Trash2, RefreshCw, Shield, 
   Wifi, Globe, Info, Clock, Monitor, Smartphone, Laptop 

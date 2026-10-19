@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useRef } from 'react';
-import { BackupSnapshotRecord } from '../../lib/db';
+import { BackupSnapshotRecord } from '@/lib/db';
 import { 
   Database, Download, Upload, ShieldCheck, 
   Trash2, RefreshCw, Clock, HardDrive, CheckCircle2, AlertCircle, FileJson 
