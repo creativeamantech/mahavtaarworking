@@ -259,3 +259,16 @@
     animation-duration: 2s !important;
   }
 }
+
+/* Mahavtaar logo-inspired login and loading screens */
+.mv-login { background: #fff; color: #202238; }
+.mv-login-ribbon { height: 5px; background: linear-gradient(90deg,#81258c 0 18%,#0799cf 18% 36%,#55a94f 36% 54%,#efc51e 54% 70%,#ef8424 70% 85%,#e33e32 85%); }
+.mv-login-brand { padding: clamp(2rem,5vw,5.5rem); color: #fff; background: linear-gradient(145deg,#64206f 0%,#81258c 34%,#147fb7 72%,#0b9ac2 100%); }
+.mv-orb { position:absolute; border-radius:9999px; pointer-events:none; filter:blur(1px); }
+.mv-orb-one { width:32rem;height:32rem;right:-12rem;top:-13rem;background:linear-gradient(135deg,rgba(82,190,87,.55),rgba(239,197,30,.22)); }
+.mv-orb-two { width:28rem;height:28rem;left:-15rem;bottom:-17rem;background:linear-gradient(135deg,rgba(239,132,36,.55),rgba(227,62,50,.25)); }
+.mv-loader { position:relative; overflow:hidden; background:radial-gradient(ellipse at 15% 20%,rgba(129,37,140,.11),transparent 38%),radial-gradient(ellipse at 85% 78%,rgba(7,153,207,.12),transparent 40%),#f8f9fc; }
+.mv-loader:before { content:"";position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#81258c,#0799cf,#55a94f,#efc51e,#ef8424,#e33e32); }
+.mv-loader-progress { animation:mv-loading 1.5s ease-in-out infinite; transform-origin:left; }
+@keyframes mv-loading { 0% { transform:translateX(-110%) scaleX(.65); } 55% { transform:translateX(70%) scaleX(1.15); } 100% { transform:translateX(260%) scaleX(.65); } }
+@media (prefers-reduced-motion: reduce) { .mv-loader-progress { animation:none; transform:none; width:100%; } }
