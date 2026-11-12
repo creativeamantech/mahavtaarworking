@@ -42,6 +42,15 @@
   --color-disp-rtp: hsl(var(--disp-rtp));
   --color-disp-settled: hsl(var(--disp-settled));
   --color-disp-paid: hsl(var(--disp-paid));
+  --color-disp-nc: hsl(var(--disp-nc));
+  --color-role-admin: hsl(var(--role-admin));
+  --color-role-manager: hsl(var(--role-manager));
+  --color-role-executive: hsl(var(--role-executive));
+  --color-role-viewer: hsl(var(--role-viewer));
+  --color-heat-cool: hsl(var(--heat-cool));
+  --color-heat-warm: hsl(var(--heat-warm));
+  --color-heat-hot: hsl(var(--heat-hot));
+  --color-heat-critical: hsl(var(--heat-critical));
   --color-sidebar: hsl(var(--sidebar-bg));
   --color-sidebar-foreground: hsl(var(--sidebar-fg));
   --color-sidebar-border: hsl(var(--sidebar-border));
@@ -99,6 +108,23 @@
     --border-subtle: 214 32% 95%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
+
+    --role-admin: 291 44% 38%;
+    --role-manager: 190 58% 36%;
+    --role-executive: 230 35% 49%;
+    --role-viewer: 220 10% 48%;
+    --heat-cool: 190 58% 36%;
+    --heat-warm: 39 65% 46%;
+    --heat-hot: 22 62% 48%;
+    --heat-critical: 350 55% 45%;
+    --disp-nc: 350 45% 51%;
+    --r-2xl: 1.25rem;
+    --shadow-card: 0 1px 3px hsl(258 26% 15% / .045), 0 1px 2px hsl(258 26% 15% / .025);
+    --shadow-popover: 0 12px 32px hsl(258 26% 15% / .12);
+    --motion-fast: 140ms;
+    --motion-base: 180ms;
+    --motion-slow: 240ms;
+    --ease-standard: cubic-bezier(.2,.7,.2,1);
 
     /* Geometric Radius Scale */
     --r-xs: 0.25rem;
@@ -168,6 +194,18 @@
     --sidebar-bg: 224 40% 6%;
     --sidebar-fg: 210 40% 98%;
     --sidebar-border: 217 28% 14%;
+    --role-admin: 287 42% 72%;
+    --role-manager: 190 55% 62%;
+    --role-executive: 230 55% 72%;
+    --role-viewer: 220 12% 68%;
+    --heat-cool: 190 55% 62%;
+    --heat-warm: 39 75% 62%;
+    --heat-hot: 22 75% 62%;
+    --heat-critical: 350 60% 68%;
+    --disp-nc: 350 60% 68%;
+    --r-2xl: 1.25rem;
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / .22);
+    --shadow-popover: 0 12px 32px hsl(0 0% 0% / .32);
   }
 
   * {
@@ -496,136 +534,3 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   .mobile-main-content button,
   .mobile-main-content a { transition-timing-function: cubic-bezier(.2,.8,.2,1); }
 }
-
-
-/* Phase 1 — Lotus-inspired semantic design system.
-   Existing component contracts and application behavior are intentionally unchanged. */
-@theme inline {
-  --color-bucket-current: hsl(var(--bucket-current));
-  --color-bucket-1-30: hsl(var(--bucket-1-30));
-  --color-bucket-31-60: hsl(var(--bucket-31-60));
-  --color-bucket-61-90: hsl(var(--bucket-61-90));
-  --color-bucket-npa: hsl(var(--bucket-npa));
-  --color-disp-paid: hsl(var(--disp-paid));
-  --color-disp-settled: hsl(var(--disp-settled));
-  --color-disp-ptp: hsl(var(--disp-ptp));
-  --color-disp-rtp: hsl(var(--disp-rtp));
-  --color-disp-rnr: hsl(var(--disp-rnr));
-  --color-disp-nc: hsl(var(--disp-nc));
-  --color-role-admin: hsl(var(--role-admin));
-  --color-role-manager: hsl(var(--role-manager));
-  --color-role-executive: hsl(var(--role-executive));
-  --color-role-viewer: hsl(var(--role-viewer));
-  --color-heat-cool: hsl(var(--heat-cool));
-  --color-heat-warm: hsl(var(--heat-warm));
-  --color-heat-hot: hsl(var(--heat-hot));
-  --color-heat-critical: hsl(var(--heat-critical));
-}
-
-:root {
-  --background: 36 25% 98%;
-  --foreground: 258 26% 15%;
-  --card: 0 0% 100%;
-  --card-foreground: 258 26% 15%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 258 26% 15%;
-  --primary: 291 44% 31%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 246 28% 94%;
-  --secondary-foreground: 258 26% 22%;
-  --muted: 246 20% 95%;
-  --muted-foreground: 250 10% 43%;
-  --accent: 190 58% 94%;
-  --accent-foreground: 258 26% 18%;
-  --border: 252 17% 88%;
-  --border-subtle: 252 17% 93%;
-  --input: 252 17% 88%;
-  --ring: 291 44% 42%;
-  --sidebar-bg: 258 30% 14%;
-  --sidebar-fg: 36 22% 96%;
-  --sidebar-border: 258 20% 23%;
-  --bucket-current: 135 20% 43%;
-  --bucket-1-30: 230 35% 49%;
-  --bucket-31-60: 39 65% 46%;
-  --bucket-61-90: 22 62% 48%;
-  --bucket-npa: 350 45% 51%;
-  --disp-paid: 135 20% 43%;
-  --disp-settled: 170 52% 37%;
-  --disp-ptp: 230 35% 49%;
-  --disp-rtp: 39 65% 46%;
-  --disp-rnr: 220 10% 48%;
-  --disp-nc: 350 45% 51%;
-  --role-admin: 291 44% 38%;
-  --role-manager: 190 58% 36%;
-  --role-executive: 230 35% 49%;
-  --role-viewer: 220 10% 48%;
-  --heat-cool: 190 58% 36%;
-  --heat-warm: 39 65% 46%;
-  --heat-hot: 22 62% 48%;
-  --heat-critical: 350 55% 45%;
-  --r-xs: 0.25rem;
-  --r-sm: 0.375rem;
-  --r-md: 0.625rem;
-  --r-lg: 0.875rem;
-  --r-xl: 1rem;
-  --r-2xl: 1.25rem;
-  --shadow-card: 0 1px 3px hsl(258 26% 15% / .045), 0 1px 2px hsl(258 26% 15% / .025);
-  --shadow-popover: 0 12px 32px hsl(258 26% 15% / .12);
-  --motion-fast: 140ms;
-  --motion-base: 180ms;
-  --motion-slow: 240ms;
-  --ease-standard: cubic-bezier(.2,.7,.2,1);
-}
-.dark {
-  --background: 258 27% 9%;
-  --foreground: 36 22% 95%;
-  --card: 258 23% 13%;
-  --card-foreground: 36 22% 95%;
-  --popover: 258 23% 13%;
-  --popover-foreground: 36 22% 95%;
-  --primary: 287 42% 67%;
-  --primary-foreground: 258 27% 10%;
-  --secondary: 258 18% 20%;
-  --secondary-foreground: 36 22% 95%;
-  --muted: 258 16% 18%;
-  --muted-foreground: 252 12% 68%;
-  --accent: 190 35% 20%;
-  --accent-foreground: 36 22% 95%;
-  --border: 258 16% 25%;
-  --border-subtle: 258 16% 19%;
-  --input: 258 16% 25%;
-  --ring: 287 42% 67%;
-  --sidebar-bg: 258 31% 7%;
-  --sidebar-fg: 36 22% 95%;
-  --sidebar-border: 258 18% 18%;
-  --bucket-current: 135 25% 58%;
-  --bucket-1-30: 230 55% 72%;
-  --bucket-31-60: 39 75% 62%;
-  --bucket-61-90: 22 75% 62%;
-  --bucket-npa: 350 60% 68%;
-  --disp-paid: 135 25% 58%;
-  --disp-settled: 170 52% 56%;
-  --disp-ptp: 230 55% 72%;
-  --disp-rtp: 39 75% 62%;
-  --disp-rnr: 220 12% 68%;
-  --disp-nc: 350 60% 68%;
-  --role-admin: 287 42% 72%;
-  --role-manager: 190 55% 62%;
-  --role-executive: 230 55% 72%;
-  --role-viewer: 220 12% 68%;
-  --heat-cool: 190 55% 62%;
-  --heat-warm: 39 75% 62%;
-  --heat-hot: 22 75% 62%;
-  --heat-critical: 350 60% 68%;
-  --shadow-card: 0 1px 3px hsl(0 0% 0% / .22);
-  --shadow-popover: 0 12px 32px hsl(0 0% 0% / .32);
-}
-
-/* Thin identity ribbon — no oversized gradients or decorative blur. */
-.brand-ribbon {
-  height: 3px;
-  background: linear-gradient(90deg, #702878 0 20%, #5264a8 20% 40%, #168fa9 40% 60%, #56845a 60% 75%, #d5a72d 75% 88%, #c66c35 88%);
-}
-.surface-card { box-shadow: var(--shadow-card); }
-.surface-card-hover { transition: border-color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard); }
-.surface-card-hover:hover { transform: none; box-shadow: var(--shadow-popover); }
