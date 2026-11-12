@@ -6,7 +6,7 @@ import {
   Home, Edit3, UserPlus, TrendingUp, Target, 
   Search, Building2, GitFork, Waves, 
   MonitorPlay, MessageSquare, CalendarClock, 
-  Sliders, History, LogOut, Hexagon, PanelLeftClose, PanelLeftOpen,
+  Sliders, History, LogOut, Hexagon, PanelLeftClose, PanelLeftOpen, Database,
   ChevronDown, ChevronRight
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
@@ -47,6 +47,31 @@ const NAV_GROUPS = [
     ]
   }
 ];
+
+const ADMIN_CONTROL_PATHS = new Set([
+  '/dashboard', '/live-monitoring', '/explorer', '/band-explorer',
+  '/city-pivot', '/team-pivot', '/feedbacks', '/data-entry',
+  '/assignment', '/attendance', '/settings', '/audit', '/connectivity',
+]);
+
+const ADMIN_NAV_GROUP = {
+  title: 'Admin Controls',
+  items: [
+    { label: 'Admin Dashboard', icon: Home, path: '/dashboard', view: VIEWS.DASHBOARD },
+    { label: 'Live Tracking', icon: MonitorPlay, path: '/live-monitoring', view: VIEWS.LIVE_MONITORING },
+    { label: 'Data Explorer', icon: Search, path: '/explorer', view: VIEWS.DATA_EXPLORER },
+    { label: 'Band Analysis', icon: Waves, path: '/band-explorer', view: VIEWS.CITY_TEAM_MATRIX },
+    { label: 'City Ledger', icon: Building2, path: '/city-pivot', view: VIEWS.CITY_PIVOT },
+    { label: 'Team Ledger', icon: GitFork, path: '/team-pivot', view: VIEWS.TEAM_PIVOT },
+    { label: 'Quality & Feedback', icon: MessageSquare, path: '/feedbacks', view: VIEWS.FEEDBACKS },
+    { label: 'Data Ingestion', icon: Edit3, path: '/data-entry', view: VIEWS.DATA_ENTRY },
+    { label: 'Case Assignment', icon: UserPlus, path: '/assignment', view: VIEWS.ASSIGNMENT },
+    { label: 'Attendance Logs', icon: CalendarClock, path: '/attendance', view: VIEWS.ATTENDANCE },
+    { label: 'System Settings', icon: Sliders, path: '/settings', view: VIEWS.SETTINGS },
+    { label: 'Audit Logs', icon: History, path: '/audit', view: VIEWS.AUDIT_LOG },
+    { label: 'Workspace Connection', icon: Database, path: '/connectivity', view: VIEWS.CONNECTIVITY_HUB },
+  ],
+};
 
 export function AppSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: { collapsed: boolean, setCollapsed: (c: boolean | ((prev: boolean) => boolean)) => void, mobileOpen: boolean, setMobileOpen: (v: boolean) => void }) {
   const { user, logout, hasPermission } = useAuth();
@@ -93,9 +118,9 @@ export function AppSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen 
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 scrollbar-thin scrollbar-thumb-white/10 flex flex-col gap-2">
-        {NAV_GROUPS.map((group, idx) => {
+        {(user?.role === 'ADMIN' ? [ADMIN_NAV_GROUP, ...NAV_GROUPS] : NAV_GROUPS).map((group, idx) => {
           
-          const visibleItems = group.items.filter(item => hasPermission(item.view));
+          const visibleItems = group.items.filter(item => hasPermission(item.view) && !(user?.role === 'ADMIN' && group !== ADMIN_NAV_GROUP && ADMIN_CONTROL_PATHS.has(item.path)));
           if (visibleItems.length === 0) return null;
           
           const isExpanded = expandedGroups[group.title];
