@@ -16,39 +16,38 @@ const SOURCES = {
 
 type SourceKey = keyof typeof SOURCES;
 
-async function gatewayRequest(base: string, path: string, apiKeyName: string) {
-  const lovableKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env[apiKeyName];
-  if (!lovableKey || !connectionKey) {
-    throw new Error("Google Workspace connection is not configured on the server.");
-  }
-
-  const response = await fetch(`${base}${path}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": connectionKey,
-      Accept: "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    console.error("Google Workspace gateway error", response.status, detail.slice(0, 500));
-    throw new Error(
-      response.status === 401 || response.status === 403
-        ? "Google Workspace connection authorization failed."
-        : `Google Workspace request failed (${response.status}).`,
-    );
-  }
-  return response.json();
-}
-
 /** Read-only access to the two approved workspace spreadsheets. */
 export const fetchMahavtaarWorkspaceSheet = createServerFn({ method: "GET" })
   .inputValidator(z.object({ source: z.enum(["master", "collections"]) }))
   .handler(async ({ data }) => {
     const { requireSession } = await import("./auth.server");
+    async function gatewayRequest(base: string, path: string, apiKeyName: string) {
+      const lovableKey = process.env["LOVABLE_API_KEY"];
+      const connectionKey = process.env[apiKeyName];
+      if (!lovableKey || !connectionKey) {
+        throw new Error("Google Workspace connection is not configured on the server.");
+      }
+    
+      const response = await fetch(`${base}${path}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${lovableKey}`,
+          "X-Connection-Api-Key": connectionKey,
+          Accept: "application/json",
+        },
+      });
+    
+      if (!response.ok) {
+        const detail = await response.text().catch(() => "");
+        console.error("Google Workspace gateway error", response.status, detail.slice(0, 500));
+        throw new Error(
+          response.status === 401 || response.status === 403
+            ? "Google Workspace connection authorization failed."
+            : `Google Workspace request failed (${response.status}).`,
+        );
+      }
+      return response.json();
+    }
     await requireSession();
     const source: SourceKey = data.source;
     const config = SOURCES[source];
