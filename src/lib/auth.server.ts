@@ -81,7 +81,8 @@ export function setSessionCookie(value: string, maxAge: number) {
   const options = {
     httpOnly: true,
     secure: process.env["NODE_ENV"] === "production",
-    sameSite: "strict" as const,
+    // Lovable embedded previews are cross-site; production cookies must be sent in the iframe.
+    sameSite: process.env["NODE_ENV"] === "production" ? "none" as const : "lax" as const,
     path: "/",
   };
   if (value) setCookie(COOKIE, value, { ...options, maxAge });
