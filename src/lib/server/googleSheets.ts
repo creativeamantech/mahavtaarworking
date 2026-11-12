@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSession } from "./auth";
 
 const SOURCES = {
   master: {
@@ -52,6 +53,7 @@ export const fetchMahavtaarWorkspaceSheet = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
+    await requireSession();
     const source: SourceKey = data.source;
     const config = SOURCES[source];
     const sheetsBase = "https://connector-gateway.lovable.dev/google_sheets/v4";
