@@ -48,8 +48,9 @@ export const fetchMahavtaarWorkspaceSheet = createServerFn({ method: "GET" })
       }
       return response.json();
     }
-    await requireSession();
     const source: SourceKey = data.source;
+    // Master Allocation contains the full portfolio and is an administrator-only source.
+    await requireSession(source === 'master' ? 'Admin' : undefined);
     const config = SOURCES[source];
     const sheetsBase = "https://connector-gateway.lovable.dev/google_sheets/v4";
     const driveBase = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
