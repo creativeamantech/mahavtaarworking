@@ -1,6 +1,6 @@
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { Database, FileSpreadsheet, RefreshCw, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
+import { Database, FileSpreadsheet, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { fetchMahavtaarWorkspaceSheet } from "@/lib/server/googleSheets";
 
@@ -101,7 +101,7 @@ export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
         </div>
       )}
       <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <CheckCircle2 className="h-3.5 w-3.5" /> Server-side authenticated, read-only connection
+        <CheckCircle2 className="h-3.5 w-3.5" /> Server-side connector credentials · read-only sheet access
       </p>
     </section>
   );
