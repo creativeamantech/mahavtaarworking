@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import * as XLSX from "xlsx";
 import { Database, FileSpreadsheet, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
+  const fetchSheet = useServerFn(fetchMahavtaarWorkspaceSheet);
   const [loading, setLoading] = useState<SheetSource | null>(null);
   const [collectionCount, setCollectionCount] = useState<number | null>(null);
   const [lastMasterSync, setLastMasterSync] = useState<string | null>(null);
@@ -20,7 +22,7 @@ export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
     setLoading(source);
     setError(null);
     try {
-      const result = await fetchMahavtaarWorkspaceSheet({ data: { source } });
+      const result = await fetchSheet({ data: { source } });
       if (source === "collections") {
         setCollectionCount(result.rowCount);
         toast.success(`Daily Collection connected: ${result.rowCount.toLocaleString()} rows read.`);
