@@ -70,8 +70,8 @@
 @layer base {
   :root {
     /* Institutional Light Theme - Crisp slate canvas with deep contrast */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    --background: 36 25% 98%;
+    --foreground: 258 26% 15%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -80,18 +80,18 @@
     --popover-foreground: 222 47% 11%;
 
     /* Brand Primary - Institutional Deep Cobalt */
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 291 44% 31%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary & Muted */
-    --secondary: 215 16% 47%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 16% 47%;
+    --secondary: 246 28% 94%;
+    --secondary-foreground: 258 26% 22%;
+    --muted: 246 20% 95%;
+    --muted-foreground: 250 10% 43%;
 
     /* Accent & Interactive */
-    --accent: 217 91% 60%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 190 58% 94%;
+    --accent-foreground: 258 26% 18%;
 
     /* Semantic Status Tokens */
     --success: 158 64% 42%;
@@ -104,10 +104,10 @@
     --info-foreground: 0 0% 100%;
 
     /* Structural Borders & Inputs */
-    --border: 214 32% 91%;
-    --border-subtle: 214 32% 95%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --border: 252 17% 88%;
+    --border-subtle: 252 17% 93%;
+    --input: 252 17% 88%;
+    --ring: 291 44% 42%;
 
     --role-admin: 291 44% 38%;
     --role-manager: 190 58% 36%;
@@ -135,23 +135,23 @@
     --radius: var(--r-md);
 
     /* Sidebar & Mobile Nav */
-    --sidebar-bg: 222 47% 11%;
-    --sidebar-fg: 210 40% 98%;
-    --sidebar-border: 217 33% 18%;
+    --sidebar-bg: 258 30% 14%;
+    --sidebar-fg: 36 22% 96%;
+    --sidebar-border: 258 20% 23%;
 
     /* Bucket Financial Codes */
-    --bucket-current: 158 64% 42%;
-    --bucket-1-30: 221 83% 53%;
-    --bucket-31-60: 38 92% 50%;
-    --bucket-61-90: 16 90% 52%;
-    --bucket-npa: 0 84% 60%;
+    --bucket-current: 135 20% 43%;
+    --bucket-1-30: 230 35% 49%;
+    --bucket-31-60: 39 65% 46%;
+    --bucket-61-90: 22 62% 48%;
+    --bucket-npa: 350 45% 51%;
 
     /* Disposition Statuses */
-    --disp-ptp: 221 83% 53%;
-    --disp-rnr: 215 16% 47%;
-    --disp-rtp: 38 92% 50%;
-    --disp-settled: 158 64% 42%;
-    --disp-paid: 158 64% 42%;
+    --disp-ptp: 230 35% 49%;
+    --disp-rnr: 220 10% 48%;
+    --disp-rtp: 39 65% 46%;
+    --disp-settled: 170 52% 37%;
+    --disp-paid: 135 20% 43%;
   }
 
   .dark {
