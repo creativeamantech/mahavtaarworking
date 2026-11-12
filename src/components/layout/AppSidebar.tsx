@@ -6,7 +6,7 @@ import {
   Home, Edit3, UserPlus, TrendingUp, Target, 
   Search, Building2, GitFork, Waves, 
   MonitorPlay, MessageSquare, CalendarClock, 
-  Sliders, History, LogOut, Hexagon, PanelLeftClose, PanelLeftOpen, Database,
+  Sliders, History, LogOut, PanelLeftClose, PanelLeftOpen, Database,
   ChevronDown, ChevronRight
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
@@ -94,10 +94,11 @@ export function AppSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen 
       {/* Header / Logo */}
       <div className="flex h-[72px] shrink-0 items-center justify-center bg-muted/30 transition-all duration-300 border-b border-border">
         <div className={`flex items-center gap-3 transition-all duration-300 ${collapsed ? 'px-0 justify-center' : 'px-6 w-full'}`}>
-          <div className="relative flex h-8 w-8 shrink-0 items-center justify-center text-primary transition-transform hover:scale-110">
-            <Hexagon className="absolute inset-0 h-full w-full fill-primary/20 stroke-primary stroke-[2]" />
-            <span className="z-10 font-sans text-sm font-bold text-primary">M</span>
-          </div>
+          <img
+            src="/149353-removebg-preview.png"
+            alt="Mahavtaar"
+            className="h-10 w-10 shrink-0 object-contain"
+          />
           {!collapsed && (
             <div className="flex flex-col animate-in fade-in zoom-in duration-300">
               <h1 className="font-heading text-lg font-black tracking-tight text-foreground leading-tight">Mahavtaar</h1>
