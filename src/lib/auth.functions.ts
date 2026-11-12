@@ -26,6 +26,23 @@ export const getCurrentSession = createServerFn({ method: "GET" }).handler(async
   return { name: verified.user.name, role: verified.user.role };
 });
 
+
+/** Safe diagnostics: reports session state only, never returns the cookie or credentials. */
+export const getAuthSessionDiagnostics = createServerFn({ method: "GET" }).handler(async () => {
+  const { getSessionCookie, readCredentials, verifyToken } = await import("./auth.server");
+  let users;
+  try {
+    users = readCredentials();
+  } catch {
+    return { status: "credentials_unavailable" as const };
+  }
+  const token = getSessionCookie();
+  if (!token) return { status: "cookie_missing" as const };
+  const verified = verifyToken(token, users);
+  if (!verified) return { status: "cookie_invalid" as const };
+  return { status: "authenticated" as const, role: verified.user.role };
+});
+
 export const logoutCurrentSession = createServerFn({ method: "POST" }).handler(async () => {
   const { setSessionCookie } = await import("./auth.server");
   setSessionCookie("", 0);
