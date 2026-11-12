@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import * as XLSX from "xlsx";
 import { Database, FileSpreadsheet, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { fetchMahavtaarWorkspaceSheet } from "@/lib/googleSheets.functions";
+import { getAuthSessionDiagnostics } from "@/lib/auth.functions";
 
 type SheetSource = "master" | "collections";
 
@@ -13,6 +14,18 @@ interface Props {
 
 export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
   const fetchSheet = useServerFn(fetchMahavtaarWorkspaceSheet);
+  const getSessionDiagnostics = useServerFn(getAuthSessionDiagnostics);
+  const [sessionStatus, setSessionStatus] = useState<string>("checking");
+
+  useEffect(() => {
+    let active = true;
+    void getSessionDiagnostics().then((result) => {
+      if (active) setSessionStatus(result.status === "authenticated" ? `Authenticated (${result.role})` : result.status);
+    }).catch(() => {
+      if (active) setSessionStatus("diagnostic_unavailable");
+    });
+    return () => { active = false; };
+  }, [getSessionDiagnostics]);
   const [loading, setLoading] = useState<SheetSource | null>(null);
   const [collectionCount, setCollectionCount] = useState<number | null>(null);
   const [lastMasterSync, setLastMasterSync] = useState<string | null>(null);
@@ -58,6 +71,12 @@ export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
           <h3 className="text-sm font-semibold text-foreground">Google Workspace — Live Sheets</h3>
           <p className="text-xs text-muted-foreground">Read directly from the linked Drive spreadsheets. No CSV sharing or local database merge.</p>
         </div>
+      </div>
+
+      <div className="mb-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+        App session: <span className="font-semibold text-foreground">{sessionStatus}</span>
+        <span className="mx-2">·</span>
+        Google connector: server-side credentials are checked when a sheet is requested
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
