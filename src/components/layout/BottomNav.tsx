@@ -1,82 +1,85 @@
-
 import { Link, useLocation } from '@/lib/router-compat';
-import { LayoutDashboard, FileText, Building2, Users, MoreHorizontal, Database, Activity, Settings, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Search, CalendarCheck, MessageSquare, MoreHorizontal, Building2, Users, Activity, Settings, ClipboardList, FileSpreadsheet, Database, UserCircle, Radio } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { VIEWS } from '@/constants/permissions';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../ui/sheet';
 
-
-const BOTTOM_TABS = [
-  { label: 'Home', icon: LayoutDashboard, path: '/dashboard', view: VIEWS.DASHBOARD },
-  { label: 'Exec Home', icon: LayoutDashboard, path: '/exec-dashboard', view: VIEWS.EXEC_DASHBOARD },
-  { label: 'Data', icon: FileText, path: '/data-entry', view: VIEWS.DATA_ENTRY },
-  { label: 'City', icon: Building2, path: '/city-pivot', view: VIEWS.CITY_PIVOT },
-  { label: 'Team', icon: Users, path: '/team-pivot', view: VIEWS.TEAM_PIVOT },
-];
-
 const MORE_TABS = [
-  { label: 'Assignment', icon: Users, path: '/assignment', view: VIEWS.ASSIGNMENT },
-  { label: 'Team Perf', icon: Activity, path: '/exec-team-perf', view: VIEWS.EXEC_TEAM_PERF },
-  { label: 'Data Explorer', icon: Database, path: '/explorer', view: VIEWS.DATA_EXPLORER },
-  { label: 'Band Analysis', icon: Activity, path: '/band-explorer', view: VIEWS.CITY_TEAM_MATRIX },
-  { label: 'Live Monitoring', icon: Activity, path: '/live-monitoring', view: VIEWS.LIVE_MONITORING },
-  { label: 'All Feedback', icon: ClipboardList, path: '/feedbacks', view: VIEWS.FEEDBACKS },
-  { label: 'Attendance', icon: Activity, path: '/attendance', view: VIEWS.ATTENDANCE },
-  { label: 'Settings', icon: Settings, path: '/settings', view: VIEWS.SETTINGS },
+  { label: 'Data Entry & Imports', icon: FileSpreadsheet, path: '/data-entry', view: VIEWS.DATA_ENTRY },
+  { label: 'Case Assignment', icon: Users, path: '/assignment', view: VIEWS.ASSIGNMENT },
+  { label: 'City Pivot', icon: Building2, path: '/city-pivot', view: VIEWS.CITY_PIVOT },
+  { label: 'Team Pivot', icon: Users, path: '/team-pivot', view: VIEWS.TEAM_PIVOT },
+  { label: 'Band Explorer', icon: Activity, path: '/band-explorer', view: VIEWS.CITY_TEAM_MATRIX },
+  { label: 'Executive Performance', icon: Activity, path: '/exec-team-perf', view: VIEWS.EXEC_TEAM_PERF },
+  { label: 'Live Monitoring', icon: Radio, path: '/live-monitoring', view: VIEWS.LIVE_MONITORING },
   { label: 'Audit Log', icon: ClipboardList, path: '/audit', view: VIEWS.AUDIT_LOG },
+  { label: 'Connectivity Hub', icon: Database, path: '/connectivity', view: VIEWS.CONNECTIVITY_HUB },
+  { label: 'Settings', icon: Settings, path: '/settings', view: VIEWS.SETTINGS },
+  { label: 'Profile', icon: UserCircle, path: '/profile' },
 ];
 
 export function BottomNav() {
   const location = useLocation();
   const { hasPermission, logout, user } = useAuth();
+  const isExecutive = user?.role === 'EXECUTIVE';
+  const homePath = isExecutive ? '/exec-dashboard' : '/dashboard';
+  const homeView = isExecutive ? VIEWS.EXEC_DASHBOARD : VIEWS.DASHBOARD;
 
-  const isExecView = (view: string) => view === VIEWS.EXEC_DASHBOARD || view === VIEWS.EXEC_TEAM_PERF;
-  const isExec = user?.role === 'EXECUTIVE';
+  const primaryTabs = [
+    { label: 'Home', icon: LayoutDashboard, path: homePath, view: homeView },
+    { label: 'Cases', icon: Search, path: '/explorer', view: VIEWS.DATA_EXPLORER },
+    { label: 'Attendance', icon: CalendarCheck, path: '/attendance', view: VIEWS.ATTENDANCE },
+    { label: 'Feedbacks', icon: MessageSquare, path: '/feedbacks', view: VIEWS.FEEDBACKS },
+  ].filter((tab) => hasPermission(tab.view));
 
-  const visibleTabs = BOTTOM_TABS.filter(t => hasPermission(t.view) && (!isExecView(t.view) || isExec));
-  const visibleMore = MORE_TABS.filter(t => hasPermission(t.view) && (!isExecView(t.view) || isExec));
+  const visibleMore = MORE_TABS.filter((tab) => !tab.view || hasPermission(tab.view));
+  const isCaseRoute = location.pathname === '/explorer' || location.pathname.startsWith('/customer/');
 
   return (
-    <div className="bottom-nav fixed bottom-0 left-0 right-0 z-50 flex border-t border-[rgba(255,255,255,0.08)] bg-sidebar md:hidden">
-      {visibleTabs.map(tab => {
-        const active = location.pathname === tab.path;
+    <nav aria-label="Primary navigation" className="bottom-nav fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border bg-card/95 shadow-[0_-8px_28px_hsl(var(--foreground)/0.07)] backdrop-blur-xl md:hidden">
+      {primaryTabs.map((tab) => {
+        const active = tab.path === '/explorer' ? isCaseRoute : location.pathname === tab.path;
         return (
-          <Link key={tab.path} to={tab.path} className="flex flex-1 flex-col items-center justify-center gap-1 py-2">
-            <tab.icon className={`h-5 w-5 ${active ? 'text-accent' : 'text-sidebar-foreground/50'}`} />
-            <span className={`font-sans text-[10px] font-medium ${active ? 'text-accent' : 'text-sidebar-foreground/50'}`}>{tab.label}</span>
+          <Link
+            key={tab.path}
+            to={tab.path}
+            aria-current={active ? 'page' : undefined}
+            className={`mobile-nav-item flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 transition-colors active:scale-[.97] ${active ? 'text-primary' : 'text-muted-foreground'}`}
+          >
+            <span className={`flex h-8 w-10 items-center justify-center rounded-xl transition-colors ${active ? 'bg-primary/10' : ''}`}>
+              <tab.icon className="h-5 w-5" strokeWidth={active ? 2.4 : 1.8} />
+            </span>
+            <span className="text-[10px] font-semibold leading-none">{tab.label}</span>
           </Link>
         );
       })}
-      
-      {visibleMore.length > 0 && (
-        <Sheet>
-          <SheetTrigger asChild>
-            <button className="flex flex-1 flex-col items-center justify-center gap-1 py-2">
-              <MoreHorizontal className="h-5 w-5 text-sidebar-foreground/50" />
-              <span className="font-sans text-[10px] font-medium text-sidebar-foreground/50">More</span>
-            </button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="bg-sidebar border-t border-[rgba(255,255,255,0.08)] text-sidebar-foreground">
-            <SheetHeader>
-              <SheetTitle className="text-left text-sidebar-foreground">More Options</SheetTitle>
-            </SheetHeader>
-            <div className="mt-4 flex flex-col gap-2 pb-8 max-h-[70vh] overflow-y-auto scrollbar-thin">
-              {visibleMore.map(tab => {
-                const active = location.pathname === tab.path;
-                return (
-                  <Link key={tab.path} to={tab.path} className={`flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium ${active ? 'bg-accent/10 text-accent' : 'text-sidebar-foreground hover:bg-sidebar-accent'}`}>
-                    <tab.icon className="h-5 w-5" />
-                    {tab.label}
-                  </Link>
-                );
-              })}
-              <button onClick={logout} className="flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10">
-                Logout
-              </button>
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
-    </div>
+      <Sheet>
+        <SheetTrigger asChild>
+          <button type="button" className="mobile-nav-item flex min-h-16 flex-col items-center justify-center gap-1 px-1 py-2 text-muted-foreground transition-colors active:scale-[.97]">
+            <span className="flex h-8 w-10 items-center justify-center rounded-xl"><MoreHorizontal className="h-5 w-5" /></span>
+            <span className="text-[10px] font-semibold leading-none">More</span>
+          </button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="max-h-[82dvh] rounded-t-3xl border-border bg-card px-4 pb-[max(24px,env(safe-area-inset-bottom))] text-foreground">
+          <SheetHeader className="pb-3 text-left">
+            <SheetTitle className="text-left text-base font-bold">More workspace tools</SheetTitle>
+          </SheetHeader>
+          <div className="grid max-h-[65dvh] grid-cols-2 gap-2 overflow-y-auto pb-3">
+            {visibleMore.map((tab) => {
+              const active = location.pathname === tab.path;
+              return (
+                <Link key={tab.path} to={tab.path} className={`flex min-h-14 items-center gap-3 rounded-xl border px-3 py-3 text-sm font-semibold transition-colors ${active ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border bg-muted/35 text-foreground hover:bg-muted'}`}>
+                  <tab.icon className="h-4 w-4 shrink-0" />
+                  <span className="min-w-0 truncate">{tab.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <button onClick={logout} className="mt-2 flex min-h-12 w-full items-center justify-center rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-semibold text-destructive">
+            Sign out
+          </button>
+        </SheetContent>
+      </Sheet>
+    </nav>
   );
 }
