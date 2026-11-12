@@ -4,7 +4,7 @@ import { useServerFn } from '@tanstack/react-start';
 import { getCurrentSession, loginWithPin, logoutCurrentSession } from '../lib/server/auth';
 import { User, Role, DEFAULT_PERMISSIONS } from '../constants/permissions';
 import { db } from '../lib/db';
-import { derivePasswordHash, verifyPassword } from '../lib/authCrypto';
+import { derivePasswordHash } from '../lib/authCrypto';
 
 interface AuthContextType {
   user: User | null;
@@ -21,9 +21,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const MOCK_USERS: User[] = [
-  { id: '1', name: 'Admin User', email: 'admin@company.com', role: 'ADMIN', permissions: { views: DEFAULT_PERMISSIONS.ADMIN } },
-];
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -54,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: session.name,
             email: local?.email,
             role,
-            permissions: local?.permissions || { views: DEFAULT_PERMISSIONS[role] || [] },
+            permissions: { views: DEFAULT_PERMISSIONS[role] || [] },
             assignedExecutiveName: local?.assignedExecutiveName || session.name,
             maintenanceMode: local?.maintenanceMode,
           });
