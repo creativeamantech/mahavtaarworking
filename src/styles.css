@@ -156,26 +156,26 @@
 
   .dark {
     /* Institutional Dark Theme - Sophisticated deep navy/charcoal */
-    --background: 224 35% 8%;       /* #0d111a - Rich Calm Financial Dark */
-    --foreground: 210 40% 98%;
+    --background: 258 27% 9%;       /* #0d111a - Rich Calm Financial Dark */
+    --foreground: 36 22% 95%;
 
-    --card: 222 35% 11%;            /* #121724 - Elevated Surface 1 */
-    --card-foreground: 210 40% 98%;
+    --card: 258 23% 13%;            /* #121724 - Elevated Surface 1 */
+    --card-foreground: 36 22% 95%;
 
-    --popover: 222 35% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 258 23% 13%;
+    --popover-foreground: 36 22% 95%;
 
-    --primary: 217 91% 60%;         /* #3b82f6 - Crisp Institutional Blue */
-    --primary-foreground: 222 47% 11%;
+    --primary: 287 42% 67%;         /* #3b82f6 - Crisp Institutional Blue */
+    --primary-foreground: 258 27% 10%;
 
-    --secondary: 217 24% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 258 18% 20%;
+    --secondary-foreground: 36 22% 95%;
 
-    --muted: 220 28% 16%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 258 16% 18%;
+    --muted-foreground: 252 12% 68%;
 
-    --accent: 217 33% 22%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 190 35% 20%;
+    --accent-foreground: 36 22% 95%;
 
     --success: 158 70% 45%;
     --success-foreground: 222 47% 11%;
@@ -186,14 +186,14 @@
     --info: 199 89% 58%;
     --info-foreground: 222 47% 11%;
 
-    --border: 217 28% 18%;          /* #1e2638 - Crisp structural border */
-    --border-subtle: 217 28% 14%;
-    --input: 217 28% 18%;
-    --ring: 217 91% 60%;
+    --border: 258 16% 25%;          /* #1e2638 - Crisp structural border */
+    --border-subtle: 258 16% 19%;
+    --input: 258 16% 25%;
+    --ring: 287 42% 67%;
 
-    --sidebar-bg: 224 40% 6%;
-    --sidebar-fg: 210 40% 98%;
-    --sidebar-border: 217 28% 14%;
+    --sidebar-bg: 258 31% 7%;
+    --sidebar-fg: 36 22% 95%;
+    --sidebar-border: 258 18% 18%;
     --role-admin: 287 42% 72%;
     --role-manager: 190 55% 62%;
     --role-executive: 230 55% 72%;
