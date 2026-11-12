@@ -5,7 +5,7 @@ const SOURCES = {
   master: {
     id: "1w4ROwnbOmDlzCOfLAuWIQRpKQR3sa3f8GNDGFqb-P_Q",
     name: "Mahavtaar Master Allocation November 2026",
-    range: "Data!A1:GS",
+    range: "Data!A1:GU",
   },
   collections: {
     id: "1AXLakW3subO9H-O9iWIpXJyjT4JLXRTG5uiL3dWsY5g",
