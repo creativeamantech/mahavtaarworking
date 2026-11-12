@@ -1,4 +1,4 @@
-@import "tailwindcss" source(none);
+@import "tailwindcss" source(none);\n@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @source "../src";
 @import "tw-animate-css";
 
@@ -400,4 +400,98 @@
 @media (max-width: 1023px) {
   .mv-dashboard-page { min-width: 0; }
   .mv-dashboard-page table { min-width: 720px; }
+}
+
+
+/* Enterprise responsive foundation — semantic surfaces, financial typography and touch ergonomics. */
+:root {
+  --surface-elevated: 0 0% 100%;
+  --surface-sunken: 210 24% 96%;
+  --surface-overlay: 0 0% 100%;
+  --shadow-soft: 0 2px 10px hsl(222 47% 11% / .045);
+  --shadow-panel: 0 10px 32px hsl(222 47% 11% / .075);
+  --focus-ring: hsl(var(--primary) / .28);
+  --mobile-nav-height: 4.25rem;
+  --content-gutter: clamp(1rem, 2.2vw, 2rem);
+  color-scheme: light;
+}
+.dark {
+  --surface-elevated: 222 35% 13%;
+  --surface-sunken: 224 35% 6%;
+  --surface-overlay: 222 35% 12%;
+  --shadow-soft: 0 2px 12px hsl(0 0% 0% / .18);
+  --shadow-panel: 0 12px 36px hsl(0 0% 0% / .28);
+  --focus-ring: hsl(var(--primary) / .38);
+  color-scheme: dark;
+}
+html { scroll-behavior: smooth; }
+body { min-width: 320px; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+:where(button, a, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+.font-data, .font-mono, .font-tabular, [data-financial-value], [data-case-id] {
+  font-family: "JetBrains Mono", "DM Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.surface-card, .metric-kpi-card {
+  box-shadow: var(--shadow-soft);
+}
+.surface-card-hover {
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease, border-color 180ms ease;
+}
+.surface-card-hover:hover { transform: translateY(-1px); box-shadow: var(--shadow-panel); }
+.mobile-nav-item { min-width: 0; min-height: var(--mobile-nav-height); touch-action: manipulation; }
+.bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+.mobile-main-content { scroll-padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); }
+.mobile-main-content > div { width: 100%; }
+:where(.mobile-main-content) :where(button, [role="button"], input, select, textarea) { min-height: 2.75rem; }
+:where(.mobile-main-content) :where(input, select, textarea) { max-width: 100%; }
+:where(.mobile-main-content) table { font-variant-numeric: tabular-nums; }
+:where(.mobile-main-content) .overflow-x-auto { overscroll-behavior-inline: contain; scrollbar-width: thin; }
+:where(.mobile-main-content) .rounded-xl.border,
+:where(.mobile-main-content) .rounded-2xl.border { box-shadow: var(--shadow-soft); }
+
+@media (max-width: 767px) {
+  :root { --content-gutter: 0.875rem; }
+  body { overscroll-behavior-y: none; }
+  .mobile-main-content { padding-bottom: calc(var(--mobile-nav-height) + 1rem + env(safe-area-inset-bottom)); }
+  .mobile-main-content > div { padding: var(--content-gutter); }
+  .mobile-main-content h1 { font-size: clamp(1.25rem, 5vw, 1.55rem); line-height: 1.25; }
+  .mobile-main-content .grid { min-width: 0; }
+  .mobile-main-content .grid > * { min-width: 0; }
+  .mobile-main-content .overflow-x-auto { max-width: calc(100vw - 2 * var(--content-gutter)); }
+  .mobile-main-content [data-mobile-card], .mobile-main-content .mobile-case-card {
+    border: 1px solid hsl(var(--border));
+    border-radius: 1rem;
+    background: hsl(var(--card));
+    box-shadow: var(--shadow-soft);
+  }
+}
+@media (min-width: 768px) {
+  .bottom-nav { display: none; }
+  .mobile-main-content { padding-bottom: 0; }
+}
+@media (min-width: 1024px) {
+  .mobile-main-content > div { max-width: 1760px; padding-inline: clamp(1.5rem, 2.4vw, 2.75rem); }
+  .mobile-main-content { min-height: calc(100vh - 7rem); }
+  .mobile-main-content table thead { position: sticky; top: 0; z-index: 10; }
+  .mobile-main-content table thead th {
+    background: hsl(var(--muted) / .96);
+    color: hsl(var(--muted-foreground));
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .055em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .mobile-main-content table tbody tr { transition: background-color 120ms ease; }
+  .mobile-main-content table tbody tr:hover { background: hsl(var(--primary) / .035); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-nav-item:active { transform: scale(.96); }
+  .mobile-main-content .surface-card-hover,
+  .mobile-main-content button,
+  .mobile-main-content a { transition-timing-function: cubic-bezier(.2,.8,.2,1); }
 }
