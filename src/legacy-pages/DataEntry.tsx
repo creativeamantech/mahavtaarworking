@@ -25,7 +25,7 @@ import { LiveGoogleSheetsSource } from "../components/sync/LiveGoogleSheetsSourc
 
 export default function DataEntry() {
   const { records, uploadHistory } = useDataState();
-  const { loadMainFile, loadPaidFile, loadAdditionalFile, loadCorrectedFile, updateRecord } =
+  const { loadMainFile, loadMainSheetSource, loadPaidFile, loadAdditionalFile, loadCorrectedFile, updateRecord } =
     useDataDispatch();
   const { user, isExecutive } = useAuth();
   const [activeInputMode, setActiveInputMode] = useState<"sheets" | "files">("sheets");
