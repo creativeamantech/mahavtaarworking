@@ -249,17 +249,20 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <AppLayout>
+      <div className="mv-dashboard-page">
         <div className="mb-4"><BucketFilter /></div>
         <div className="flex h-[50vh] items-center justify-center text-muted-foreground animate-pulse font-medium">
           Loading portfolio intelligence...
         </div>
-      </AppLayout>
+      </div>
+    </AppLayout>
     );
   }
 
   if (filteredRecords.length === 0) {
     return (
       <AppLayout>
+      <div className="mv-dashboard-page">
         <SectionHeader
           title="Portfolio Analytics Cockpit"
           subtitle="Real-time recovery velocity, bucket distribution, and city bifurcation"
@@ -279,12 +282,14 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-      </AppLayout>
+      </div>
+    </AppLayout>
     );
   }
 
   return (
     <AppLayout>
+      <div className="mv-dashboard-page">
       <SectionHeader
         title="Portfolio Analytics Cockpit"
         subtitle="Real-time recovery velocity, bucket distribution, and city bifurcation"
@@ -716,6 +721,7 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+    </div>
     </AppLayout>
   );
 }
