@@ -1,19 +1,18 @@
-import { createServerFn } from "@tanstack/react-start";
 import { deleteCookie, getCookie, setCookie } from "@tanstack/react-start/server";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { z } from "zod";
 
 const COOKIE = "mahavtaar_working_auth";
 const AUTH_TTL_SECONDS = 365 * 24 * 60 * 60;
-type Role = "Admin" | "Executive";
-type Credential = { name: string; role: Role; pin: string };
+
+export type Role = "Admin" | "Executive";
+export type Credential = { name: string; role: Role; pin: string };
 type Claims = {
   sub: string; role: Role; iat: number; exp: number; jti: string;
   iss: "mahavtaar-working"; ver: 1;
 };
 
-function readCredentials(): Credential[] {
-  const raw = process.env.LOGIN_CREDENTIALS;
+export function readCredentials(): Credential[] {
+  const raw = process.env["LOGIN_CREDENTIALS"];
   if (!raw?.trim()) throw new Error("LOGIN_CREDENTIALS secret is not configured.");
   const users: Credential[] = [];
   const seen = new Set<string>();
@@ -41,7 +40,7 @@ function encode(value: unknown) {
 function signature(value: string, pin: string) {
   return createHmac("sha256", pin).update(value).digest("base64url");
 }
-function issueToken(user: Credential) {
+export function issueToken(user: Credential) {
   const now = Math.floor(Date.now() / 1000);
   const claims: Claims = {
     sub: user.name, role: user.role, iat: now, exp: now + AUTH_TTL_SECONDS,
@@ -50,13 +49,16 @@ function issueToken(user: Credential) {
   const unsigned = encode({ alg: "HS256", typ: "JWT" }) + "." + encode(claims);
   return unsigned + "." + signature(unsigned, user.pin);
 }
-function verifyToken(token: string, users: Credential[]) {
+export function verifyToken(token: string, users: Credential[]) {
   try {
     if (token.length > 4096) return null;
     const parts = token.split(".");
-    if (parts.length !== 3 || parts.some((part) => !part)) return null;
-    const header = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
-    const claims = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")) as Partial<Claims>;
+    if (parts.length !== 3) return null;
+    const [headerPart, claimsPart, signaturePart] = parts;
+    if (typeof headerPart !== "string" || typeof claimsPart !== "string" ||
+        typeof signaturePart !== "string" || !headerPart || !claimsPart || !signaturePart) return null;
+    const header = JSON.parse(Buffer.from(headerPart, "base64url").toString("utf8"));
+    const claims = JSON.parse(Buffer.from(claimsPart, "base64url").toString("utf8")) as Partial<Claims>;
     const now = Math.floor(Date.now() / 1000);
     if (header.alg !== "HS256" || header.typ !== "JWT" ||
       claims.iss !== "mahavtaar-working" || claims.ver !== 1 ||
@@ -67,60 +69,34 @@ function verifyToken(token: string, users: Credential[]) {
       claims.exp <= now || claims.exp - claims.iat > AUTH_TTL_SECONDS) return null;
     const user = users.find((candidate) => candidate.name === claims.sub && candidate.role === claims.role);
     if (!user?.pin) return null;
-    const expected = Buffer.from(signature(parts.slice(0, 2).join("."), user.pin), "base64url");
-    const supplied = Buffer.from(parts[2], "base64url");
+    const expected = Buffer.from(signature(headerPart + "." + claimsPart, user.pin), "base64url");
+    const supplied = Buffer.from(signaturePart, "base64url");
     if (expected.length !== supplied.length || !timingSafeEqual(expected, supplied)) return null;
     return { user };
   } catch {
     return null;
   }
 }
-function setSessionCookie(value: string, maxAge: number) {
+export function setSessionCookie(value: string, maxAge: number) {
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env["NODE_ENV"] === "production",
     sameSite: "strict" as const,
     path: "/",
   };
   if (value) setCookie(COOKIE, value, { ...options, maxAge });
   else deleteCookie(COOKIE, options);
 }
-function verifyPin(input: string, stored: string) {
+export function getSessionCookie() {
+  return getCookie(COOKIE) ?? "";
+}
+export function verifyPin(input: string, stored: string) {
   const expected = createHash("sha256").update(stored).digest();
   const actual = createHash("sha256").update(input).digest();
   return timingSafeEqual(actual, expected);
 }
-
-export const loginWithPin = createServerFn({ method: "POST" })
-  .inputValidator((value: unknown) => z.object({
-    executiveName: z.string().trim().min(1).max(100),
-    pin: z.string().min(1).max(100),
-  }).parse(value))
-  .handler(async ({ data }) => {
-    const user = readCredentials().find((candidate) => candidate.name === data.executiveName);
-    if (!user || !verifyPin(data.pin, user.pin)) throw new Error("Executive name or PIN is incorrect.");
-    setSessionCookie(issueToken(user), AUTH_TTL_SECONDS);
-    return { name: user.name, role: user.role };
-  });
-
-export const getCurrentSession = createServerFn({ method: "GET" }).handler(async () => {
-  const token = getCookie(COOKIE) ?? "";
-  if (!token) return null;
-  const verified = verifyToken(token, readCredentials());
-  if (!verified) {
-    setSessionCookie("", 0);
-    return null;
-  }
-  return { name: verified.user.name, role: verified.user.role };
-});
-
-export const logoutCurrentSession = createServerFn({ method: "POST" }).handler(async () => {
-  setSessionCookie("", 0);
-  return { ok: true as const };
-});
-
 export async function requireSession(requiredRole?: Role) {
-  const token = getCookie(COOKIE) ?? "";
+  const token = getSessionCookie();
   const verified = token ? verifyToken(token, readCredentials()) : null;
   if (!verified) {
     if (token) setSessionCookie("", 0);

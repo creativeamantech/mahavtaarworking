@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as XLSX from "xlsx";
 import { Database, FileSpreadsheet, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { fetchMahavtaarWorkspaceSheet } from "@/lib/server/googleSheets";
+import { fetchMahavtaarWorkspaceSheet } from "@/lib/googleSheets.functions";
 
 type SheetSource = "master" | "collections";
 

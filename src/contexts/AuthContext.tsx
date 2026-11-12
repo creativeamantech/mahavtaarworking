@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { getCurrentSession, loginWithPin, logoutCurrentSession } from '../lib/server/auth';
+import { getCurrentSession, loginWithPin, logoutCurrentSession } from '../lib/auth.functions';
 import { User, Role, DEFAULT_PERMISSIONS } from '../constants/permissions';
 import { db } from '../lib/db';
 import { derivePasswordHash } from '../lib/authCrypto';
