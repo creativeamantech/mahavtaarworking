@@ -46,6 +46,7 @@ interface DataDispatchContextType {
     fileName: string,
     userName: string,
   ) => Promise<{ rowCount: number }>;
+  loadMainSheetSource: (buffer: ArrayBuffer, sourceName: string) => Promise<{ rowCount: number }>;
   loadPaidFile: (
     buffer: ArrayBuffer,
     fileName: string,
