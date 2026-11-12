@@ -95,3 +95,14 @@ export function verifyPin(input: string, stored: string) {
   const actual = createHash("sha256").update(input).digest();
   return timingSafeEqual(actual, expected);
 }
+export async function requireSession(requiredRole?: Role) {
+  const token = getSessionCookie();
+  const verified = token ? verifyToken(token, readCredentials()) : null;
+  if (!verified) {
+    if (token) setSessionCookie("", 0);
+    throw new Error("Authentication required. Please log in again.");
+  }
+  if (requiredRole && verified.user.role !== requiredRole)
+    throw new Error("Administrator access required.");
+  return { name: verified.user.name, role: verified.user.role };
+}
