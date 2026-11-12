@@ -1,0 +1,46 @@
+name: Phase 0 Validation
+
+on:
+  push:
+    branches:
+      - redesign/phase-0-brand-repair
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The repository-wide lint command currently reports thousands of pre-existing
+      # formatting violations across untouched files. Gate this PR on semantic ESLint
+      # checks for the TypeScript files it actually changes; formatting is reviewed
+      # separately to avoid mass-reformatting unrelated application code.
+      - name: Lint changed TypeScript files
+        run: >-
+          bunx eslint --rule 'prettier/prettier: off'
+          src/components/layout/AppSidebar.tsx
+          src/components/layout/MobileHeader.tsx
+          src/lib/tokens.ts
+          src/lib/typography.ts
+          src/routes/__root.tsx
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Production build
+        run: bun run build

@@ -1,4 +1,5 @@
-@import "tailwindcss" source(none);\n@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss" source(none);
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @source "../src";
 @import "tw-animate-css";
 
@@ -41,6 +42,15 @@
   --color-disp-rtp: hsl(var(--disp-rtp));
   --color-disp-settled: hsl(var(--disp-settled));
   --color-disp-paid: hsl(var(--disp-paid));
+  --color-disp-nc: hsl(var(--disp-nc));
+  --color-role-admin: hsl(var(--role-admin));
+  --color-role-manager: hsl(var(--role-manager));
+  --color-role-executive: hsl(var(--role-executive));
+  --color-role-viewer: hsl(var(--role-viewer));
+  --color-heat-cool: hsl(var(--heat-cool));
+  --color-heat-warm: hsl(var(--heat-warm));
+  --color-heat-hot: hsl(var(--heat-hot));
+  --color-heat-critical: hsl(var(--heat-critical));
   --color-sidebar: hsl(var(--sidebar-bg));
   --color-sidebar-foreground: hsl(var(--sidebar-fg));
   --color-sidebar-border: hsl(var(--sidebar-border));
@@ -50,9 +60,9 @@
   --radius-md: var(--r-md);
   --radius-lg: var(--r-lg);
   --radius-xl: var(--r-xl);
-  --font-sans: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-  --font-heading: "Plus Jakarta Sans", "Inter", sans-serif;
-  --font-data: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans", sans-serif;
+  --font-data: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "DM Mono", monospace;
 }
 
@@ -60,8 +70,8 @@
 @layer base {
   :root {
     /* Institutional Light Theme - Crisp slate canvas with deep contrast */
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    --background: 36 25% 98%;
+    --foreground: 258 26% 15%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -70,18 +80,18 @@
     --popover-foreground: 222 47% 11%;
 
     /* Brand Primary - Institutional Deep Cobalt */
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 291 44% 31%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary & Muted */
-    --secondary: 215 16% 47%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 210 20% 95%;
-    --muted-foreground: 215 16% 47%;
+    --secondary: 246 28% 94%;
+    --secondary-foreground: 258 26% 22%;
+    --muted: 246 20% 95%;
+    --muted-foreground: 250 10% 43%;
 
     /* Accent & Interactive */
-    --accent: 217 91% 60%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 190 58% 94%;
+    --accent-foreground: 258 26% 18%;
 
     /* Semantic Status Tokens */
     --success: 158 64% 42%;
@@ -94,10 +104,27 @@
     --info-foreground: 0 0% 100%;
 
     /* Structural Borders & Inputs */
-    --border: 214 32% 91%;
-    --border-subtle: 214 32% 95%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --border: 252 17% 88%;
+    --border-subtle: 252 17% 93%;
+    --input: 252 17% 88%;
+    --ring: 291 44% 42%;
+
+    --role-admin: 291 44% 38%;
+    --role-manager: 190 58% 36%;
+    --role-executive: 230 35% 49%;
+    --role-viewer: 220 10% 48%;
+    --heat-cool: 190 58% 36%;
+    --heat-warm: 39 65% 46%;
+    --heat-hot: 22 62% 48%;
+    --heat-critical: 350 55% 45%;
+    --disp-nc: 350 45% 51%;
+    --r-2xl: 1.25rem;
+    --shadow-card: 0 1px 3px hsl(258 26% 15% / .045), 0 1px 2px hsl(258 26% 15% / .025);
+    --shadow-popover: 0 12px 32px hsl(258 26% 15% / .12);
+    --motion-fast: 140ms;
+    --motion-base: 180ms;
+    --motion-slow: 240ms;
+    --ease-standard: cubic-bezier(.2,.7,.2,1);
 
     /* Geometric Radius Scale */
     --r-xs: 0.25rem;
@@ -108,47 +135,47 @@
     --radius: var(--r-md);
 
     /* Sidebar & Mobile Nav */
-    --sidebar-bg: 222 47% 11%;
-    --sidebar-fg: 210 40% 98%;
-    --sidebar-border: 217 33% 18%;
+    --sidebar-bg: 258 30% 14%;
+    --sidebar-fg: 36 22% 96%;
+    --sidebar-border: 258 20% 23%;
 
     /* Bucket Financial Codes */
-    --bucket-current: 158 64% 42%;
-    --bucket-1-30: 221 83% 53%;
-    --bucket-31-60: 38 92% 50%;
-    --bucket-61-90: 16 90% 52%;
-    --bucket-npa: 0 84% 60%;
+    --bucket-current: 135 20% 43%;
+    --bucket-1-30: 230 35% 49%;
+    --bucket-31-60: 39 65% 46%;
+    --bucket-61-90: 22 62% 48%;
+    --bucket-npa: 350 45% 51%;
 
     /* Disposition Statuses */
-    --disp-ptp: 221 83% 53%;
-    --disp-rnr: 215 16% 47%;
-    --disp-rtp: 38 92% 50%;
-    --disp-settled: 158 64% 42%;
-    --disp-paid: 158 64% 42%;
+    --disp-ptp: 230 35% 49%;
+    --disp-rnr: 220 10% 48%;
+    --disp-rtp: 39 65% 46%;
+    --disp-settled: 170 52% 37%;
+    --disp-paid: 135 20% 43%;
   }
 
   .dark {
     /* Institutional Dark Theme - Sophisticated deep navy/charcoal */
-    --background: 224 35% 8%;       /* #0d111a - Rich Calm Financial Dark */
-    --foreground: 210 40% 98%;
+    --background: 258 27% 9%;       /* #0d111a - Rich Calm Financial Dark */
+    --foreground: 36 22% 95%;
 
-    --card: 222 35% 11%;            /* #121724 - Elevated Surface 1 */
-    --card-foreground: 210 40% 98%;
+    --card: 258 23% 13%;            /* #121724 - Elevated Surface 1 */
+    --card-foreground: 36 22% 95%;
 
-    --popover: 222 35% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 258 23% 13%;
+    --popover-foreground: 36 22% 95%;
 
-    --primary: 217 91% 60%;         /* #3b82f6 - Crisp Institutional Blue */
-    --primary-foreground: 222 47% 11%;
+    --primary: 287 42% 67%;         /* #3b82f6 - Crisp Institutional Blue */
+    --primary-foreground: 258 27% 10%;
 
-    --secondary: 217 24% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 258 18% 20%;
+    --secondary-foreground: 36 22% 95%;
 
-    --muted: 220 28% 16%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 258 16% 18%;
+    --muted-foreground: 252 12% 68%;
 
-    --accent: 217 33% 22%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 190 35% 20%;
+    --accent-foreground: 36 22% 95%;
 
     --success: 158 70% 45%;
     --success-foreground: 222 47% 11%;
@@ -159,14 +186,26 @@
     --info: 199 89% 58%;
     --info-foreground: 222 47% 11%;
 
-    --border: 217 28% 18%;          /* #1e2638 - Crisp structural border */
-    --border-subtle: 217 28% 14%;
-    --input: 217 28% 18%;
-    --ring: 217 91% 60%;
+    --border: 258 16% 25%;          /* #1e2638 - Crisp structural border */
+    --border-subtle: 258 16% 19%;
+    --input: 258 16% 25%;
+    --ring: 287 42% 67%;
 
-    --sidebar-bg: 224 40% 6%;
-    --sidebar-fg: 210 40% 98%;
-    --sidebar-border: 217 28% 14%;
+    --sidebar-bg: 258 31% 7%;
+    --sidebar-fg: 36 22% 95%;
+    --sidebar-border: 258 18% 18%;
+    --role-admin: 287 42% 72%;
+    --role-manager: 190 55% 62%;
+    --role-executive: 230 55% 72%;
+    --role-viewer: 220 12% 68%;
+    --heat-cool: 190 55% 62%;
+    --heat-warm: 39 75% 62%;
+    --heat-hot: 22 75% 62%;
+    --heat-critical: 350 60% 68%;
+    --disp-nc: 350 60% 68%;
+    --r-2xl: 1.25rem;
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / .22);
+    --shadow-popover: 0 12px 32px hsl(0 0% 0% / .32);
   }
 
   * {
@@ -175,7 +214,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -186,7 +225,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: -0.02em;
   }
 }

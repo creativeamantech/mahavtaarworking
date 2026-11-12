@@ -4,7 +4,8 @@ import { useDataState, useDataDispatch } from '@/contexts/DataContext';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '../ThemeToggle';
-import { AutoSyncBar } from '../sync/AutoSyncBar';\nimport { AgentNotifications } from '../agent/AgentNotifications';
+import { AutoSyncBar } from '../sync/AutoSyncBar';
+import { AgentNotifications } from '../agent/AgentNotifications';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,8 +70,16 @@ export function MobileHeader() {
           
         </div>
 
-        <div className="flex items-center justify-center flex-1 mx-2">
-          <div className="flex min-w-0 flex-col items-center leading-tight"><h1 className="font-heading text-[11px] font-extrabold tracking-wide text-foreground truncate">Mahavtaar Working</h1><span className="mt-0.5 max-w-full truncate text-[9px] font-semibold text-muted-foreground">{title}</span></div>
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5 mx-2">
+          <img
+            src="/149353-removebg-preview.png"
+            alt="Mahavtaar"
+            className="h-8 w-8 shrink-0 object-contain"
+          />
+          <div className="flex min-w-0 flex-col items-start leading-tight">
+            <h1 className="truncate text-[11px] font-extrabold tracking-wide text-foreground">Mahavtaar Working</h1>
+            <span className="mt-0.5 max-w-full truncate text-[9px] font-semibold text-muted-foreground">{title}</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
