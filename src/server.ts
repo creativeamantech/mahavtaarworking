@@ -47,6 +47,13 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const hasSessionCookie = (request.headers.get("cookie") ?? "").includes("mahavtaar_working_auth=");
+      if (hasSessionCookie && ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
+        const origin = request.headers.get("origin");
+        if (!origin || new URL(origin).origin !== new URL(request.url).origin) {
+          return new Response("Forbidden", { status: 403 });
+        }
+      }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

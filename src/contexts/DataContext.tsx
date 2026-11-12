@@ -46,6 +46,7 @@ interface DataDispatchContextType {
     fileName: string,
     userName: string,
   ) => Promise<{ rowCount: number }>;
+  loadMainSheetSource: (buffer: ArrayBuffer, sourceName: string) => Promise<{ rowCount: number }>;
   loadPaidFile: (
     buffer: ArrayBuffer,
     fileName: string,
@@ -196,6 +197,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     },
     [user],
   );
+
+  // Use the Google Sheet as the current in-memory portfolio source.
+  // Unlike loadMainFile, this deliberately does not merge or write rows to Dexie.
+  const loadMainSheetSource = useCallback(async (buffer: ArrayBuffer, sourceName: string) => {
+    const parsed = parseMainFile(buffer);
+    if (parsed.length === 0) {
+      throw new Error("The connected Master Allocation sheet contains no recognizable loan IDs.");
+    }
+    setRecords(parsed);
+    setUndoStack([]);
+    setRedoStack([]);
+    return { rowCount: parsed.length };
+  }, []);
 
   const loadPaidFile = useCallback(
     async (buffer: ArrayBuffer, fileName: string, userName: string) => {
@@ -491,6 +505,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           undo,
           redo,
           loadMainFile,
+          loadMainSheetSource,
           loadPaidFile,
           loadAdditionalFile,
           loadCorrectedFile,
@@ -503,6 +518,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           undo,
           redo,
           loadMainFile,
+          loadMainSheetSource,
           loadPaidFile,
           loadAdditionalFile,
           loadCorrectedFile,

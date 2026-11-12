@@ -21,7 +21,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import * as XLSX from "xlsx";
-import { GoogleSheetsConnector } from "../components/sync/GoogleSheetsConnector";
+import { LiveGoogleSheetsSource } from "../components/sync/LiveGoogleSheetsSource";
 
 export default function DataEntry() {
   const { records, uploadHistory } = useDataState();
@@ -104,26 +104,6 @@ export default function DataEntry() {
       reader.readAsArrayBuffer(file);
     },
     [loadMainFile, user],
-  );
-
-  const handleGoogleSheetImport = useCallback(
-    async (
-      buffer: ArrayBuffer,
-      sourceTitle: string,
-      type: "MAIN_DATA" | "PAID_FILE" | "ADDITIONAL_COLLECTION_FILE" | "CORRECTED_DAC_FILE",
-    ) => {
-      const userName = user?.name || "Google Sheet User";
-      if (type === "MAIN_DATA") {
-        return await loadMainFile(buffer, sourceTitle, userName);
-      } else if (type === "PAID_FILE") {
-        return await loadPaidFile(buffer, sourceTitle, userName);
-      } else if (type === "ADDITIONAL_COLLECTION_FILE") {
-        return await loadAdditionalFile(buffer, sourceTitle, userName);
-      } else if (type === "CORRECTED_DAC_FILE") {
-        return await loadCorrectedFile(buffer, sourceTitle, userName);
-      }
-    },
-    [loadMainFile, loadPaidFile, loadAdditionalFile, loadCorrectedFile, user],
   );
 
   const handlePaidUpload = useCallback(
@@ -451,13 +431,13 @@ export default function DataEntry() {
             )}
           </span>
           <span aria-hidden="true">·</span>
-          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Auto-Merge On</span>
+          <span className="text-primary font-medium">Live Google Sheet Source</span>
         </div>
       </div>
 
       {/* Primary Ingestion View */}
       {activeInputMode === "sheets" ? (
-        <GoogleSheetsConnector onImport={handleGoogleSheetImport} currentUser={user?.name} />
+        <LiveGoogleSheetsSource onLoadMaster={loadMainSheetSource} />
       ) : (
         <UploadStepper
           steps={[
