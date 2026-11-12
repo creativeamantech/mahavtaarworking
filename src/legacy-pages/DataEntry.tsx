@@ -369,8 +369,10 @@ export default function DataEntry() {
 
   return (
     <AppLayout>
-      <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="data-entry-page">
+      <div className="mv-data-heading mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div>
+          <div className="mb-1 flex items-center gap-2"><span className="mv-data-mark" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span><span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Mahavtaar Workspace</span></div>
           <h1 className="font-sans text-xl font-extrabold tracking-tight">Data Entry</h1>
           <p className="font-sans text-xs text-muted-foreground">
             Upload files & manage payment data
@@ -378,14 +380,14 @@ export default function DataEntry() {
         </div>
         <button
           onClick={exportFilteredData}
-          className="flex h-9 items-center gap-2 rounded-md bg-primary px-4 font-sans text-xs font-bold text-primary-foreground hover:bg-primary/90"
+          className="mv-data-export flex h-9 items-center gap-2 rounded-lg bg-primary px-4 font-sans text-xs font-bold text-primary-foreground hover:bg-primary/90"
         >
           <Download className="h-3.5 w-3.5" /> Export Data
         </button>
       </div>
 
       {/* Mode Switcher & Portfolio Summary Ribbon */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="mv-data-toolbar flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-1 p-1 bg-muted/70 rounded-lg w-fit border border-border">
           <button
             type="button"
@@ -478,7 +480,7 @@ export default function DataEntry() {
       )}
 
       {/* Filters */}
-      <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+      <div className="mv-data-filters mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         <div className="relative col-span-2 w-full sm:col-span-1 sm:flex-1 sm:min-w-[200px] sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -556,7 +558,7 @@ export default function DataEntry() {
 
       {/* Data Table */}
       {/* Android-first loan cards; desktop retains the sortable, paginated table. */}
-      <div className="md:hidden space-y-3 pb-4">
+      <div className="mv-data-mobile md:hidden space-y-3 pb-4">
         {filteredRecords.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
             No records found
@@ -612,7 +614,7 @@ export default function DataEntry() {
           );
         })}
       </div>
-      <div className="hidden md:block">
+      <div className="mv-data-desktop hidden md:block">
         <DataTable
           tableId="data-entry-table"
           columns={columns}
@@ -623,6 +625,7 @@ export default function DataEntry() {
             return c.mainPaid ? "border-l-2 border-l-primary" : "border-l-2 border-border";
           }}
         />
+      </div>
       </div>
     </AppLayout>
   );
