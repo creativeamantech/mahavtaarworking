@@ -22,7 +22,7 @@ export default function CityMainPerformance({ onBack }: { onBack: () => void }) 
     [records, user, isExecutive],
   );
   const { data, isCalculating } = useWorkerPivot<MainPerformanceBucket[]>('buildMainPerformance', visibleRecords, targets, empty);
-  const selected = data.find(b => b.bucket === bucket) ?? data[0];
+  const selected = data.find(b => b.bucket === bucket);
   const cities = useMemo(
     () => (selected?.cities ?? []).filter(c => c.city.toLowerCase().includes(query.trim().toLowerCase())),
     [selected, query],
