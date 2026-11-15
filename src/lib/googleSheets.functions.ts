@@ -18,6 +18,42 @@ function hasLovableConnectors(): boolean {
   );
 }
 
+async function gatewayWriteRequest<T>(
+  base: string,
+  path: string,
+  apiKeyName: string,
+  method: "POST" | "PUT",
+  body: unknown,
+): Promise<T> {
+  const lovableKey = process.env["LOVABLE_API_KEY"];
+  const connectionKey = process.env[apiKeyName];
+  if (!lovableKey || !connectionKey) {
+    throw new Error("Google Workspace connection is not configured on the server.");
+  }
+
+  const response = await fetch(`${base}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": connectionKey,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    console.error("Google Workspace write error", response.status, detail.slice(0, 500));
+    throw new Error(
+      response.status === 401 || response.status === 403
+        ? "Google Workspace connection authorization failed."
+        : `Google Workspace write failed (${response.status}).`,
+    );
+  }
+  return response.json() as Promise<T>;
+}
+
 async function gatewayRequest<T>(base: string, path: string, apiKeyName: string): Promise<T> {
   const lovableKey = process.env["LOVABLE_API_KEY"];
   const connectionKey = process.env[apiKeyName];
@@ -232,5 +268,55 @@ export const fetchMahavtaarWorkspaceSheet = createServerFn({ method: "GET" })
       matchType,
       periodLabel,
       candidates,
+    };
+  });
+
+/**
+ * Appends validated rows to an explicitly selected Mahavtaar worksheet.
+ * This is intentionally an append-only primitive; callers must not treat it as
+ * an upsert until agreement-ID deduplication and retry/idempotency are implemented.
+ */
+export const appendMahavtaarWorkspaceRows = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      source: z.enum(["master", "collections"]),
+      spreadsheetId: z.string().trim().min(10).max(200),
+      tabTitle: z.string().trim().min(1).max(100),
+      rows: z.array(
+        z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])).min(1).max(200),
+      ).min(1).max(500),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { requireSession } = await import("./auth.server");
+    await requireSession(data.source === "master" ? "Admin" : undefined);
+
+    const meta = await resolveTabViaConnector(data.spreadsheetId, data.tabTitle);
+    if (meta.sheetTitle.toLowerCase() !== data.tabTitle.toLowerCase()) {
+      throw new Error("The requested worksheet was not found. No rows were written.");
+    }
+
+    const range = `'${meta.sheetTitle.replace(/'/g, "''")}'!A:GU`;
+    const params = new URLSearchParams({
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+    });
+    const result = await gatewayWriteRequest<{
+      updates?: { updatedRows?: number; updatedRange?: string };
+    }>(
+      SHEETS_GATEWAY,
+      `/spreadsheets/${encodeURIComponent(data.spreadsheetId)}/values/${encodeURIComponent(range)}:append?${params.toString()}`,
+      "GOOGLE_SHEETS_API_KEY",
+      "POST",
+      { majorDimension: "ROWS", values: data.rows },
+    );
+
+    return {
+      success: true,
+      updatedRows: result.updates?.updatedRows ?? 0,
+      updatedRange: result.updates?.updatedRange ?? null,
+      spreadsheetId: data.spreadsheetId,
+      sheetTitle: meta.sheetTitle,
+      writtenAt: new Date().toISOString(),
     };
   });
