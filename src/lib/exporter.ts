@@ -15,7 +15,8 @@ export function exportCityPivot(cityPivotData: CityPivotRow[]) {
     'City': c.city,
     'State': c.state,
     'Collection': c.collection,
-    'Sum of %': (c.pct * 100).toFixed(2) + '%',
+    'Actual %': ((c.actualPct ?? c.pct) * 100).toFixed(2) + '%',
+    'Recovery %': ((c.recoveryPct || 0) * 100).toFixed(2) + '%',
     'Rollback %': (c.rollbackPct * 100).toFixed(2) + '%',
     'Total Count': c.count,
     'Total POS': c.totalPOS,
@@ -30,7 +31,8 @@ export function exportCityPivot(cityPivotData: CityPivotRow[]) {
     'City': 'GRAND TOTAL',
     'State': '',
     'Collection': cityPivotData.reduce((s, c) => s + c.collection, 0),
-    'Sum of %': '',
+    'Actual %': '',
+    'Recovery %': '',
     'Rollback %': '',
     'Total Count': cityPivotData.reduce((s, c) => s + c.count, 0),
     'Total POS': cityPivotData.reduce((s, c) => s + c.totalPOS, 0),
@@ -53,7 +55,8 @@ export function exportTeamPivot(teamPivotData: TeamPivotRow[]) {
     'Paid Count': e.paid,
     'Total POS': e.totalPOS,
     'Paid POS': e.paidPOS,
-    'Total %': (e.pct * 100).toFixed(2) + '%',
+    'Actual %': ((e.actualPct ?? e.pct) * 100).toFixed(2) + '%',
+    'Recovery %': ((e.recoveryPct || 0) * 100).toFixed(2) + '%',
   }));
   exportToExcel(rows, 'Team Performance', `Team_Performance_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
@@ -101,7 +104,8 @@ export function exportBucketCityPivot(data: BucketCityPivotRow[]) {
     'Target Date': c.targetDate || '-',
     'Daily Required POS': c.dailyRequiredPOS || 0,
     'POS Paid Only POS': c.posPaidOnlyPOS,
-    'Total %': (c.pct * 100).toFixed(2) + '%'
+    'Actual %': ((c.actualPct ?? c.pct) * 100).toFixed(2) + '%',
+    'Recovery %': ((c.recoveryPct || 0) * 100).toFixed(2) + '%',
   }));
   exportToExcel(rows, 'City Bucket Matrix', `City_Bucket_Matrix_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
@@ -115,7 +119,8 @@ export function exportExecCityPivot(data: ExecCityPivotRow[]) {
     'Paid Count': e.paid,
     'Total POS': e.totalPOS,
     'Paid POS': e.paidPOS,
-    'Total %': (e.pct * 100).toFixed(2) + '%',
+    'Actual %': ((e.actualPct ?? e.pct) * 100).toFixed(2) + '%',
+    'Recovery %': ((e.recoveryPct || 0) * 100).toFixed(2) + '%',
   }));
   exportToExcel(rows, 'Team Overall Performance', `Team_Overall_Performance_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }

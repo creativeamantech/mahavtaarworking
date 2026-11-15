@@ -535,7 +535,8 @@ export default function ExecDashboard() {
                 <col style={{ width: '100px' }} />
                 <col style={{ width: '100px' }} />
                 <col style={{ width: '130px' }} />
-                <col style={{ width: '100px' }} />
+                <col style={{ width: '95px' }} />
+                <col style={{ width: '95px' }} />
               </colgroup>
             <thead className="sticky top-0 z-30 bg-slate-50 dark:bg-slate-900 border-b border-border shadow-sm">
               <tr>
@@ -551,7 +552,8 @@ export default function ExecDashboard() {
                 <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Target Date</th>
                 <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">DRR</th>
                 <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">POS Paid Only POS</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Total %</th>
+                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Actual %</th>
+                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Recovery %</th>
               </tr>
             </thead>
             <tbody>
@@ -567,11 +569,12 @@ export default function ExecDashboard() {
                   target: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.target, 0),
                   dailyRequiredPOS: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + (i.dailyRequiredPOS || 0), 0),
                 };
-                const subPct = sub.totalPOS ? sub.paidPOS / sub.totalPOS : 0;
+                const subActualPct = sub.totalPOS ? (sub.paidPOS + sub.posPaidOnlyPOS) / sub.totalPOS : 0;
+                const subRecoveryPct = sub.totalPOS ? sub.collection / sub.totalPOS : 0;
                 return (
                   <Fragment key={bkt}>
                     <tr className="bg-primary/10 border-b border-border">
-                      <td colSpan={13} className="px-3 py-2.5 font-sans text-[11px] font-bold text-primary uppercase tracking-[0.1em]">BUCKET {bkt}</td>
+                      <td colSpan={14} className="px-3 py-2.5 font-sans text-[11px] font-bold text-primary uppercase tracking-[0.1em]">BUCKET {bkt}</td>
                     </tr>
                     {items.map((item: import('../lib/pivots').ExecCityPivotRow) => (
                       <tr key={item.city} className="border-b border-border transition-colors hover:bg-muted/30">
@@ -587,7 +590,8 @@ export default function ExecDashboard() {
                         <td className="px-3 py-2 text-right text-xs text-muted-foreground">{item.targetDate || "-"}</td>
                         <td className="px-3 py-2 text-right font-tabular-nums font-bold tracking-tight text-amber-600">{fmtCur(item.dailyRequiredPOS || 0)}</td>
                         <td className="px-3 py-2 text-right font-tabular-nums font-medium text-blue-600 dark:text-blue-400 cursor-pointer hover:bg-info/10 transition-colors" onClick={() => navigateToExplorer({ city: item.city })}>{fmtCur(item.posPaidOnlyPOS)}</td>
-                        <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(item.pct)}`}>{fmtPct(item.pct)}</td>
+                        <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(item.actualPct ?? item.pct)}`}>{fmtPct(item.actualPct ?? item.pct)}</td>
+                        <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(item.recoveryPct ?? 0)}`}>{fmtPct(item.recoveryPct ?? 0)}</td>
                       </tr>
                     ))}
                     <tr className="border-b border-border bg-muted/10 font-medium">
@@ -603,7 +607,8 @@ export default function ExecDashboard() {
                       <td className="px-3 py-2 text-right text-xs text-muted-foreground">-</td>
                       <td className="px-3 py-2 text-right font-tabular-nums font-bold tracking-tight text-amber-600">{fmtCur(sub.dailyRequiredPOS || 0)}</td>
                       <td className="px-3 py-2 text-right font-tabular-nums font-medium text-blue-600 dark:text-blue-400">{fmtCur(sub.posPaidOnlyPOS)}</td>
-                      <td className={`px-3 py-2 text-right ${pctColor(subPct)}`}>{fmtPct(subPct)}</td>
+                      <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(subActualPct)}`}>{fmtPct(subActualPct)}</td>
+                      <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(subRecoveryPct)}`}>{fmtPct(subRecoveryPct)}</td>
                     </tr>
                   </Fragment>
                 );
@@ -631,8 +636,11 @@ export default function ExecDashboard() {
                   </div>
                 </td>
                 <td className="px-3 py-2.5 text-right font-tabular-nums text-blue-600 dark:text-blue-400">{fmtCur(teamPerfGrandTotal.posPaidOnlyPOS)}</td>
-                <td className={"px-3 py-2.5 text-right font-tabular-nums " + pctColor(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.paidPOS / teamPerfGrandTotal.totalPOS : 0)}>
-                  {fmtPct(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.paidPOS / teamPerfGrandTotal.totalPOS : 0)}
+                <td className={"px-3 py-2.5 text-right font-tabular-nums font-bold " + pctColor(teamPerfGrandTotal.totalPOS ? (teamPerfGrandTotal.paidPOS + teamPerfGrandTotal.posPaidOnlyPOS) / teamPerfGrandTotal.totalPOS : 0)}>
+                  {fmtPct(teamPerfGrandTotal.totalPOS ? (teamPerfGrandTotal.paidPOS + teamPerfGrandTotal.posPaidOnlyPOS) / teamPerfGrandTotal.totalPOS : 0)}
+                </td>
+                <td className={"px-3 py-2.5 text-right font-tabular-nums font-bold " + pctColor(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.collection / teamPerfGrandTotal.totalPOS : 0)}>
+                  {fmtPct(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.collection / teamPerfGrandTotal.totalPOS : 0)}
                 </td>
               </tr>
             </tfoot>

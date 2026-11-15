@@ -90,9 +90,12 @@ export default function CityPivot() {
           let valA = recA[sort.key];
           let valB = recB[sort.key];
 
-          if (sort.key === 'pct') {
-            valA = a.totalPOS ? a.paidPOS / a.totalPOS : 0;
-            valB = b.totalPOS ? b.paidPOS / b.totalPOS : 0;
+          if (sort.key === 'pct' || sort.key === 'actualPct') {
+            valA = a.totalPOS ? (a.paidPOS + (a.posPaidOnlyPOS || 0)) / a.totalPOS : 0;
+            valB = b.totalPOS ? (b.paidPOS + (b.posPaidOnlyPOS || 0)) / b.totalPOS : 0;
+          } else if (sort.key === 'recoveryPct') {
+            valA = a.totalPOS ? a.collection / a.totalPOS : 0;
+            valB = b.totalPOS ? b.collection / b.totalPOS : 0;
           }
 
           const numA = Number(valA);
@@ -143,16 +146,20 @@ export default function CityPivot() {
         collection: acc.collection + (cur.collection || 0),
         count: acc.count + (cur.count || 0),
         paid: acc.paid + (cur.paid || 0),
+        posPaidOnlyCount: acc.posPaidOnlyCount + (cur.posPaidOnlyCount || 0),
         totalPOS: acc.totalPOS + (cur.totalPOS || 0),
         paidPOS: acc.paidPOS + (cur.paidPOS || 0),
+        posPaidOnlyPOS: acc.posPaidOnlyPOS + (cur.posPaidOnlyPOS || 0),
         target: acc.target + (cur.target || 0),
         dailyRequiredPOS: acc.dailyRequiredPOS + (cur.dailyRequiredPOS || 0),
       }),
-      { collection: 0, count: 0, paid: 0, totalPOS: 0, paidPOS: 0, target: 0, dailyRequiredPOS: 0 }
+      { collection: 0, count: 0, paid: 0, posPaidOnlyCount: 0, totalPOS: 0, paidPOS: 0, posPaidOnlyPOS: 0, target: 0, dailyRequiredPOS: 0 }
     );
   }, [rawCityData]);
 
-  const grandPct = grandTotal.totalPOS ? grandTotal.paidPOS / grandTotal.totalPOS : 0;
+  const grandActualPct = grandTotal.totalPOS ? (grandTotal.paidPOS + grandTotal.posPaidOnlyPOS) / grandTotal.totalPOS : 0;
+  const grandRecoveryPct = grandTotal.totalPOS ? grandTotal.collection / grandTotal.totalPOS : 0;
+  const grandPct = grandActualPct;
 
   const toggleSort = (key: string) => {
     setSortConfig(prev => {
@@ -170,14 +177,15 @@ export default function CityPivot() {
   // Shared single source of truth for column definitions and fixed proportion metrics
   const columns: PivotColumn[] = useMemo(() => [
     { key: 'globalRank', label: '#', align: 'center', width: 45, minWidth: 45 },
-    { key: 'city', label: 'City', align: 'left', width: 150, minWidth: 150 },
+    { key: 'city', label: 'City', align: 'left', width: 140, minWidth: 140 },
     { key: 'collection', label: 'Collection (DAC)', align: 'right', width: 110, minWidth: 110 },
-    { key: 'count', label: 'Total Count', align: 'right', width: 90, minWidth: 90 },
-    { key: 'paid', label: 'Paid Count', align: 'right', width: 90, minWidth: 90 },
-    { key: 'totalPOS', label: 'Total POS', align: 'right', width: 110, minWidth: 110 },
-    { key: 'paidPOS', label: 'Paid POS', align: 'right', width: 110, minWidth: 110 },
-    { key: 'target', label: 'Target Needed', align: 'right', width: 110, minWidth: 110 },
-    { key: 'pct', label: 'Recovery %', align: 'right', width: 100, minWidth: 100 },
+    { key: 'count', label: 'Total Count', align: 'right', width: 85, minWidth: 85 },
+    { key: 'paid', label: 'Paid Count', align: 'right', width: 85, minWidth: 85 },
+    { key: 'totalPOS', label: 'Total POS', align: 'right', width: 105, minWidth: 105 },
+    { key: 'paidPOS', label: 'Paid POS', align: 'right', width: 105, minWidth: 105 },
+    { key: 'target', label: 'Target Needed', align: 'right', width: 105, minWidth: 105 },
+    { key: 'actualPct', label: 'Actual %', align: 'right', width: 95, minWidth: 95 },
+    { key: 'recoveryPct', label: 'Recovery %', align: 'right', width: 95, minWidth: 95 },
   ], []);
 
   const cellPadding = {
@@ -193,10 +201,10 @@ export default function CityPivot() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-border">
           <div>
             <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-primary" /> City Pivot Matrix
+              <Building2 className="w-5 h-5 text-primary" /> City Ledger & Pivot Matrix
             </h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Geographical collection breakdown with unified freeze-panes and inline recovery pacing
+              Geographical collection breakdown with unified freeze-panes, actual vs recovery pacing, and bucket rollups
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -224,6 +232,24 @@ export default function CityPivot() {
               <Download className="h-3.5 w-3.5" /> Export Excel
             </button>
           </div>
+        </div>
+
+        {/* Executive Summary Metrics Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {[
+            { label: 'Total Assigned POS', value: fmtCur(grandTotal.totalPOS), sub: `${grandTotal.count.toLocaleString()} cases`, color: 'text-foreground' },
+            { label: 'Total Recovered', value: fmtCur(grandTotal.paidPOS), sub: `${grandTotal.paid.toLocaleString()} accounts paid`, color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Needed Target', value: fmtCur(grandTotal.target), sub: `DRR: ₹${fmtCur(grandTotal.dailyRequiredPOS)}/day`, color: 'text-rose-600 dark:text-rose-400' },
+            { label: 'Actual & Recovery', value: fmtPct(grandActualPct), sub: `Cash Rec: ${fmtPct(grandRecoveryPct)}`, color: pctColor(grandActualPct) },
+          ].map((card, i) => (
+            <div key={i} className="bg-card border border-border/80 rounded-lg p-3 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">{card.label}</span>
+              <div className="flex items-baseline justify-between mt-1">
+                <span className={`text-base sm:text-lg font-bold font-mono ${card.color}`}>{card.value}</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground block mt-0.5 font-mono">{card.sub}</span>
+            </div>
+          ))}
         </div>
 
         {/* Search & Sort Pill Strip */}
@@ -273,8 +299,8 @@ export default function CityPivot() {
                   { key: 'totalPOS', label: 'Total POS' },
                   { key: 'paidPOS', label: 'Paid POS' },
                   { key: 'target', label: 'Target Needed' },
-                  { key: 'posPaidOnlyPOS', label: 'POS Paid POS' },
-                  { key: 'pct', label: 'Recovery %' },
+                  { key: 'actualPct', label: 'Actual %' },
+                  { key: 'recoveryPct', label: 'Recovery %' },
                 ]
                   .filter(opt => opt.label.toLowerCase().includes(sortSearch.toLowerCase()))
                   .map(opt => (
@@ -294,7 +320,7 @@ export default function CityPivot() {
           {sortConfig.map(sort => {
             const labels: Record<string, string> = {
               globalRank: 'Rank', city: 'City', collection: 'Collection', count: 'Count', paid: 'Paid',
-              totalPOS: 'Total POS', paidPOS: 'Paid POS', pct: 'Total %', target: 'Needed',
+              totalPOS: 'Total POS', paidPOS: 'Paid POS', pct: 'Actual %', actualPct: 'Actual %', recoveryPct: 'Recovery %', target: 'Needed',
               posPaidOnlyCount: 'POS Paid Count', posPaidOnlyPOS: 'POS Paid POS',
               dailyRequiredPOS: 'DRR'
             };
@@ -334,7 +360,7 @@ export default function CityPivot() {
               <tbody className="divide-y divide-border/40">
                 {grouped.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-10 text-muted-foreground">
+                    <td colSpan={10} className="text-center py-10 text-muted-foreground">
                       {filterText ? `No ` + "city" + ` matching "${filterText}".` : 'No portfolio records in current view.'}
                     </td>
                   </tr>
@@ -344,13 +370,16 @@ export default function CityPivot() {
                       collection: acc.collection + (curr.collection || 0),
                       count: acc.count + (curr.count || 0),
                       paid: acc.paid + (curr.paid || 0),
+                      posPaidOnlyCount: acc.posPaidOnlyCount + (curr.posPaidOnlyCount || 0),
                       totalPOS: acc.totalPOS + (curr.totalPOS || 0),
                       paidPOS: acc.paidPOS + (curr.paidPOS || 0),
+                      posPaidOnlyPOS: acc.posPaidOnlyPOS + (curr.posPaidOnlyPOS || 0),
                       target: acc.target + (curr.target || 0),
                       dailyRequiredPOS: acc.dailyRequiredPOS + (curr.dailyRequiredPOS || 0),
-                    }), { collection: 0, count: 0, paid: 0, totalPOS: 0, paidPOS: 0, target: 0, dailyRequiredPOS: 0 });
+                    }), { collection: 0, count: 0, paid: 0, posPaidOnlyCount: 0, totalPOS: 0, paidPOS: 0, posPaidOnlyPOS: 0, target: 0, dailyRequiredPOS: 0 });
                     
-                    const subPct = sub.totalPOS > 0 ? sub.paidPOS / sub.totalPOS : 0;
+                    const subActualPct = sub.totalPOS > 0 ? (sub.paidPOS + sub.posPaidOnlyPOS) / sub.totalPOS : 0;
+                    const subRecoveryPct = sub.totalPOS > 0 ? sub.collection / sub.totalPOS : 0;
                     
                     return (
                       <React.Fragment key={bkt}>
@@ -370,13 +399,17 @@ export default function CityPivot() {
                           <td className={`${cellPadding} text-right font-mono font-bold text-emerald-600 dark:text-emerald-400`}>{fmtCur(sub.paidPOS)}</td>
                           <td className={`${cellPadding} text-right font-mono font-bold text-rose-600 dark:text-rose-400`}>{fmtCur(sub.target)}</td>
                           <td className={`${cellPadding} text-right font-mono font-bold`}>
-                            <HeatBar pct={subPct} showBar={false} showBadge={true} />
+                            <HeatBar pct={subActualPct} showBar={false} showBadge={true} />
+                          </td>
+                          <td className={`${cellPadding} text-right font-mono font-bold`}>
+                            <HeatBar pct={subRecoveryPct} showBar={false} showBadge={true} />
                           </td>
                         </tr>
                         
                         {/* Bucket Rows */}
                         {items.map((item, i) => {
-                          const rowPct = item.totalPOS > 0 ? item.paidPOS / item.totalPOS : 0;
+                          const rowActualPct = item.totalPOS > 0 ? (item.paidPOS + (item.posPaidOnlyPOS || 0)) / item.totalPOS : 0;
+                          const rowRecoveryPct = item.totalPOS > 0 ? item.collection / item.totalPOS : 0;
                           const isAchieved = item.paidPOS >= item.targetPOS;
                           return (
                             <tr key={i} className="hover:bg-muted/30 transition-colors group">
@@ -401,8 +434,11 @@ export default function CityPivot() {
                                   </div>
                                 )}
                               </td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums`}>
-                                <HeatBar pct={rowPct} showBar={false} showBadge={true} />
+                              <td className={`${cellPadding} text-right font-mono tabular-nums font-bold`}>
+                                <HeatBar pct={item.actualPct ?? rowActualPct} showBar={false} showBadge={true} />
+                              </td>
+                              <td className={`${cellPadding} text-right font-mono tabular-nums font-bold`}>
+                                <HeatBar pct={item.recoveryPct ?? rowRecoveryPct} showBar={false} showBadge={true} />
                               </td>
                             </tr>
                           );
@@ -431,7 +467,10 @@ export default function CityPivot() {
                       </div>
                     </td>
                     <td className={`${cellPadding} text-right font-mono font-bold`}>
-                      <HeatBar pct={grandPct} showBar={false} showBadge={true} />
+                      <HeatBar pct={grandActualPct} showBar={false} showBadge={true} />
+                    </td>
+                    <td className={`${cellPadding} text-right font-mono font-bold`}>
+                      <HeatBar pct={grandRecoveryPct} showBar={false} showBadge={true} />
                     </td>
                   </tr>
                 </tfoot>

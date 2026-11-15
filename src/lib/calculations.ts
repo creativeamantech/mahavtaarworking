@@ -88,7 +88,7 @@ export function calculateRow(row: Partial<LoanRecord> | Record<string, unknown>)
     emiCount = Math.min(raw, bkt + 1);
   }
 
-  const teamPaid = (total >= emi1 && emi1 > 0) || (approxFC > 0 && fcCleared <= 0) || lastMonthPaid ? 1 : null;
+  const teamPaid = (total >= emi1 && emi1 > 0) || (pos > 0 && posCleared <= 0) || (approxFC > 0 && fcCleared <= 0) || lastMonthPaid ? 1 : null;
   const teamUnpaid = teamPaid ? null : 1;
   const teamPaidPOS = teamPaid ? pos : null;
   const teamRBPOS = rbCondition <= 0 ? pos : null;

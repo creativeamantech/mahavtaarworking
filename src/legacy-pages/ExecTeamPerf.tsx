@@ -298,7 +298,8 @@ export default function ExecTeamPerf() {
                 <th className="px-3 py-2.5 text-right font-bold">Target Date</th>
                 <th className="px-3 py-2.5 text-right font-bold text-amber-600 dark:text-amber-400">DRR</th>
                 <th className="px-3 py-2.5 text-right font-bold">POS Paid Only Amt</th>
-                <th className="px-3 py-2.5 text-right font-bold">Total %</th>
+                <th className="px-3 py-2.5 text-right font-bold">Actual %</th>
+                <th className="px-3 py-2.5 text-right font-bold">Recovery %</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -314,12 +315,13 @@ export default function ExecTeamPerf() {
                   target: items.reduce((s, i) => s + i.target, 0),
                   dailyRequiredPOS: items.reduce((s, i) => s + (i.dailyRequiredPOS || 0), 0),
                 };
-                const subPct = sub.totalPOS ? sub.paidPOS / sub.totalPOS : 0;
+                const subActualPct = sub.totalPOS ? (sub.paidPOS + sub.posPaidOnlyPOS) / sub.totalPOS : 0;
+                const subRecoveryPct = sub.totalPOS ? sub.collection / sub.totalPOS : 0;
 
                 return (
                   <React.Fragment key={bkt}>
                     <tr className="bg-primary/10 border-b border-border">
-                      <td colSpan={13} className="px-3 py-2 font-sans text-[11px] font-bold text-primary uppercase tracking-wider">
+                      <td colSpan={14} className="px-3 py-2 font-sans text-[11px] font-bold text-primary uppercase tracking-wider">
                         BUCKET {bkt}
                       </td>
                     </tr>
@@ -348,7 +350,8 @@ export default function ExecTeamPerf() {
                         <td className="px-3 py-2 text-right text-[11px] text-muted-foreground">{item.targetDate || '—'}</td>
                         <td className="px-3 py-2 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(item.dailyRequiredPOS || 0)}</td>
                         <td className="px-3 py-2 text-right font-tabular text-blue-600 dark:text-blue-400">{fmtCur(item.posPaidOnlyPOS)}</td>
-                        <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.pct)}`}>{fmtPct(item.pct)}</td>
+                        <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.actualPct ?? item.pct)}`}>{fmtPct(item.actualPct ?? item.pct)}</td>
+                        <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.recoveryPct ?? 0)}`}>{fmtPct(item.recoveryPct ?? 0)}</td>
                       </tr>
                     ))}
                     <tr className="bg-muted/40 font-semibold border-b border-border">
@@ -370,7 +373,8 @@ export default function ExecTeamPerf() {
                       <td className="px-3 py-2 text-right text-muted-foreground">—</td>
                       <td className="px-3 py-2 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(sub.dailyRequiredPOS)}</td>
                       <td className="px-3 py-2 text-right font-tabular text-blue-600 dark:text-blue-400">{fmtCur(sub.posPaidOnlyPOS)}</td>
-                      <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subPct)}`}>{fmtPct(subPct)}</td>
+                      <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subActualPct)}`}>{fmtPct(subActualPct)}</td>
+                      <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subRecoveryPct)}`}>{fmtPct(subRecoveryPct)}</td>
                     </tr>
                   </React.Fragment>
                 );
@@ -396,8 +400,11 @@ export default function ExecTeamPerf() {
                 <td className="px-3 py-2.5 text-right text-muted-foreground">—</td>
                 <td className="px-3 py-2.5 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(grandTotal.dailyRequiredPOS)}</td>
                 <td className="px-3 py-2.5 text-right font-tabular text-blue-600 dark:text-blue-400">{fmtCur(grandTotal.posPaidOnlyPOS)}</td>
-                <td className={`px-3 py-2.5 text-right font-tabular font-bold ${pctColor(grandTotal.totalPOS ? grandTotal.paidPOS / grandTotal.totalPOS : 0)}`}>
-                  {fmtPct(grandTotal.totalPOS ? grandTotal.paidPOS / grandTotal.totalPOS : 0)}
+                <td className={`px-3 py-2.5 text-right font-tabular font-bold ${pctColor(grandTotal.totalPOS ? (grandTotal.paidPOS + grandTotal.posPaidOnlyPOS) / grandTotal.totalPOS : 0)}`}>
+                  {fmtPct(grandTotal.totalPOS ? (grandTotal.paidPOS + grandTotal.posPaidOnlyPOS) / grandTotal.totalPOS : 0)}
+                </td>
+                <td className={`px-3 py-2.5 text-right font-tabular font-bold ${pctColor(grandTotal.totalPOS ? grandTotal.collection / grandTotal.totalPOS : 0)}`}>
+                  {fmtPct(grandTotal.totalPOS ? grandTotal.collection / grandTotal.totalPOS : 0)}
                 </td>
               </tr>
             </tfoot>

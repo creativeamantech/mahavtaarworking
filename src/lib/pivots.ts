@@ -20,6 +20,8 @@ export interface CityPivotRow {
   targetPOS: number;
   targetDate?: string;
   pct: number;
+  actualPct: number;
+  recoveryPct: number;
   rollbackPct: number;
   target: number;
   dailyRequiredPOS: number;
@@ -39,6 +41,8 @@ export interface BucketCityPivotRow {
   targetDate?: string;
   target: number;
   pct: number;
+  actualPct: number;
+  recoveryPct: number;
   dailyRequiredPOS: number;
   cases: { aggr: string, name: string, pos: number, isPaid: boolean }[];
 }
@@ -57,6 +61,8 @@ export interface ExecCityPivotRow {
   targetDate?: string;
   target: number;
   pct: number;
+  actualPct: number;
+  recoveryPct: number;
   dailyRequiredPOS: number;
   cases: { aggr: string, name: string, pos: number, isPaid: boolean }[];
 }
@@ -74,6 +80,8 @@ export interface TeamPivotRow {
   targetPOS: number;
   targetDate?: string;
   pct: number;
+  actualPct: number;
+  recoveryPct: number;
   target: number;
   dailyRequiredPOS: number;
   cases: Array<{ aggr: string; name: string; pos: number; isPaid: boolean }>;
@@ -117,14 +125,15 @@ export function buildCityPivot(records: LoanRecord[], targets: Record<string, nu
       };
     }
     
-    const posVal = safeNumber(r.principal_outstanding);
-    if (c.mainPaid === 1) {
-      map[city].collection += safeNumber(r.dac ?? r.DAC);
-      map[city].paid += 1;
-    }
+    const posVal = safeNumber(r.principal_outstanding ?? r.POS ?? r['Principal Outstanding'] ?? r.amount);
+    const dacVal = safeNumber(r.dac ?? r.DAC ?? r['DAC'] ?? r.collection ?? r['Collection']);
+    map[city].collection += dacVal;
     map[city].count += 1;
     map[city].totalPOS += posVal;
-    map[city].paidPOS += c.mainPaidPOS || 0;
+    if (c.mainPaid === 1) {
+      map[city].paid += 1;
+      map[city].paidPOS += c.mainPaidPOS || 0;
+    }
     map[city].rollbackPOS += c.rollbackPOS || 0;
 
     const tRes = resolveTarget(targets, { city: r.city || r.City, state: r.state || r.State, bkt: r.bom_bkt });
@@ -134,14 +143,17 @@ export function buildCityPivot(records: LoanRecord[], targets: Record<string, nu
 
   return Object.values(map)
     .map((item) => {
-      const pct = item.totalPOS > 0 ? item.paidPOS / item.totalPOS : 0;
+      const actualPct = item.totalPOS > 0 ? item.paidPOS / item.totalPOS : 0;
+      const recoveryPct = item.totalPOS > 0 ? item.collection / item.totalPOS : 0;
       const rollbackPct = item.totalPOS > 0 ? item.rollbackPOS / item.totalPOS : 0;
       const target = Math.max(0, item.targetPOS - item.paidPOS);
       const dailyRequiredPOS = computeDailyRequiredPOS(item.targetPOS, item.paidPOS, item.targetDate);
 
       return {
         ...item,
-        pct,
+        pct: actualPct,
+        actualPct,
+        recoveryPct,
         rollbackPct,
         target,
         dailyRequiredPOS,
@@ -173,14 +185,17 @@ export function buildTeamPivot(records: LoanRecord[], targets: Record<string, nu
         posPaidOnlyPOS: 0,
         targetPOS: 0,
         pct: 0,
+        actualPct: 0,
+        recoveryPct: 0,
         target: 0,
         dailyRequiredPOS: 0,
         cases: [],
       };
     }
 
-    const posVal = safeNumber(r.principal_outstanding);
-    map[key].collection += safeNumber(r.dac ?? r.DAC);
+    const posVal = safeNumber(r.principal_outstanding ?? r.POS ?? r['Principal Outstanding'] ?? r.amount);
+    const dacVal = safeNumber(r.dac ?? r.DAC ?? r['DAC'] ?? r.collection ?? r['Collection']);
+    map[key].collection += dacVal;
     map[key].count += 1;
     map[key].totalPOS += posVal;
 
@@ -206,12 +221,18 @@ export function buildTeamPivot(records: LoanRecord[], targets: Record<string, nu
   }
 
   return Object.values(map)
-    .map((e) => ({ 
-      ...e, 
-      pct: e.totalPOS > 0 ? e.paidPOS / e.totalPOS : 0,
-      target: Math.max(0, e.targetPOS - e.paidPOS),
-      dailyRequiredPOS: computeDailyRequiredPOS(e.targetPOS, e.paidPOS, e.targetDate),
-    }))
+    .map((e) => {
+      const actualPct = e.totalPOS > 0 ? (e.paidPOS + (e.posPaidOnlyPOS || 0)) / e.totalPOS : 0;
+      const recoveryPct = e.totalPOS > 0 ? e.collection / e.totalPOS : 0;
+      return { 
+        ...e, 
+        pct: actualPct,
+        actualPct,
+        recoveryPct,
+        target: Math.max(0, e.targetPOS - e.paidPOS),
+        dailyRequiredPOS: computeDailyRequiredPOS(e.targetPOS, e.paidPOS, e.targetDate),
+      };
+    })
     .sort((a, b) => String(a.bkt).localeCompare(String(b.bkt)) || a.exec.localeCompare(b.exec));
 }
 
@@ -265,7 +286,7 @@ export function buildCrossTab(records: LoanRecord[], targets: Record<string, num
 }
 
 export function buildBucketCityPivot(records: LoanRecord[], targets: Record<string, number> = {}): BucketCityPivotRow[] {
-  const map: Record<string, Omit<BucketCityPivotRow, 'pct' | 'target' | 'dailyRequiredPOS'>> = {};
+  const map: Record<string, Omit<BucketCityPivotRow, 'pct' | 'actualPct' | 'recoveryPct' | 'target' | 'dailyRequiredPOS'>> = {};
 
   for (let i = 0; i < records.length; i++) {
     const r = records[i];
@@ -290,9 +311,10 @@ export function buildBucketCityPivot(records: LoanRecord[], targets: Record<stri
       };
     }
 
-    map[key].collection += safeNumber(r.dac ?? r.DAC);
+    const dacVal = safeNumber(r.dac ?? r.DAC ?? r['DAC'] ?? r.collection ?? r['Collection']);
+    map[key].collection += dacVal;
     map[key].count += 1;
-    const posVal = safeNumber(r.principal_outstanding);
+    const posVal = safeNumber(r.principal_outstanding ?? r.POS ?? r['Principal Outstanding'] ?? r.amount);
     map[key].totalPOS += posVal;
 
     if (c.mainPaid === 1) {
@@ -311,17 +333,23 @@ export function buildBucketCityPivot(records: LoanRecord[], targets: Record<stri
   }
 
   return Object.values(map)
-    .map((e) => ({ 
-      ...e, 
-      pct: e.totalPOS > 0 ? e.paidPOS / e.totalPOS : 0,
-      target: Math.max(0, e.targetPOS - e.paidPOS),
-      dailyRequiredPOS: computeDailyRequiredPOS(e.targetPOS, e.paidPOS, e.targetDate),
-    }))
+    .map((e) => {
+      const actualPct = e.totalPOS > 0 ? (e.paidPOS + (e.posPaidOnlyPOS || 0)) / e.totalPOS : 0;
+      const recoveryPct = e.totalPOS > 0 ? e.collection / e.totalPOS : 0;
+      return { 
+        ...e, 
+        pct: actualPct,
+        actualPct,
+        recoveryPct,
+        target: Math.max(0, e.targetPOS - e.paidPOS),
+        dailyRequiredPOS: computeDailyRequiredPOS(e.targetPOS, e.paidPOS, e.targetDate),
+      };
+    })
     .sort((a, b) => String(a.bkt).localeCompare(String(b.bkt)) || a.city.localeCompare(b.city));
 }
 
 export function buildExecCityPivot(records: LoanRecord[], targets: Record<string, number> = {}): ExecCityPivotRow[] {
-  const map: Record<string, Omit<ExecCityPivotRow, 'pct' | 'target' | 'dailyRequiredPOS'>> = {};
+  const map: Record<string, Omit<ExecCityPivotRow, 'pct' | 'actualPct' | 'recoveryPct' | 'target' | 'dailyRequiredPOS'>> = {};
 
   for (let i = 0; i < records.length; i++) {
     const r = records[i];
@@ -346,10 +374,11 @@ export function buildExecCityPivot(records: LoanRecord[], targets: Record<string
       };
     }
     
-    map[key].collection += safeNumber(r.dac ?? r.DAC);
+    const dacVal = safeNumber(r.dac ?? r.DAC ?? r['DAC'] ?? r.collection ?? r['Collection']);
+    map[key].collection += dacVal;
     map[key].count += 1;
     
-    const posVal = safeNumber(r.principal_outstanding);
+    const posVal = safeNumber(r.principal_outstanding ?? r.POS ?? r['Principal Outstanding'] ?? r.amount);
     map[key].totalPOS += posVal;
     
     const tRes = resolveTarget(targets, { city: r.city || r.City, state: r.state || r.State, bkt: r.bom_bkt });
@@ -366,10 +395,16 @@ export function buildExecCityPivot(records: LoanRecord[], targets: Record<string
     }
   }
 
-  return Object.values(map).map((e) => ({
-    ...e,
-    pct: e.totalPOS > 0 ? e.paidPOS / e.totalPOS : 0,
-    target: Math.max(0, e.targetPOS - e.paidPOS),
-    dailyRequiredPOS: computeDailyRequiredPOS(e.targetPOS, e.paidPOS, e.targetDate),
-  }));
+  return Object.values(map).map((e) => {
+    const actualPct = e.totalPOS > 0 ? (e.paidPOS + (e.posPaidOnlyPOS || 0)) / e.totalPOS : 0;
+    const recoveryPct = e.totalPOS > 0 ? e.collection / e.totalPOS : 0;
+    return {
+      ...e,
+      pct: actualPct,
+      actualPct,
+      recoveryPct,
+      target: Math.max(0, e.targetPOS - e.paidPOS),
+      dailyRequiredPOS: computeDailyRequiredPOS(e.targetPOS, e.paidPOS, e.targetDate),
+    };
+  });
 }

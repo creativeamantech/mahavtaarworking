@@ -71,7 +71,7 @@ export default function Dashboard() {
     let smallCasesBoth = 0;
     let totalSmallCases = 0;
 
-    const bktMap: Record<string, { bucket: string; cases: number; pos: number; paid: number; unpaid: number; paidPos: number; unpaidPos: number }> = {};
+    const bktMap: Record<string, { bucket: string; cases: number; pos: number; paid: number; unpaid: number; paidPos: number; unpaidPos: number; collection: number }> = {};
     const cityMap: Record<string, { 
       city: string; 
       cases: number; 
@@ -104,10 +104,11 @@ export default function Dashboard() {
       // Bucket aggregation
       const bkt = r.bom_bkt ? String(r.bom_bkt) : 'Other';
       if (!bktMap[bkt]) {
-        bktMap[bkt] = { bucket: bkt, cases: 0, pos: 0, paid: 0, unpaid: 0, paidPos: 0, unpaidPos: 0 };
+        bktMap[bkt] = { bucket: bkt, cases: 0, pos: 0, paid: 0, unpaid: 0, paidPos: 0, unpaidPos: 0, collection: 0 };
       }
       bktMap[bkt].cases++;
       bktMap[bkt].pos += pos;
+      bktMap[bkt].collection += dac;
       if (isPaid) {
         bktMap[bkt].paid++;
         bktMap[bkt].paidPos += pos;
@@ -453,7 +454,8 @@ export default function Dashboard() {
         <div className="overflow-x-auto border-t border-border">
           <table className="w-full text-xs text-left">
             <colgroup>
-              <col className="w-32" />
+              <col className="w-28" />
+              <col />
               <col />
               <col />
               <col />
@@ -467,12 +469,14 @@ export default function Dashboard() {
                 <th className="px-4 py-2.5 text-right">Total POS</th>
                 <th className="px-4 py-2.5 text-right text-emerald-600 dark:text-emerald-400">Paid Cases</th>
                 <th className="px-4 py-2.5 text-right text-rose-600 dark:text-rose-400">Unpaid Cases</th>
+                <th className="px-4 py-2.5 text-right">Actual %</th>
                 <th className="px-4 py-2.5 text-right">Recovery %</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {stats.bucketData.map(b => {
-                const recPct = b.pos > 0 ? (b.paidPos / b.pos) * 100 : 0;
+                const actPct = b.pos > 0 ? (b.paidPos / b.pos) * 100 : 0;
+                const recPct = b.pos > 0 ? (b.collection / b.pos) * 100 : 0;
                 return (
                   <tr
                     key={b.bucket}
@@ -484,7 +488,8 @@ export default function Dashboard() {
                     <td className="px-4 py-2 text-right font-tabular font-medium">{fmtCur(b.pos)}</td>
                     <td className="px-4 py-2 text-right font-tabular text-emerald-600 dark:text-emerald-400 font-semibold">{b.paid.toLocaleString()}</td>
                     <td className="px-4 py-2 text-right font-tabular text-rose-600 dark:text-rose-400">{b.unpaid.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right font-tabular font-bold text-primary">{recPct.toFixed(1)}%</td>
+                    <td className="px-4 py-2 text-right font-tabular font-bold text-primary">{actPct.toFixed(1)}%</td>
+                    <td className="px-4 py-2 text-right font-tabular font-bold text-emerald-600 dark:text-emerald-400">{recPct.toFixed(1)}%</td>
                   </tr>
                 );
               })}
@@ -498,6 +503,9 @@ export default function Dashboard() {
                 <td className="px-4 py-2.5 text-right font-tabular text-rose-600 dark:text-rose-400">{stats.bucketData.reduce((a, b) => a + b.unpaid, 0).toLocaleString()}</td>
                 <td className="px-4 py-2.5 text-right font-tabular text-primary">
                   {stats.totalPOS > 0 ? `${((stats.paidPOS / stats.totalPOS) * 100).toFixed(1)}%` : '—'}
+                </td>
+                <td className="px-4 py-2.5 text-right font-tabular text-emerald-600 dark:text-emerald-400">
+                  {stats.totalPOS > 0 ? `${((stats.totalCollection / stats.totalPOS) * 100).toFixed(1)}%` : '—'}
                 </td>
               </tr>
             </tfoot>

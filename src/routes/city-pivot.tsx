@@ -8,10 +8,10 @@ const Page = lazy(() => import("@/legacy-pages/CityPivot"));
 export const Route = createFileRoute("/city-pivot")({
   head: () => ({
     meta: [
-      { title: "City Pivot — Mahavtaar Ledger" },
-      { name: "description", content: "City Pivot view of the Mahavtaar Ledger collection portfolio." },
-      { property: "og:title", content: "City Pivot — Mahavtaar Ledger" },
-      { property: "og:description", content: "City Pivot view of the Mahavtaar Ledger collection portfolio." },
+      { title: "City Ledger & Pivot — Mahavtaar Ledger" },
+      { name: "description", content: "City Ledger and Pivot view of the Mahavtaar Ledger collection portfolio." },
+      { property: "og:title", content: "City Ledger & Pivot — Mahavtaar Ledger" },
+      { property: "og:description", content: "City Ledger and Pivot view of the Mahavtaar Ledger collection portfolio." },
     ],
   }),
   component: RoutePage,

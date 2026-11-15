@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { describe, it, expect } from "vitest";
 import { ROUTE_LOOKUP, renderTabIcon } from "@/contexts/WorkspaceTabsContext";
 
