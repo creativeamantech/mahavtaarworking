@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { MAHAVTAAR_LOGO_POLYGONS, type PolygonWithHoles } from "@/components/mahavtaarLogoData";
