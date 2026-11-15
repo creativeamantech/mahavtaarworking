@@ -18,42 +18,6 @@ function hasLovableConnectors(): boolean {
   );
 }
 
-async function gatewayWriteRequest<T>(
-  base: string,
-  path: string,
-  apiKeyName: string,
-  method: "POST" | "PUT",
-  body: unknown,
-): Promise<T> {
-  const lovableKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env[apiKeyName];
-  if (!lovableKey || !connectionKey) {
-    throw new Error("Google Workspace connection is not configured on the server.");
-  }
-
-  const response = await fetch(`${base}${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": connectionKey,
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    console.error("Google Workspace write error", response.status, detail.slice(0, 500));
-    throw new Error(
-      response.status === 401 || response.status === 403
-        ? "Google Workspace connection authorization failed."
-        : `Google Workspace write failed (${response.status}).`,
-    );
-  }
-  return response.json() as Promise<T>;
-}
-
 async function gatewayRequest<T>(base: string, path: string, apiKeyName: string): Promise<T> {
   const lovableKey = process.env["LOVABLE_API_KEY"];
   const connectionKey = process.env[apiKeyName];
