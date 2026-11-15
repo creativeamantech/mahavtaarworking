@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useMemo } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
+import CityMainPerformance from './CityMainPerformance';
 import { useDataState } from '../contexts/DataContext';
 import { useNavigate } from '@/lib/router-compat';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,6 +39,7 @@ export default function CityPivot() {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }[]>([]);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [density, setDensity] = useState<PivotDensity>('comfortable');
+  const [viewMode, setViewMode] = useState<'main' | 'pivot'>('main');
 
   const navigateToExplorer = (filters: { city?: string; bucket?: string; paid?: string }) => {
     const params = new URLSearchParams();
@@ -194,6 +196,10 @@ export default function CityPivot() {
     detailed: 'px-3.5 py-2.5 text-xs',
   }[density];
 
+  if (viewMode === 'main') {
+    return <AppLayout><div className="p-3 sm:p-4"><CityMainPerformance onBack={() => setViewMode('pivot')} /></div></AppLayout>;
+  }
+
   return (
     <AppLayout>
       <div className="space-y-3 flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-128px)] min-h-0">
@@ -225,6 +231,12 @@ export default function CityPivot() {
               ))}
             </div>
 
+            <button
+              onClick={() => setViewMode('main')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/15 transition-colors shadow-xs"
+            >
+              Main Performance
+            </button>
             <button
               onClick={() => exportBucketCityPivot(cityData, targets)}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-xs"
