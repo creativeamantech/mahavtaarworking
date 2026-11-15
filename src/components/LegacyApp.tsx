@@ -1,30 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { LoaderCircle } from "lucide-react";
+import { MahavtaarLogoMark } from "@/components/MahavtaarLogo3D";
 
 type ClientMod = typeof import("./LegacyClient");
 const Ctx = createContext<ClientMod | null>(null);
 
 function LoadingBrandMark() {
-  return (
-    <div className="relative h-20 w-20">
-      <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
-        <defs>
-          <linearGradient id="loadPurple" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#9b2495"/><stop offset="1" stopColor="#69228b"/></linearGradient>
-          <linearGradient id="loadBlue" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#11b5df"/><stop offset="1" stopColor="#0876bb"/></linearGradient>
-          <linearGradient id="loadGreen" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#8bc53f"/><stop offset="1" stopColor="#35a65b"/></linearGradient>
-          <linearGradient id="loadOrange" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#ffc32b"/><stop offset="1" stopColor="#ef542c"/></linearGradient>
-        </defs>
-        <path d="M47 53 C22 38 20 13 29 5 C48 14 57 31 53 51Z" fill="url(#loadPurple)"/>
-        <path d="M52 53 C49 28 58 11 70 8 C82 28 73 45 57 58Z" fill="url(#loadBlue)"/>
-        <path d="M55 57 C68 34 83 34 94 39 C92 59 75 69 56 65Z" fill="url(#loadGreen)"/>
-        <path d="M50 65 C67 59 82 65 91 78 C73 93 52 87 42 73Z" fill="url(#loadOrange)"/>
-        <path d="M13 72 C23 91 49 98 73 87 C54 105 20 96 8 76Z" fill="#e84a37"/>
-        <path d="M27 69 C28 54 36 45 48 43 C59 47 66 58 65 72 C58 81 39 84 27 69Z" fill="white" stroke="#f0b51e" strokeWidth="3"/>
-        <path d="M37 70 C38 59 43 53 48 51 C54 55 58 62 58 71 C53 77 42 78 37 70Z" fill="none" stroke="#7c2b8b" strokeWidth="2.5"/>
-        <path d="M22 76 Q48 91 73 76" fill="none" stroke="#0b9dc2" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
-    </div>
-  );
+  return <MahavtaarLogoMark className="h-20 w-20 object-contain" alt="Mahavtaar Enterprises" />;
 }
 
 export function PageLoader() {
