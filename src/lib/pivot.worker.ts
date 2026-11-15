@@ -3,7 +3,8 @@ import {
   buildTeamPivot, 
   buildCrossTab, 
   buildBucketCityPivot, 
-  buildExecCityPivot 
+  buildExecCityPivot,
+  buildMainPerformance 
 } from './pivots.ts';
 
 self.onmessage = (e: MessageEvent) => {
@@ -27,6 +28,9 @@ self.onmessage = (e: MessageEvent) => {
         break;
       case 'buildExecCityPivot':
         result = buildExecCityPivot(records, targets);
+        break;
+      case 'buildMainPerformance':
+        result = buildMainPerformance(records, targets);
         break;
       default:
         throw new Error(`Unknown worker message type: ${type}`);

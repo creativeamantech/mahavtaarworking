@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LoanRecord } from '../types/domain';
 
-type PivotType = 'buildCityPivot' | 'buildTeamPivot' | 'buildCrossTab' | 'buildBucketCityPivot' | 'buildExecCityPivot';
+type PivotType = 'buildCityPivot' | 'buildTeamPivot' | 'buildCrossTab' | 'buildBucketCityPivot' | 'buildExecCityPivot' | 'buildMainPerformance';
 
 export function useWorkerPivot<T>(type: PivotType, records: LoanRecord[], targets: Record<string, number> = {}, fallbackResult: T) {
   const [data, setData] = useState<T>(fallbackResult);
