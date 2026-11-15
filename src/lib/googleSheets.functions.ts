@@ -386,6 +386,11 @@ export const updateMahavtaarWorkspaceRows = createServerFn({ method: "POST" })
       return result;
     };
 
+    const seenAgreementIds = new Set<string>();
+    for (const item of data.updates) {
+      if (seenAgreementIds.has(item.agreementId)) throw new Error("Duplicate Agreement ID in update request: " + item.agreementId);
+      seenAgreementIds.add(item.agreementId);
+    }
     const dataValues: Array<{ range: string; values: Array<Array<string | number | boolean | null>> }> = [];
     const missing: string[] = [];
     const ambiguous: string[] = [];
@@ -395,7 +400,9 @@ export const updateMahavtaarWorkspaceRows = createServerFn({ method: "POST" })
       if (rowMatches.length > 1) { ambiguous.push(item.agreementId); continue; }
       for (const [field, value] of Object.entries(item.values)) {
         if (field.endsWith("_source")) continue;
-        const column = columnIndexByName.get(normalize(field));
+        const normalizedField = normalize(field);
+        if (agreementAliases.includes(normalizedField)) throw new Error("Agreement ID fields cannot be modified.");
+        const column = columnIndexByName.get(normalizedField);
         if (column === undefined) throw new Error("Column not found for field: " + field + ". No rows were updated.");
         dataValues.push({
           range: escapedTab + "!" + columnLetter(column) + rowMatches[0],
