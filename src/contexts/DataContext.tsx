@@ -151,7 +151,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
         // The connected current-month Google Sheet is authoritative for Admin master data.
         // Dexie is retained only as a compatibility cache for non-admin/offline workflows.
-        if (user?.role === "ADMIN") {
+        if (String(user?.role || "").toLowerCase() === "admin") {
           try {
             const source = await fetchMasterSheet({ data: { source: "master" } });
             const buffer = sheetValuesToXlsxBuffer(source.values, source.sheetTitle);
@@ -164,7 +164,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
             console.error("Live Master Sheet load failed:", sheetError);
             setRecords([]);
           }
-        } else {
+        } else if (user) {
           const { fetchAuthorizedLoanRecords } = await import("../lib/repositories/loanRepository");
           const dbRecords = await fetchAuthorizedLoanRecords(user);
           setRecords(dbRecords);
@@ -182,7 +182,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-  }, [user]);
+  }, [user, fetchMasterSheet]);
 
   // Google Sheets is the authoritative master source. Dexie is refreshed only as a local operational cache.
   const loadMainSheetSource = useCallback(async (buffer: ArrayBuffer, sourceName: string) => {
