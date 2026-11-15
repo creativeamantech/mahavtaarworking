@@ -112,7 +112,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [records]);
 
-  // Load from Dexie on mount
+  // Load auxiliary local state and hydrate master data from its authoritative source
   useEffect(() => {
     async function loadData() {
       // 1. Migrate legacy localStorage targets if present
@@ -205,7 +205,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setUndoStack([]);
     setRedoStack([]);
     return { rowCount: parsed.length };
-  }, [user, fetchMasterSheet]);
+  }, [user]);
 
   const loadPaidFile = useCallback(
     async (buffer: ArrayBuffer, fileName: string, userName: string) => {
