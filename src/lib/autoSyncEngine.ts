@@ -158,14 +158,15 @@ export async function executeAutoSync(userName = 'Auto-Sync Scheduler'): Promise
       }
     }
     for (const preset of sheets) {
+      if (preset.type === 'MAIN_DATA') {
+        // Master Allocation is loaded only by the live current-month Google Sheets source.
+        // Ignore legacy MAIN_DATA presets to prevent a second master-data path.
+        continue;
+      }
       try {
         const preview = await previewGoogleSheet(preset.url);
 
-        if (preset.type === 'MAIN_DATA') {
-          // Master Allocation is loaded only by the live current-month Google Sheets source.
-          // Ignore legacy MAIN_DATA presets to prevent a second master-data path.
-          continue;
-        } else if (preset.type === 'PAID_FILE') {
+        if (preset.type === 'PAID_FILE') {
           const paidRows = parsePaidFile(preview.buffer);
           const allDbRecords = await db.loan_records.toArray();
           const mergedData = mergePaidIntoRecords(allDbRecords, paidRows);
