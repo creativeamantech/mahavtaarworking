@@ -408,3 +408,95 @@ export function buildExecCityPivot(records: LoanRecord[], targets: Record<string
     };
   });
 }
+
+
+export interface MainPerformanceMetric {
+  totalCount: number;
+  paidCount: number;
+  unpaidCount: number;
+  totalPos: number;
+  collection: number;
+  mainPaidPos: number;
+  rollbackPos: number;
+  mainPercent: number;
+  rollbackPercent: number;
+  targetPos: number | null;
+  neededPos: number | null;
+}
+export interface MainPerformanceExecutive extends MainPerformanceMetric { executive: string }
+export interface MainPerformanceCity extends MainPerformanceMetric {
+  city: string;
+  executives: MainPerformanceExecutive[];
+}
+export interface MainPerformanceBucket {
+  bucket: string;
+  cities: MainPerformanceCity[];
+  total: MainPerformanceMetric;
+}
+
+function buildMainMetric(rows: LoanRecord[], targets: Record<string, number>): MainPerformanceMetric {
+  let paidCount = 0, totalPos = 0, collection = 0, mainPaidPos = 0, rollbackPos = 0;
+  let targetPos = 0, targetedPos = 0;
+  for (const r of rows) {
+    const c = calculateRow(r);
+    const pos = Math.max(0, safeNumber(r.principal_outstanding ?? r.POS ?? r['Principal Outstanding']));
+    totalPos += pos;
+    collection += safeNumber(r.dac ?? r.DAC ?? r['DAC'] ?? r.collection ?? r['Collection']);
+    if (c.mainPaid === 1) {
+      paidCount += 1;
+      mainPaidPos += c.mainPaidPOS || 0;
+    }
+    rollbackPos += c.rollbackPOS || 0;
+    const t = resolveTarget(targets, { city: r.city || r.City, state: r.state || r.State, bkt: r.bom_bkt ?? r['BOM Bucket'] });
+    if (t.pct > 0) {
+      targetedPos += pos;
+      targetPos += (pos * t.pct) / 100;
+    }
+  }
+  const totalCount = rows.length;
+  return {
+    totalCount,
+    paidCount,
+    unpaidCount: Math.max(0, totalCount - paidCount),
+    totalPos,
+    collection,
+    mainPaidPos,
+    rollbackPos,
+    mainPercent: totalPos > 0 ? (mainPaidPos / totalPos) * 100 : 0,
+    rollbackPercent: totalPos > 0 ? (rollbackPos / totalPos) * 100 : 0,
+    targetPos: targetedPos > 0 ? targetPos : null,
+    neededPos: targetedPos > 0 ? targetPos - mainPaidPos : null,
+  };
+}
+
+export function buildMainPerformance(records: LoanRecord[], targets: Record<string, number> = {}): MainPerformanceBucket[] {
+  const bucketNames = ['Bucket 1', 'Bucket 2', 'Bucket 3', 'Bucket 4', 'Bucket 5'];
+  return bucketNames.map((bucket) => {
+    const rows = records.filter((r) => {
+      const raw = r.bom_bkt ?? r['BOM Bucket'] ?? '';
+      return String(raw).replace(/^bucket\s*/i, '').trim() === bucket.replace('Bucket ', '');
+    });
+    const cityMap = new Map<string, LoanRecord[]>();
+    for (const r of rows) {
+      const city = String(r.city || r.City || 'UNKNOWN').trim() || 'UNKNOWN';
+      const list = cityMap.get(city) ?? [];
+      list.push(r);
+      cityMap.set(city, list);
+    }
+    const cities: MainPerformanceCity[] = [...cityMap.entries()].map(([city, cityRows]) => {
+      const executiveMap = new Map<string, LoanRecord[]>();
+      for (const r of cityRows) {
+        const executive = String(r.executive_name || r['Executive Name'] || 'Unassigned').trim() || 'Unassigned';
+        const list = executiveMap.get(executive) ?? [];
+        list.push(r);
+        executiveMap.set(executive, list);
+      }
+      const executives = [...executiveMap.entries()].map(([executive, exRows]) => ({
+        executive,
+        ...buildMainMetric(exRows, targets),
+      })).sort((a, b) => b.totalCount - a.totalCount || a.executive.localeCompare(b.executive));
+      return { city, executives, ...buildMainMetric(cityRows, targets) };
+    }).sort((a, b) => b.totalCount - a.totalCount || a.city.localeCompare(b.city));
+    return { bucket, cities, total: buildMainMetric(rows, targets) };
+  });
+}
