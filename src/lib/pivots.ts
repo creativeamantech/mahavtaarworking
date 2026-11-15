@@ -474,7 +474,7 @@ export function buildMainPerformance(records: LoanRecord[], targets: Record<stri
   return bucketNames.map((bucket) => {
     const rows = records.filter((r) => {
       const raw = r.bom_bkt ?? r['BOM Bucket'] ?? '';
-      return String(raw).replace(/^bucket\s*/i, '').trim() === bucket.replace('Bucket ', '');
+      return String(raw).trim().toLowerCase().replace(/^bucket\s*/, '').replace(/^b\s*/, '').replace(/[^0-9]/g, '') === bucket.replace('Bucket ', '');
     });
     const cityMap = new Map<string, LoanRecord[]>();
     for (const r of rows) {
