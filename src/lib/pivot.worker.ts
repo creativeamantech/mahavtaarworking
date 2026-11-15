@@ -3,7 +3,8 @@ import {
   buildTeamPivot, 
   buildCrossTab, 
   buildBucketCityPivot, 
-  buildExecCityPivot 
+  buildExecCityPivot,
+  buildMainPerformance 
 } from './pivots.ts';
 
 self.onmessage = (e: MessageEvent) => {
