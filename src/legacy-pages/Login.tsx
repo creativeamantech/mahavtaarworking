@@ -2,34 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "@/lib/router-compat";
 import { useAuth } from "../contexts/AuthContext";
 import { Eye, EyeOff, CheckCircle2, ShieldCheck, LoaderCircle } from "lucide-react";
+import { MahavtaarLogo3D } from "@/components/MahavtaarLogo3D";
 
 const EXECUTIVE_NAMES = [
   "Aarti", "Admin", "Ankita", "Bharti", "Julee",
   "Pooja", "Shikha", "Sona", "Sunanda", "Vinita",
 ] as const;
 
-function BrandMark({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className={`relative shrink-0 ${compact ? "h-14 w-14" : "h-20 w-20"}`} aria-label="Mahavtaar logo">
-      <svg viewBox="0 0 100 100" className="h-full w-full" role="img" aria-hidden="true">
-        <defs>
-          <linearGradient id="petalPurple" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#9b2495"/><stop offset="1" stopColor="#69228b"/></linearGradient>
-          <linearGradient id="petalBlue" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#11b5df"/><stop offset="1" stopColor="#0876bb"/></linearGradient>
-          <linearGradient id="petalGreen" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#8bc53f"/><stop offset="1" stopColor="#35a65b"/></linearGradient>
-          <linearGradient id="petalOrange" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#ffc32b"/><stop offset="1" stopColor="#ef542c"/></linearGradient>
-        </defs>
-        <path d="M47 53 C22 38 20 13 29 5 C48 14 57 31 53 51Z" fill="url(#petalPurple)"/>
-        <path d="M52 53 C49 28 58 11 70 8 C82 28 73 45 57 58Z" fill="url(#petalBlue)"/>
-        <path d="M55 57 C68 34 83 34 94 39 C92 59 75 69 56 65Z" fill="url(#petalGreen)"/>
-        <path d="M50 65 C67 59 82 65 91 78 C73 93 52 87 42 73Z" fill="url(#petalOrange)"/>
-        <path d="M13 72 C23 91 49 98 73 87 C54 105 20 96 8 76Z" fill="#e84a37"/>
-        <path d="M27 69 C28 54 36 45 48 43 C59 47 66 58 65 72 C58 81 39 84 27 69Z" fill="#fff" stroke="#f0b51e" strokeWidth="3"/>
-        <path d="M37 70 C38 59 43 53 48 51 C54 55 58 62 58 71 C53 77 42 78 37 70Z" fill="none" stroke="#7c2b8b" strokeWidth="2.5"/>
-        <path d="M22 76 Q48 91 73 76" fill="none" stroke="#0b9dc2" strokeWidth="3" strokeLinecap="round"/>
-      </svg>
-    </div>
-  );
-}
 
 export default function Login() {
   const [executiveName, setExecutiveName] = useState("");
@@ -62,7 +41,7 @@ export default function Login() {
       <div className="grid min-h-screen lg:grid-cols-[1.05fr_.95fr]">
         <section className="mv-login-brand relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between">
           <div className="relative z-10 flex items-center gap-4">
-            <div className="rounded-2xl bg-white p-2 shadow-lg"><BrandMark /></div>
+            <div className="rounded-2xl bg-white p-2 shadow-lg"><MahavtaarLogo3D alt="Mahavtaar Enterprises" className="h-20 w-20" interactive={false} /></div>
             <div><div className="text-xl font-extrabold tracking-[.12em] text-white">MAHAVTAAR</div><div className="mt-1 text-xs font-semibold tracking-[.34em] text-white/70">WORKING</div></div>
           </div>
           <div className="relative z-10 max-w-xl py-14">
@@ -82,7 +61,7 @@ export default function Login() {
         <section className="flex min-h-screen items-center justify-center bg-white px-5 py-10 sm:px-8">
           <div className="w-full max-w-[420px]">
             <div className="mb-9 flex flex-col items-center text-center lg:hidden">
-              <BrandMark compact />
+              <MahavtaarLogo3D alt="Mahavtaar Enterprises" className="h-16 w-16" interactive={false} />
               <div className="mt-3 text-lg font-extrabold tracking-[.12em] text-slate-900">MAHAVTAAR</div>
               <div className="mt-1 text-[10px] font-bold tracking-[.34em] text-slate-500">WORKING</div>
             </div>
