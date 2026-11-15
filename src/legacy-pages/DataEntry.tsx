@@ -25,7 +25,7 @@ import { LiveGoogleSheetsSource } from "../components/sync/LiveGoogleSheetsSourc
 
 export default function DataEntry() {
   const { records, uploadHistory } = useDataState();
-  const { loadMainFile, loadMainSheetSource, loadPaidFile, loadAdditionalFile, loadCorrectedFile, updateRecord } =
+  const { loadMainSheetSource, loadPaidFile, loadAdditionalFile, loadCorrectedFile, updateRecord } =
     useDataDispatch();
   const { user, isExecutive } = useAuth();
   const [activeInputMode, setActiveInputMode] = useState<"sheets" | "files">("sheets");
@@ -76,35 +76,6 @@ export default function DataEntry() {
   }, [records, search, bucketFilter, paidFilter, cityFilter, conflictFilter, user, isExecutive]);
 
   const cities = useMemo(() => [...new Set(records.map((r) => r.city))].sort(), [records]);
-
-  const handleMainUpload = useCallback(
-    async (file: File) => {
-      setUploadingState((p) => ({ ...p, main: true }));
-      await new Promise((r) => setTimeout(r, 50));
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const result = await loadMainFile(
-            e.target!.result as ArrayBuffer,
-            file.name,
-            user?.name || "Unknown",
-          );
-          const newCount = result?.newCount ?? result.rowCount;
-          const updatedCount = result?.updatedCount ?? 0;
-          const total = result?.totalRecords ?? "";
-          toast.success(
-            `Master Data Loaded: ${result.rowCount} records (${newCount} new, ${updatedCount} merged)${total ? ` · Total in ledger: ${total}` : ""}`,
-          );
-        } catch {
-          toast.error("Failed to parse file");
-        } finally {
-          setUploadingState((p) => ({ ...p, main: false }));
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    },
-    [loadMainFile, user],
-  );
 
   const handlePaidUpload = useCallback(
     async (file: File) => {
@@ -449,14 +420,6 @@ export default function DataEntry() {
           steps={[
             {
               id: "step-1",
-              title: "Main Data File",
-              optional: false,
-              status: uploadingState.main ? "uploading" : lastMain ? "done" : "pending",
-              lastUpload: lastMain?.fileName,
-              onFileSelect: handleMainUpload,
-            },
-            {
-              id: "step-2",
               title: "Paid File",
               optional: false,
               status: uploadingState.paid ? "uploading" : lastPaid ? "done" : "pending",
@@ -464,7 +427,7 @@ export default function DataEntry() {
               onFileSelect: handlePaidUpload,
             },
             {
-              id: "step-3",
+              id: "step-2",
               title: "Additional Collection",
               optional: true,
               status: uploadingState.add ? "uploading" : lastAdditional ? "done" : "pending",
@@ -472,7 +435,7 @@ export default function DataEntry() {
               onFileSelect: handleAdditionalUpload,
             },
             {
-              id: "step-4",
+              id: "step-3",
               title: "Corrected DAC",
               optional: true,
               status: uploadingState.corr ? "uploading" : lastCorrected ? "done" : "pending",
