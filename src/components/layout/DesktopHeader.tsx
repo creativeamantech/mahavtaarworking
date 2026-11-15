@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AgentNotifications } from '../agent/AgentNotifications';
-import { AutoSyncBar } from '../sync/AutoSyncBar';
+import { MasterSheetsSyncStatus } from '../sync/MasterSheetsSyncStatus';
 
 export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean; setCollapsed?: (val: boolean | ((prev: boolean) => boolean)) => void }) {
   const { records,  } = useDataState();
@@ -67,7 +67,7 @@ export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean
 
   return (
     <header className="hidden md:flex sticky top-0 z-30 justify-between items-center px-4 h-14 bg-card/95 backdrop-blur border-b border-border shadow-sm">
-      <div className="flex items-center gap-3 w-1/4">
+      <div className="flex items-center gap-3 shrink-0">
         {setCollapsed && (
           <button 
             type="button"
@@ -101,8 +101,8 @@ export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean
         </div>
       </div>
 
-      <div className="flex-1 flex justify-center px-4">
-        <div className="relative" ref={searchContainerRef}>
+      <div className="flex-1 flex justify-center px-4 min-w-0">
+        <div className="relative w-full max-w-[380px]" ref={searchContainerRef}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input 
             type="text" 
@@ -111,7 +111,7 @@ export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
             onKeyDown={handleSearchSubmit}
-            className="pl-9 pr-14 h-9 bg-muted/50 border border-border rounded-full text-xs font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all w-[300px] lg:w-[400px]"
+            className="pl-9 pr-14 h-9 bg-muted/50 border border-border rounded-full text-xs font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all w-full"
           />
           <kbd 
             onClick={() => {
@@ -176,11 +176,9 @@ export function DesktopHeader({ collapsed, setCollapsed }: { collapsed?: boolean
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-muted-foreground w-1/4 justify-end">
-        
-        
+      <div className="flex items-center gap-3 text-muted-foreground shrink-0 justify-end">
         <div className="flex items-center gap-2 border-l border-border pl-3">
-          <AutoSyncBar compact userName={user?.name} />
+          <MasterSheetsSyncStatus />
           <ThemeToggle />
           {user?.role === 'EXECUTIVE' ? (
             <AgentNotifications />

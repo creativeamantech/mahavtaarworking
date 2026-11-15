@@ -4,7 +4,7 @@ import { useDataState, useDataDispatch } from '@/contexts/DataContext';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '../ThemeToggle';
-import { AutoSyncBar } from '../sync/AutoSyncBar';
+import { MasterSheetsSyncStatus } from '../sync/MasterSheetsSyncStatus';
 import { AgentNotifications } from '../agent/AgentNotifications';
 import {
   DropdownMenu,
@@ -75,7 +75,7 @@ export function MobileHeader() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <AutoSyncBar compact userName={user?.name} />
+          <MasterSheetsSyncStatus compact />
           <ThemeToggle />
           
           <DropdownMenu>

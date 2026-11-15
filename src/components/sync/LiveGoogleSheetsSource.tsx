@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import * as XLSX from "xlsx";
 import {
   Database,
   FileSpreadsheet,
@@ -35,6 +34,15 @@ import {
   type MasterMatchType,
   type SelectedMasterSheetRecord,
 } from "@/lib/masterAllocationMatcher";
+import {
+  getMasterSyncMeta,
+  isMasterSyncInFlight,
+  MASTER_SYNC_EVENT,
+  saveMasterSyncMeta,
+  setMasterSyncInFlight,
+  sheetValuesToXlsxBuffer,
+  subscribeMasterSyncInFlight,
+} from "@/lib/masterSyncStore";
 import type { LoanRecord } from "@/types/domain";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { GoogleDriveBrowserModal } from "./GoogleDriveBrowserModal";
@@ -46,25 +54,6 @@ interface Props {
   onLoadMaster: (buffer: ArrayBuffer, sourceName: string) => Promise<{ rowCount?: number } | void>;
   records?: LoanRecord[] | undefined;
   totalRecordCount?: number | undefined;
-}
-
-function valuesToXlsxBuffer(values: unknown[][], sheetTitle: string): ArrayBuffer {
-  const headers = (values[0] || []).map((v, i) => {
-    const text = String(v ?? "").trim();
-    return text || `Column_${i + 1}`;
-  });
-  const rows = values
-    .slice(1)
-    .map((rowValues) =>
-      Object.fromEntries(headers.map((header, index) => [header, rowValues[index] ?? ""])),
-    );
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(
-    workbook,
-    XLSX.utils.json_to_sheet(rows),
-    (sheetTitle || "Data").slice(0, 31),
-  );
-  return XLSX.write(workbook, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
 }
 
 export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecordCount }: Props) {
@@ -81,24 +70,59 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
   );
   const [candidates, setCandidates] = useState<DriveSpreadsheetCandidate[]>([]);
   const [loading, setLoading] = useState<LoadingAction>(null);
+  const [globalMasterSyncing, setGlobalMasterSyncing] = useState<boolean>(() =>
+    isMasterSyncInFlight(),
+  );
   const [collectionCount, setCollectionCount] = useState<number | null>(null);
   const [collectionUrl, setCollectionUrl] = useState<string | null>(null);
-  const [lastMasterSync, setLastMasterSync] = useState<string | null>(null);
+  const [lastMasterSync, setLastMasterSync] = useState<string | null>(() => {
+    const initial = getMasterSyncMeta().lastSyncedAt;
+    return initial ? new Date(initial).toLocaleString() : null;
+  });
   const [lastExportUrl, setLastExportUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [driveBrowserOpen, setDriveBrowserOpen] = useState(false);
   const [exportConfirmOpen, setExportConfirmOpen] = useState(false);
   const autoSyncedRef = useRef(false);
 
+  useEffect(() => {
+    const handleSyncUpdated = () => {
+      const meta = getMasterSyncMeta();
+      setLastMasterSync(meta.lastSyncedAt ? new Date(meta.lastSyncedAt).toLocaleString() : null);
+      setError(meta.lastError);
+    };
+    const handleMasterSelected = () => {
+      const saved = getSavedSelectedMasterSheet();
+      if (saved) setSelectedMaster(saved);
+    };
+    window.addEventListener(MASTER_SYNC_EVENT, handleSyncUpdated);
+    window.addEventListener("mahavtaar_master_sheet_selected", handleMasterSelected);
+    window.addEventListener("storage", handleSyncUpdated);
+    window.addEventListener("storage", handleMasterSelected);
+    const unsubInFlight = subscribeMasterSyncInFlight(setGlobalMasterSyncing);
+
+    return () => {
+      window.removeEventListener(MASTER_SYNC_EVENT, handleSyncUpdated);
+      window.removeEventListener("mahavtaar_master_sheet_selected", handleMasterSelected);
+      window.removeEventListener("storage", handleSyncUpdated);
+      window.removeEventListener("storage", handleMasterSelected);
+      unsubInFlight();
+    };
+  }, []);
+
   const persistSelectedMaster = useCallback(
-    (meta: {
-      spreadsheetId: string;
-      spreadsheetName: string;
-      sheetTitle: string;
-      matchType: MasterMatchType;
-      webViewLink?: string | undefined;
-      rowCount?: number | undefined;
-    }) => {
+    (
+      meta: {
+        spreadsheetId: string;
+        spreadsheetName: string;
+        sheetTitle: string;
+        matchType: MasterMatchType;
+        webViewLink?: string | undefined;
+        rowCount?: number | undefined;
+      },
+      options: { markSynced?: boolean } = {},
+    ) => {
+      const nowIso = new Date().toISOString();
       const record: SelectedMasterSheetRecord = {
         spreadsheetId: meta.spreadsheetId,
         spreadsheetName: meta.spreadsheetName,
@@ -107,10 +131,29 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
         matchType: meta.matchType,
         webViewLink: meta.webViewLink,
         rowCount: meta.rowCount,
-        selectedAt: new Date().toISOString(),
+        selectedAt: nowIso,
       };
       saveSelectedMasterSheet(record);
       setSelectedMaster(record);
+      if (options.markSynced) {
+        saveMasterSyncMeta({
+          lastSyncedAt: nowIso,
+          spreadsheetId: meta.spreadsheetId,
+          spreadsheetName: meta.spreadsheetName,
+          sheetTitle: meta.sheetTitle,
+          periodLabel: currentPeriod.periodLabel,
+          rowCount: meta.rowCount ?? null,
+          lastError: null,
+        });
+        setLastMasterSync(new Date(nowIso).toLocaleString());
+      } else {
+        saveMasterSyncMeta({
+          spreadsheetId: meta.spreadsheetId,
+          spreadsheetName: meta.spreadsheetName,
+          sheetTitle: meta.sheetTitle,
+          periodLabel: currentPeriod.periodLabel,
+        });
+      }
     },
     [currentPeriod.periodLabel],
   );
@@ -118,8 +161,10 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
   // Load current month/year Master Allocation using Lovable connector first, else OAuth/public
   const loadCurrentMasterAllocation = useCallback(
     async (opts: { overrideSpreadsheetId?: string | undefined; silent?: boolean } = {}) => {
+      if (isMasterSyncInFlight()) return;
       setError(null);
       setLoading("master");
+      setMasterSyncInFlight(true);
       try {
         // 1. Lovable server-side connector path (no Google Sign-In required)
         if (connectorConfigured) {
@@ -132,20 +177,23 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
           if (Array.isArray(result.candidates) && result.candidates.length > 0) {
             setCandidates(result.candidates);
           }
-          const buffer = valuesToXlsxBuffer(result.values, result.sheetTitle);
-          await onLoadMaster(buffer, result.spreadsheetName);
-          persistSelectedMaster({
-            spreadsheetId: result.spreadsheetId,
-            spreadsheetName: result.spreadsheetName,
-            sheetTitle: result.sheetTitle,
-            matchType: result.matchType,
-            webViewLink: result.webViewLink || undefined,
-            rowCount: result.rowCount,
-          });
-          setLastMasterSync(new Date().toLocaleString());
+          const buffer = sheetValuesToXlsxBuffer(result.values, result.sheetTitle);
+          const loaded = await onLoadMaster(buffer, result.spreadsheetName);
+          const rowCount = loaded?.rowCount ?? result.rowCount;
+          persistSelectedMaster(
+            {
+              spreadsheetId: result.spreadsheetId,
+              spreadsheetName: result.spreadsheetName,
+              sheetTitle: result.sheetTitle,
+              matchType: result.matchType,
+              webViewLink: result.webViewLink || undefined,
+              rowCount,
+            },
+            { markSynced: true },
+          );
           if (!opts.silent) {
             toast.success(
-              `Master Allocation loaded: ${result.spreadsheetName} (${result.rowCount.toLocaleString()} rows)`,
+              `Master Allocation loaded: ${result.spreadsheetName} (${rowCount.toLocaleString()} rows)`,
             );
           }
           return;
@@ -157,19 +205,22 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
           setCandidates(discovery.candidates);
           const targetId = opts.overrideSpreadsheetId || discovery.selected.id;
           const result = await readGoogleSheet(targetId, { preferredTab: "Data" });
-          await onLoadMaster(result.buffer, result.spreadsheetTitle);
-          persistSelectedMaster({
-            spreadsheetId: result.spreadsheetId,
-            spreadsheetName: result.spreadsheetTitle,
-            sheetTitle: result.sheetTitle,
-            matchType: opts.overrideSpreadsheetId ? "PINNED_DEFAULT" : discovery.matchType,
-            webViewLink: result.webViewLink,
-            rowCount: result.rowCount,
-          });
-          setLastMasterSync(new Date().toLocaleString());
+          const loaded = await onLoadMaster(result.buffer, result.spreadsheetTitle);
+          const rowCount = loaded?.rowCount ?? result.rowCount;
+          persistSelectedMaster(
+            {
+              spreadsheetId: result.spreadsheetId,
+              spreadsheetName: result.spreadsheetTitle,
+              sheetTitle: result.sheetTitle,
+              matchType: opts.overrideSpreadsheetId ? "PINNED_DEFAULT" : discovery.matchType,
+              webViewLink: result.webViewLink,
+              rowCount,
+            },
+            { markSynced: true },
+          );
           if (!opts.silent) {
             toast.success(
-              `Master Allocation loaded: ${result.spreadsheetTitle} (${result.rowCount.toLocaleString()} rows)`,
+              `Master Allocation loaded: ${result.spreadsheetTitle} (${rowCount.toLocaleString()} rows)`,
             );
           }
           return;
@@ -186,14 +237,17 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
             const { buffer } = await fetchGoogleSheetCsv(info);
             const fallbackName =
               selectedMaster?.spreadsheetName || APPROVED_WORKSPACE_SHEETS.master.name;
-            await onLoadMaster(buffer, fallbackName);
-            persistSelectedMaster({
-              spreadsheetId: targetId,
-              spreadsheetName: fallbackName,
-              sheetTitle: "Data",
-              matchType: "PINNED_DEFAULT",
-            });
-            setLastMasterSync(new Date().toLocaleString());
+            const loaded = await onLoadMaster(buffer, fallbackName);
+            persistSelectedMaster(
+              {
+                spreadsheetId: targetId,
+                spreadsheetName: fallbackName,
+                sheetTitle: "Data",
+                matchType: "PINNED_DEFAULT",
+                rowCount: loaded?.rowCount,
+              },
+              { markSynced: true },
+            );
             if (!opts.silent) {
               toast.success(`Master Allocation loaded: ${fallbackName}`);
             }
@@ -213,18 +267,21 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
               preferredTab: "Data",
             },
           );
-          await onLoadMaster(result.buffer, result.spreadsheetTitle);
-          persistSelectedMaster({
-            spreadsheetId: result.spreadsheetId,
-            spreadsheetName: result.spreadsheetTitle,
-            sheetTitle: result.sheetTitle,
-            matchType: discovery.matchType,
-            webViewLink: result.webViewLink,
-            rowCount: result.rowCount,
-          });
-          setLastMasterSync(new Date().toLocaleString());
+          const loaded = await onLoadMaster(result.buffer, result.spreadsheetTitle);
+          const rowCount = loaded?.rowCount ?? result.rowCount;
+          persistSelectedMaster(
+            {
+              spreadsheetId: result.spreadsheetId,
+              spreadsheetName: result.spreadsheetTitle,
+              sheetTitle: result.sheetTitle,
+              matchType: discovery.matchType,
+              webViewLink: result.webViewLink,
+              rowCount,
+            },
+            { markSynced: true },
+          );
           toast.success(
-            `Master Allocation loaded: ${result.spreadsheetTitle} (${result.rowCount.toLocaleString()} rows)`,
+            `Master Allocation loaded: ${result.spreadsheetTitle} (${rowCount.toLocaleString()} rows)`,
           );
         }
       } catch (cause) {
@@ -232,10 +289,12 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
           cause instanceof Error ? cause.message : "Unable to load Master Allocation.";
         if (!opts.silent) {
           setError(message);
+          saveMasterSyncMeta({ lastError: message });
           toast.error(message);
         }
       } finally {
         setLoading(null);
+        setMasterSyncInFlight(false);
       }
     },
     [
@@ -378,33 +437,40 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
     sheetId: number;
     webViewLink?: string | undefined;
   }) => {
+    if (isMasterSyncInFlight()) return;
     setError(null);
     setLoading("custom");
+    setMasterSyncInFlight(true);
     try {
       const result = await readGoogleSheet(selection.spreadsheetId, {
         preferredTab: selection.tabTitle,
         gid: String(selection.sheetId),
       });
-      await onLoadMaster(result.buffer, result.spreadsheetTitle);
-      persistSelectedMaster({
-        spreadsheetId: result.spreadsheetId,
-        spreadsheetName: result.spreadsheetTitle,
-        sheetTitle: result.sheetTitle,
-        matchType: "PINNED_DEFAULT",
-        webViewLink: result.webViewLink || selection.webViewLink,
-        rowCount: result.rowCount,
-      });
-      setLastMasterSync(new Date().toLocaleString());
+      const loaded = await onLoadMaster(result.buffer, result.spreadsheetTitle);
+      const rowCount = loaded?.rowCount ?? result.rowCount;
+      persistSelectedMaster(
+        {
+          spreadsheetId: result.spreadsheetId,
+          spreadsheetName: result.spreadsheetTitle,
+          sheetTitle: result.sheetTitle,
+          matchType: "PINNED_DEFAULT",
+          webViewLink: result.webViewLink || selection.webViewLink,
+          rowCount,
+        },
+        { markSynced: true },
+      );
       toast.success(
-        `Selected & loaded "${result.spreadsheetTitle}" (${result.rowCount.toLocaleString()} rows).`,
+        `Selected & loaded "${result.spreadsheetTitle}" (${rowCount.toLocaleString()} rows).`,
       );
     } catch (cause) {
       const message =
         cause instanceof Error ? cause.message : "Unable to load selected Drive sheet.";
       setError(message);
+      saveMasterSyncMeta({ lastError: message });
       toast.error(message);
     } finally {
       setLoading(null);
+      setMasterSyncInFlight(false);
     }
   };
 
@@ -581,11 +647,13 @@ export function LiveGoogleSheetsSource({ onLoadMaster, records = [], totalRecord
                 overrideSpreadsheetId: selectedMaster?.spreadsheetId,
               })
             }
-            disabled={loading !== null}
+            disabled={loading !== null || globalMasterSyncing}
             className="flex h-9 w-full items-center justify-center gap-2 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-50"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading === "master" ? "animate-spin" : ""}`} />
-            {loading === "master"
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading === "master" || globalMasterSyncing ? "animate-spin" : ""}`}
+            />
+            {loading === "master" || globalMasterSyncing
               ? "Reading Master Sheet…"
               : `Load ${currentPeriod.monthShort} ${currentPeriod.year} Master Data`}
           </button>
