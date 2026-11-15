@@ -205,7 +205,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setUndoStack([]);
     setRedoStack([]);
     return { rowCount: parsed.length };
-  }, [user]);
+  }, [user, fetchMasterSheet]);
 
   const loadPaidFile = useCallback(
     async (buffer: ArrayBuffer, fileName: string, userName: string) => {
