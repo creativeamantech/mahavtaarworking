@@ -28,6 +28,9 @@ self.onmessage = (e: MessageEvent) => {
       case 'buildExecCityPivot':
         result = buildExecCityPivot(records, targets);
         break;
+      case 'buildMainPerformance':
+        result = buildMainPerformance(records, targets);
+        break;
       default:
         throw new Error(`Unknown worker message type: ${type}`);
     }
