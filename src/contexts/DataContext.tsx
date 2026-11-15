@@ -11,7 +11,6 @@ import {
 } from "react";
 import {
   parseMainFile,
-  mergeMainIntoRecords,
   parsePaidFile,
   mergePaidIntoRecords,
   parseAdditionalFile,
@@ -185,18 +184,28 @@ export function DataProvider({ children }: { children: ReactNode }) {
     loadData();
   }, [user]);
 
-  // Use the Google Sheet as the current in-memory portfolio source.
-  // Unlike loadMainFile, this deliberately does not merge or write rows to Dexie.
+  // Google Sheets is the authoritative master source. Dexie is refreshed only as a local operational cache.
   const loadMainSheetSource = useCallback(async (buffer: ArrayBuffer, sourceName: string) => {
     const parsed = parseMainFile(buffer);
     if (parsed.length === 0) {
       throw new Error("The connected Master Allocation sheet contains no recognizable loan IDs.");
     }
+    const cacheEntry = {
+      id: crypto.randomUUID(),
+      type: "MASTER_SHEET_CACHE",
+      fileName: sourceName,
+      recordCount: parsed.length,
+      uploadedBy: user?.name || "Google Sheets",
+      createdAt: new Date().toISOString(),
+    };
+    await db.loan_records.clear();
+    await atomicFileImport(parsed, cacheEntry as UploadSession);
+    setUploadHistory((prev) => [cacheEntry, ...prev.filter((entry) => entry.type !== "MASTER_SHEET_CACHE")]);
     setRecords(parsed);
     setUndoStack([]);
     setRedoStack([]);
     return { rowCount: parsed.length };
-  }, []);
+  }, [user]);
 
   const loadPaidFile = useCallback(
     async (buffer: ArrayBuffer, fileName: string, userName: string) => {
