@@ -4,7 +4,8 @@ import { useDataState, useDataDispatch } from '@/contexts/DataContext';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '../ThemeToggle';
-import { AutoSyncBar } from '../sync/AutoSyncBar';\nimport { AgentNotifications } from '../agent/AgentNotifications';
+import { AutoSyncBar } from '../sync/AutoSyncBar';
+import { AgentNotifications } from '../agent/AgentNotifications';
 import {
   DropdownMenu,
   DropdownMenuContent,

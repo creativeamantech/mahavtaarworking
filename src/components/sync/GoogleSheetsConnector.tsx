@@ -26,6 +26,9 @@ import {
 } from "@/lib/googleSheets";
 import { toast } from "sonner";
 import { AutoSyncBar } from "./AutoSyncBar";
+import { GoogleSignInButton } from "./GoogleSignInButton";
+import { GoogleDriveBrowserModal } from "./GoogleDriveBrowserModal";
+import { FolderOpen } from "lucide-react";
 
 interface GoogleSheetsConnectorProps {
   onImport: (
@@ -61,14 +64,16 @@ export function GoogleSheetsConnector({
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [savedSheets, setSavedSheets] = useState<SavedSheetPreset[]>([]);
   const [activeSyncingId, setActiveSyncingId] = useState<string | null>(null);
+  const [driveBrowserOpen, setDriveBrowserOpen] = useState(false);
 
   // Load saved presets on mount
   useEffect(() => {
     setSavedSheets(getSavedSheets());
   }, []);
 
-  const handleFetchPreview = async () => {
-    if (!urlInput.trim()) {
+  const handleFetchPreview = async (overrideUrl?: string) => {
+    const targetUrl = (overrideUrl ?? urlInput).trim();
+    if (!targetUrl) {
       toast.error("Please enter a Google Sheet URL or Sheet ID");
       return;
     }
@@ -78,7 +83,7 @@ export function GoogleSheetsConnector({
     setIsLoadingPreview(true);
 
     try {
-      const result = await previewGoogleSheet(urlInput.trim());
+      const result = await previewGoogleSheet(targetUrl);
       setPreview(result);
       if (!sheetNickname) {
         setSheetNickname(`Google Sheet (${result.sheetId.slice(0, 8)}...)`);
@@ -200,10 +205,16 @@ export function GoogleSheetsConnector({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground self-start sm:self-auto">
-          <span>Local-first Dexie</span>
-          <span aria-hidden="true">·</span>
-          <span>Zero Server Storage</span>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <GoogleSignInButton compact />
+          <button
+            type="button"
+            onClick={() => setDriveBrowserOpen(true)}
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 text-xs font-semibold text-foreground hover:bg-muted/50"
+          >
+            <FolderOpen className="h-3.5 w-3.5 text-primary" />
+            <span>Browse Drive</span>
+          </button>
         </div>
       </div>
 
@@ -223,14 +234,14 @@ export function GoogleSheetsConnector({
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleFetchPreview();
+                  if (e.key === "Enter") void handleFetchPreview();
                 }}
                 disabled={isLoadingPreview || isImporting}
                 className="w-full h-10 px-3 pr-24 text-xs font-mono bg-background border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground/60 transition-colors"
               />
               <button
                 type="button"
-                onClick={handleFetchPreview}
+                onClick={() => void handleFetchPreview()}
                 disabled={isLoadingPreview || isImporting || !urlInput.trim()}
                 className="absolute right-1 top-1 bottom-1 px-3 text-xs font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-1.5 transition-colors whitespace-nowrap"
               >
@@ -505,6 +516,20 @@ export function GoogleSheetsConnector({
           </div>
         )}
       </div>
+
+      <GoogleDriveBrowserModal
+        open={driveBrowserOpen}
+        onClose={() => setDriveBrowserOpen(false)}
+        onSelectSheet={(sel) => {
+          const url = `https://docs.google.com/spreadsheets/d/${sel.spreadsheetId}/edit#gid=${sel.sheetId}`;
+          setUrlInput(url);
+          if (!sheetNickname) {
+            setSheetNickname(`${sel.spreadsheetName} (${sel.tabTitle})`);
+          }
+          void handleFetchPreview(url);
+        }}
+        title="Browse Google Drive Spreadsheets"
+      />
     </div>
   );
 }

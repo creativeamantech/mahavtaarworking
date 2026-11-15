@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Database, Users, MessageSquare, CalendarClock, Target, 
   ExternalLink, Plus, RefreshCw, CheckCircle2, AlertTriangle, 
-  XCircle, Copy, Download, Link2, ShieldCheck, HardDrive, 
-  Clock, Info, ChevronRight, Check, Trash2, ArrowUpRight
+  XCircle, Copy, Download, Link2, ShieldCheck, 
+  Clock, Check, Trash2, FolderOpen
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
@@ -22,15 +22,18 @@ import {
   getCapacityMetrics, 
   downloadModuleTemplateCsv, 
   generateModuleTemplateCsv,
-  MAX_SHEET_BYTES
 } from '@/lib/multiSpreadsheetManager';
 import { 
-  getAutoSyncInterval, 
   setAutoSyncInterval, 
   getAutoSyncStatus, 
   subscribeAutoSync, 
   AutoSyncInterval 
 } from '@/lib/autoSyncEngine';
+import { useGoogleWorkspaceAuth } from '@/lib/googleWorkspaceAuth';
+import { createGoogleSpreadsheet } from '@/lib/googleWorkspaceApi';
+import { GoogleSignInButton } from '@/components/sync/GoogleSignInButton';
+import { GoogleDriveBrowserModal } from '@/components/sync/GoogleDriveBrowserModal';
+import { GoogleActionConfirmModal } from '@/components/sync/GoogleActionConfirmModal';
 
 const MODULE_ICONS: Record<string, React.ElementType> = {
   Users,
@@ -66,6 +69,12 @@ export function SpreadsheetManagementTab() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [activeModuleForCreate, setActiveModuleForCreate] = useState<ModuleId | null>(null);
   const [copiedHeaders, setCopiedHeaders] = useState(false);
+
+  // Google Drive OAuth, Browser & Direct Creation Confirm State
+  const { isConnected: isGoogleConnected, signIn: signInGoogle } = useGoogleWorkspaceAuth();
+  const [driveBrowserOpen, setDriveBrowserOpen] = useState(false);
+  const [createConfirmOpen, setCreateConfirmOpen] = useState(false);
+  const [isCreatingInDrive, setIsCreatingInDrive] = useState(false);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -109,11 +118,12 @@ export function SpreadsheetManagementTab() {
     setCreateModalOpen(true);
   };
 
-  const handleTestConnection = async () => {
+  const handleTestConnection = async (overrideUrl?: string) => {
     if (!activeModuleForModal && !activeModuleForCreate) return;
     const moduleId = (activeModuleForModal || activeModuleForCreate)!;
+    const urlToCheck = (overrideUrl ?? inputUrl).trim();
 
-    if (!inputUrl.trim()) {
+    if (!urlToCheck) {
       setValidationError('Please enter a valid Google Sheet URL or ID.');
       return;
     }
@@ -123,7 +133,7 @@ export function SpreadsheetManagementTab() {
     setValidationResult(null);
 
     try {
-      const result = await validateModuleSheet(moduleId, inputUrl.trim());
+      const result = await validateModuleSheet(moduleId, urlToCheck);
       setValidationResult(result);
       if (!result.isValid) {
         toast.warning(
@@ -138,6 +148,48 @@ export function SpreadsheetManagementTab() {
       toast.error(msg);
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const handleSelectFromDrive = (selection: {
+    spreadsheetId: string;
+    spreadsheetName: string;
+    tabTitle: string;
+    sheetId: number;
+  }) => {
+    const url = `https://docs.google.com/spreadsheets/d/${selection.spreadsheetId}/edit#gid=${selection.sheetId}`;
+    setInputUrl(url);
+    setValidationResult(null);
+    setValidationError(null);
+    void handleTestConnection(url);
+  };
+
+  const handleConfirmCreateInDrive = async () => {
+    if (!activeModuleForCreate) return;
+    const def = MODULE_DEFINITIONS[activeModuleForCreate];
+    setIsCreatingInDrive(true);
+    try {
+      if (!isGoogleConnected) {
+        await signInGoogle();
+      }
+      const allHeaders = [...def.requiredHeaders, ...def.optionalHeaders];
+      const sampleRows = def.sampleData.map((row) =>
+        allHeaders.map((h) => (row[h] !== undefined ? String(row[h]) : ''))
+      );
+      const created = await createGoogleSpreadsheet({
+        title: def.driveTemplateTitle,
+        sheetTitle: 'Data',
+        rows: [allHeaders, ...sampleRows],
+      });
+      setInputUrl(created.spreadsheetUrl);
+      setCreateConfirmOpen(false);
+      toast.success(`Created "${created.title}" in Google Drive!`);
+      await handleTestConnection(created.spreadsheetUrl);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Could not create Google Sheet: ${msg}`);
+    } finally {
+      setIsCreatingInDrive(false);
     }
   };
 
@@ -252,6 +304,7 @@ export function SpreadsheetManagementTab() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <GoogleSignInButton compact />
             <Button
               onClick={handleSyncAll}
               disabled={syncingAll || connectedCount === 0}
@@ -506,9 +559,21 @@ export function SpreadsheetManagementTab() {
 
             <div className="space-y-4 py-4">
               <div>
-                <label className="text-xs font-bold text-foreground uppercase tracking-wider block mb-1.5">
-                  Google Sheet URL or Sheet ID
-                </label>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wider">
+                    Google Sheet URL or Sheet ID
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDriveBrowserOpen(true)}
+                    className="h-7 text-[11px] font-semibold"
+                  >
+                    <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-primary" />
+                    Browse Google Drive
+                  </Button>
+                </div>
                 <input
                   type="text"
                   placeholder="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFM.../edit#gid=0"
@@ -521,7 +586,7 @@ export function SpreadsheetManagementTab() {
                   className="w-full px-3 py-2 text-xs font-mono bg-background border border-input rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <span className="text-[11px] text-muted-foreground mt-1.5 block">
-                  Ensure sharing is set to: <strong>"Anyone with the link can view/edit"</strong>.
+                  Pick from your signed-in Google Drive above, or paste a shared Google Sheet link.
                 </span>
               </div>
 
@@ -547,7 +612,7 @@ export function SpreadsheetManagementTab() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleTestConnection}
+                  onClick={() => void handleTestConnection()}
                   disabled={isTesting || !inputUrl.trim()}
                   className="w-full text-xs font-semibold"
                 >
@@ -624,15 +689,40 @@ export function SpreadsheetManagementTab() {
               </button>
             </div>
 
-            <div className="space-y-4 py-4">
-              {/* Step 1 */}
+            <div className="space-y-4 py-4 max-h-[65vh] overflow-y-auto pr-1">
+              {/* Direct API Creation Option */}
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="text-xs font-bold text-foreground block">
+                      Recommended: Create Directly via Google Drive API
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Creates &ldquo;{MODULE_DEFINITIONS[activeModuleForCreate].driveTemplateTitle}&rdquo; with formatted headers and starter rows in one click.
+                    </span>
+                  </div>
+                  {!isGoogleConnected && <GoogleSignInButton compact />}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => setCreateConfirmOpen(true)}
+                  disabled={isCreatingInDrive}
+                  className="text-xs font-semibold"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Create &amp; Pre-fill in Google Drive
+                </Button>
+              </div>
+
+              {/* Step 1 (Manual fallback) */}
               <div className="rounded-xl border border-border bg-muted/30 p-3.5 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="flex h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs font-bold items-center justify-center">1</span>
-                  <span className="text-xs font-bold text-foreground">Open a Blank Google Sheet</span>
+                  <span className="text-xs font-bold text-foreground">Or Open a Blank Google Sheet Manually</span>
                 </div>
                 <p className="text-xs text-muted-foreground pl-7">
-                  Click the button below to open Google's official new spreadsheet launcher in your Google Drive. Name it: <strong>"{MODULE_DEFINITIONS[activeModuleForCreate].driveTemplateTitle}"</strong>
+                  Click the button below to open Google's new spreadsheet launcher in your Google Drive. Name it: <strong>"{MODULE_DEFINITIONS[activeModuleForCreate].driveTemplateTitle}"</strong>
                 </p>
                 <div className="pl-7 pt-1">
                   <a
@@ -703,7 +793,7 @@ export function SpreadsheetManagementTab() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleTestConnection}
+                    onClick={() => void handleTestConnection()}
                     disabled={isTesting || !inputUrl.trim()}
                     className="w-full text-xs font-semibold"
                   >
@@ -742,6 +832,32 @@ export function SpreadsheetManagementTab() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Google Drive Spreadsheet & Tab Picker */}
+      <GoogleDriveBrowserModal
+        open={driveBrowserOpen}
+        onClose={() => setDriveBrowserOpen(false)}
+        onSelectSheet={handleSelectFromDrive}
+        title="Pick Spreadsheet from Google Drive"
+      />
+
+      {/* Explicit Confirmation Modal for Creating Spreadsheet in Google Drive */}
+      {activeModuleForCreate && (
+        <GoogleActionConfirmModal
+          open={createConfirmOpen}
+          title="Create Google Spreadsheet in Drive?"
+          description="This will create a new Google Spreadsheet in your Google Drive with the required module column headers and starter template rows."
+          details={[
+            `File Name: ${MODULE_DEFINITIONS[activeModuleForCreate].driveTemplateTitle}`,
+            'Worksheet Tab: Data',
+            `Required Columns: ${MODULE_DEFINITIONS[activeModuleForCreate].requiredHeaders.join(', ')}`,
+          ]}
+          confirmLabel="Create in Google Drive"
+          isSubmitting={isCreatingInDrive}
+          onConfirm={() => void handleConfirmCreateInDrive()}
+          onCancel={() => setCreateConfirmOpen(false)}
+        />
       )}
     </div>
   );

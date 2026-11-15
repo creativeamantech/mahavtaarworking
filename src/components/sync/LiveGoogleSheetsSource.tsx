@@ -1,57 +1,86 @@
-import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import * as XLSX from "xlsx";
-import { Database, FileSpreadsheet, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import {
+  Database,
+  FileSpreadsheet,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  FolderOpen,
+  Upload,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
-import { fetchMahavtaarWorkspaceSheet } from "@/lib/googleSheets.functions";
-import { getAuthSessionDiagnostics } from "@/lib/auth.functions";
+import { useGoogleWorkspaceAuth } from "@/lib/googleWorkspaceAuth";
+import {
+  APPROVED_WORKSPACE_SHEETS,
+  readGoogleSheet,
+  createGoogleSpreadsheet,
+} from "@/lib/googleWorkspaceApi";
+import type { LoanRecord } from "@/types/domain";
+import { GoogleSignInButton } from "./GoogleSignInButton";
+import { GoogleDriveBrowserModal } from "./GoogleDriveBrowserModal";
+import { GoogleActionConfirmModal } from "./GoogleActionConfirmModal";
 
-type SheetSource = "master" | "collections";
+type LoadingAction = "master" | "collections" | "custom" | "export" | null;
 
 interface Props {
   onLoadMaster: (buffer: ArrayBuffer, sourceName: string) => Promise<{ rowCount?: number } | void>;
+  records?: LoanRecord[] | undefined;
 }
 
-export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
-  const fetchSheet = useServerFn(fetchMahavtaarWorkspaceSheet);
-  const getSessionDiagnostics = useServerFn(getAuthSessionDiagnostics);
-  const [sessionStatus, setSessionStatus] = useState<string>("checking");
-
-  useEffect(() => {
-    let active = true;
-    void getSessionDiagnostics().then((result) => {
-      if (active) setSessionStatus(result.status === "authenticated" ? `Authenticated (${result.role})` : result.status);
-    }).catch(() => {
-      if (active) setSessionStatus("diagnostic_unavailable");
-    });
-    return () => { active = false; };
-  }, [getSessionDiagnostics]);
-  const [loading, setLoading] = useState<SheetSource | null>(null);
+export function LiveGoogleSheetsSource({ onLoadMaster, records = [] }: Props) {
+  const { googleUser, needsAuth, isConnected, signIn } = useGoogleWorkspaceAuth();
+  const [loading, setLoading] = useState<LoadingAction>(null);
   const [collectionCount, setCollectionCount] = useState<number | null>(null);
+  const [collectionUrl, setCollectionUrl] = useState<string | null>(null);
   const [lastMasterSync, setLastMasterSync] = useState<string | null>(null);
+  const [lastMasterTitle, setLastMasterTitle] = useState<string | null>(null);
+  const [lastExportUrl, setLastExportUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [driveBrowserOpen, setDriveBrowserOpen] = useState(false);
+  const [exportConfirmOpen, setExportConfirmOpen] = useState(false);
 
-  const loadSource = async (source: SheetSource) => {
-    setLoading(source);
-    setError(null);
+  const ensureSignedIn = async (): Promise<boolean> => {
+    if (isConnected) return true;
     try {
-      const result = await fetchSheet({ data: { source } });
+      await signIn();
+      toast.success("Connected to Google Drive & Sheets");
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Google Sign-In was cancelled or failed.";
+      setError(msg);
+      toast.error(msg);
+      return false;
+    }
+  };
+
+  const loadApprovedSource = async (source: "master" | "collections") => {
+    setError(null);
+    const ok = await ensureSignedIn();
+    if (!ok) return;
+
+    setLoading(source);
+    try {
+      const target = APPROVED_WORKSPACE_SHEETS[source];
+      const result = await readGoogleSheet(target.id, { preferredTab: target.preferredTab });
+
       if (source === "collections") {
         setCollectionCount(result.rowCount);
-        toast.success(`Daily Collection connected: ${result.rowCount.toLocaleString()} rows read.`);
+        setCollectionUrl(
+          result.webViewLink || `https://docs.google.com/spreadsheets/d/${target.id}/edit`,
+        );
+        toast.success(
+          `Daily Collection connected (${result.sheetTitle}): ${result.rowCount.toLocaleString()} rows read.`,
+        );
         return;
       }
 
-      const headers = result.values[0].map((value: unknown) => String(value ?? "").trim());
-      const rows = result.values.slice(1).map((values: unknown[]) =>
-        Object.fromEntries(headers.map((header: string, index: number) => [header, values[index] ?? ""])),
-      );
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), "Data");
-      const buffer = XLSX.write(workbook, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
-      await onLoadMaster(buffer, result.spreadsheetName);
+      await onLoadMaster(result.buffer, result.spreadsheetTitle);
       setLastMasterSync(new Date().toLocaleString());
-      toast.success(`Live Master Allocation loaded: ${result.rowCount.toLocaleString()} rows. No local merge performed.`);
+      setLastMasterTitle(`${result.spreadsheetTitle} · ${result.sheetTitle}`);
+      toast.success(
+        `Live Master Allocation loaded (${result.rowCount.toLocaleString()} rows). No local merge performed.`,
+      );
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Unable to read Google Sheet.";
       setError(message);
@@ -61,58 +90,221 @@ export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
     }
   };
 
+  const handleLoadFromDriveSelection = async (selection: {
+    spreadsheetId: string;
+    spreadsheetName: string;
+    tabTitle: string;
+    sheetId: number;
+    webViewLink?: string | undefined;
+  }) => {
+    setError(null);
+    setLoading("custom");
+    try {
+      const result = await readGoogleSheet(selection.spreadsheetId, {
+        preferredTab: selection.tabTitle,
+        gid: String(selection.sheetId),
+      });
+      const label = `${result.spreadsheetTitle} (${result.sheetTitle})`;
+      await onLoadMaster(result.buffer, label);
+      setLastMasterSync(new Date().toLocaleString());
+      setLastMasterTitle(label);
+      toast.success(`Loaded ${result.rowCount.toLocaleString()} rows from "${label}".`);
+    } catch (cause) {
+      const message =
+        cause instanceof Error ? cause.message : "Unable to load selected Drive sheet.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const exportTitle = `Mahavtaar Portfolio Snapshot - ${new Date().toISOString().slice(0, 10)}`;
+
+  const handleConfirmExportToDrive = async () => {
+    setError(null);
+    const ok = await ensureSignedIn();
+    if (!ok) {
+      setExportConfirmOpen(false);
+      return;
+    }
+
+    setLoading("export");
+    try {
+      const headers = [
+        "AGREEMENTID",
+        "CUSTOMER_NAME",
+        "CITY",
+        "STATE",
+        "BOM_BKT",
+        "EXECUTIVE_NAME",
+        "BOM_POS",
+        "PRINCIPAL_OUTSTANDING",
+        "PAID_STATUS",
+        "PROVISIONAL_DAC",
+        "FEEDBACK",
+        "UPDATED_AT",
+      ];
+      const rows: (string | number | boolean | null)[][] = records
+        .slice(0, 5000)
+        .map((r) => [
+          String(r.agreementid ?? ""),
+          String(r.customer_name ?? ""),
+          String(r.city ?? ""),
+          String(r.state ?? ""),
+          String(r.bom_bkt ?? ""),
+          String(r.executive_name ?? ""),
+          Number(r["bom_pos"] || 0),
+          Number(r.principal_outstanding || r["bom_pos"] || 0),
+          String(r["paid_status"] ?? ""),
+          Number(r.provisional_dac || 0),
+          String(r["feedback"] ?? ""),
+          String(r.updated_at ?? ""),
+        ]);
+
+      const created = await createGoogleSpreadsheet({
+        title: exportTitle,
+        sheetTitle: "Data",
+        rows: [headers, ...rows],
+      });
+
+      setLastExportUrl(created.spreadsheetUrl);
+      setExportConfirmOpen(false);
+      toast.success(
+        `Created Google Sheet "${created.title}" with ${rows.length.toLocaleString()} rows in Google Drive.`,
+      );
+    } catch (cause) {
+      const message =
+        cause instanceof Error ? cause.message : "Failed to create Google Sheet in Drive.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <section className="surface-card mb-6 rounded-xl border p-5 md:p-6">
-      <div className="mb-4 flex items-center gap-3 border-b border-border pb-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
-          <FileSpreadsheet className="h-5 w-5" />
+      <div className="mb-4 flex flex-col gap-3 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+            <FileSpreadsheet className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Google Workspace — Drive &amp; Live Sheets
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Read directly from your Google Drive spreadsheets or export snapshots via OAuth.
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">Google Workspace — Live Sheets</h3>
-          <p className="text-xs text-muted-foreground">Read directly from the linked Drive spreadsheets. No CSV sharing or local database merge.</p>
-        </div>
+
+        <GoogleSignInButton />
       </div>
 
-      <div className="mb-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-        App session: <span className="font-semibold text-foreground">{sessionStatus}</span>
-        <span className="mx-2">·</span>
-        Google connector: server-side credentials are checked when a sheet is requested
-      </div>
+      {needsAuth && (
+        <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-900 dark:text-amber-200">
+          Sign in with Google above to connect your Google Drive spreadsheets and read/write live
+          data.
+        </div>
+      )}
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="rounded-lg border border-border p-4">
           <div className="mb-1 flex items-center gap-2 text-sm font-semibold">
             <Database className="h-4 w-4 text-primary" /> Master Allocation
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Data tab · Live portfolio source</p>
+          <p className="mb-3 text-xs text-muted-foreground">
+            {lastMasterTitle || "Data tab · Live portfolio source"}
+          </p>
           <button
             type="button"
-            onClick={() => void loadSource("master")}
+            onClick={() => void loadApprovedSource("master")}
             disabled={loading !== null}
             className="flex h-9 w-full items-center justify-center gap-2 rounded-md bg-primary px-3 text-xs font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {loading === "master" ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <RefreshCw className={`h-3.5 w-3.5 ${loading === "master" ? "animate-spin" : ""}`} />
             {loading === "master" ? "Reading sheet…" : "Load Live Master Data"}
           </button>
-          {lastMasterSync && <p className="mt-2 text-[11px] text-muted-foreground">Loaded: {lastMasterSync}</p>}
+          {lastMasterSync && (
+            <p className="mt-2 text-[11px] text-muted-foreground">Loaded: {lastMasterSync}</p>
+          )}
         </div>
 
         <div className="rounded-lg border border-border p-4">
-          <div className="mb-1 flex items-center gap-2 text-sm font-semibold">
-            <FileSpreadsheet className="h-4 w-4 text-primary" /> Daily Collection
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <FileSpreadsheet className="h-4 w-4 text-primary" /> Daily Collection
+            </span>
+            {collectionUrl && (
+              <a
+                href={collectionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+              >
+                Open <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Collections tab · Operational records</p>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Collections tab · Operational records
+          </p>
           <button
             type="button"
-            onClick={() => void loadSource("collections")}
+            onClick={() => void loadApprovedSource("collections")}
             disabled={loading !== null}
-            className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-xs font-semibold text-foreground disabled:opacity-50"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-xs font-semibold text-foreground hover:bg-muted/40 disabled:opacity-50"
           >
-            {loading === "collections" ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading === "collections" ? "animate-spin" : ""}`}
+            />
             {loading === "collections" ? "Reading sheet…" : "Refresh Collections Connection"}
           </button>
-          {collectionCount !== null && <p className="mt-2 text-[11px] text-muted-foreground">{collectionCount.toLocaleString()} rows read from Drive.</p>}
+          {collectionCount !== null && (
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              {collectionCount.toLocaleString()} rows read from Google Drive.
+            </p>
+          )}
         </div>
+      </div>
+
+      {/* Drive Browser & Snapshot Export Actions */}
+      <div className="mt-3 flex flex-wrap items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => setDriveBrowserOpen(true)}
+          disabled={loading !== null}
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3.5 text-xs font-semibold text-foreground hover:bg-muted/50 disabled:opacity-50"
+        >
+          <FolderOpen className="h-3.5 w-3.5 text-primary" />
+          {loading === "custom" ? "Loading Drive Sheet…" : "Browse Any Sheet in Google Drive"}
+        </button>
+
+        {records.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setExportConfirmOpen(true)}
+            disabled={loading !== null}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-3.5 text-xs font-semibold text-primary hover:bg-primary/15 disabled:opacity-50"
+          >
+            <Upload className="h-3.5 w-3.5" />
+            Save Portfolio Snapshot ({Math.min(records.length, 5000).toLocaleString()} rows) to
+            Drive
+          </button>
+        )}
+
+        {lastExportUrl && (
+          <a
+            href={lastExportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:underline"
+          >
+            Open Exported Sheet <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        )}
       </div>
 
       {error && (
@@ -121,9 +313,35 @@ export function LiveGoogleSheetsSource({ onLoadMaster }: Props) {
           <span>{error}</span>
         </div>
       )}
+
       <p className="mt-4 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <CheckCircle2 className="h-3.5 w-3.5" /> Server-side connector credentials · read-only sheet access
+        <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+        {isConnected && googleUser
+          ? `Connected as ${googleUser.email || googleUser.displayName || "Google User"} · Direct Drive & Sheets OAuth`
+          : "Client-side Google OAuth · In-memory token session · Drive & Sheets APIs"}
       </p>
+
+      <GoogleDriveBrowserModal
+        open={driveBrowserOpen}
+        onClose={() => setDriveBrowserOpen(false)}
+        onSelectSheet={(sel) => void handleLoadFromDriveSelection(sel)}
+        title="Select Master Spreadsheet from Google Drive"
+      />
+
+      <GoogleActionConfirmModal
+        open={exportConfirmOpen}
+        title="Create New Spreadsheet in Google Drive?"
+        description="This will create a new Google Spreadsheet in your Google Drive and write the current portfolio records."
+        details={[
+          `Title: ${exportTitle}`,
+          "Worksheet tab: Data",
+          `Rows to write: ${Math.min(records.length, 5000).toLocaleString()} records`,
+        ]}
+        confirmLabel="Create in Google Drive"
+        isSubmitting={loading === "export"}
+        onConfirm={() => void handleConfirmExportToDrive()}
+        onCancel={() => setExportConfirmOpen(false)}
+      />
     </section>
   );
 }

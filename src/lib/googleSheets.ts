@@ -1,10 +1,11 @@
-// @ts-nocheck
 /**
  * Google Sheets Integration Helper for Mahavtaar Ledger
  * Supports direct Google Sheet URL / Sheet ID extraction, public/shared CSV fetching,
  * GID parsing, ArrayBuffer conversion, and preset storage.
  */
 import * as XLSX from "xlsx";
+import { getGoogleAccessToken } from "./googleWorkspaceAuth";
+import { readGoogleSheet } from "./googleWorkspaceApi";
 
 export interface GoogleSheetInfo {
   sheetId: string;
@@ -84,11 +85,35 @@ export function extractSheetInfo(input: string): GoogleSheetInfo | null {
 }
 
 /**
- * Fetches the CSV content from Google Sheets via Google Visualization API or Direct Export
+ * Fetches Google Sheet content via authenticated Google Sheets v4 OAuth API when signed in,
+ * with fallback to public CSV export endpoints for published/publicly shared sheets.
  */
 export async function fetchGoogleSheetCsv(
   info: GoogleSheetInfo,
 ): Promise<{ csvText: string; buffer: ArrayBuffer }> {
+  // Prefer authenticated Google Sheets API v4 when user has signed in with Google
+  if (!info.isPublishedWeb && typeof window !== "undefined") {
+    const token = await getGoogleAccessToken();
+    if (token) {
+      try {
+        const result = await readGoogleSheet(info.sheetId, { gid: info.gid });
+        const sheet = XLSX.utils.aoa_to_sheet(result.values);
+        const csvText = XLSX.utils.sheet_to_csv(sheet);
+        if (csvText.trim().length > 0) {
+          const buffer = new TextEncoder().encode(csvText).buffer;
+          return { csvText, buffer };
+        }
+      } catch (oauthErr) {
+        const msg = oauthErr instanceof Error ? oauthErr.message : "";
+        // Surface clear auth expiry/permission errors unless fallback succeeds
+        if (msg.startsWith("AUTH_EXPIRED")) {
+          throw oauthErr;
+        }
+        // Otherwise fall through to public URL check in case the sheet is public-shared
+      }
+    }
+  }
+
   const urlsToTry: string[] = [];
 
   if (info.isPublishedWeb) {
@@ -155,7 +180,7 @@ export async function fetchGoogleSheetCsv(
   if (!csvText) {
     if (lastError?.message === "PERMISSION_DENIED") {
       throw new Error(
-        'Google Sheet is private. Please open the Google Sheet, click "Share" (top-right), and set General Access to "Anyone with the link can view".',
+        'Google Sheet is private. Click "Sign in with Google" to access your private Drive sheets, or share the sheet as "Anyone with the link can view".',
       );
     }
     if (lastError?.message === "NOT_FOUND") {
@@ -163,7 +188,7 @@ export async function fetchGoogleSheetCsv(
     }
     throw new Error(
       lastError?.message ||
-        'Failed to fetch CSV from Google Sheets. Ensure the sheet is shared as "Anyone with the link can view".',
+        'Failed to fetch Google Sheet. Sign in with Google or ensure the sheet is shared as "Anyone with the link can view".',
     );
   }
 
@@ -191,7 +216,12 @@ export async function previewGoogleSheet(input: string): Promise<SheetPreviewRes
     throw new Error("The Google Sheet appears to be empty.");
   }
 
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[firstSheetName], {
+  const firstSheet = wb.Sheets[firstSheetName];
+  if (!firstSheet) {
+    throw new Error("The Google Sheet appears to be empty.");
+  }
+
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet, {
     defval: "",
   });
   if (rows.length === 0) {
