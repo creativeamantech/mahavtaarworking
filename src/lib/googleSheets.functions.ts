@@ -320,3 +320,104 @@ export const appendMahavtaarWorkspaceRows = createServerFn({ method: "POST" })
       writtenAt: new Date().toISOString(),
     };
   });
+
+/**
+ * Updates existing worksheet rows by Agreement ID. Ambiguous or missing IDs
+ * are rejected before any write, so a retry cannot append duplicate loans.
+ */
+export const updateMahavtaarWorkspaceRows = createServerFn({ method: "POST" })
+  .inputValidator(
+    z.object({
+      source: z.enum(["master", "collections"]),
+      spreadsheetId: z.string().trim().min(10).max(200),
+      tabTitle: z.string().trim().min(1).max(100),
+      updates: z.array(z.object({
+        agreementId: z.string().trim().min(1).max(200),
+        values: z.record(z.string().max(100), z.union([z.string(), z.number(), z.boolean(), z.null()])),
+      }).refine((item) => Object.keys(item.values).length > 0, "At least one field is required.")).min(1).max(500),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { requireSession } = await import("./auth.server");
+    await requireSession(data.source === "master" ? "Admin" : undefined);
+
+    const meta = await resolveTabViaConnector(data.spreadsheetId, data.tabTitle);
+    if (meta.sheetTitle.toLowerCase() !== data.tabTitle.toLowerCase()) {
+      throw new Error("The requested worksheet was not found. No rows were updated.");
+    }
+    const escapedTab = "'" + meta.sheetTitle.replace(/'/g, "''") + "'";
+    const readRange = escapedTab + "!A1:GU";
+    const sheet = await gatewayRequest<{ values?: Array<Array<string | number | boolean | null>> }>(
+      SHEETS_GATEWAY,
+      "/spreadsheets/" + encodeURIComponent(data.spreadsheetId) + "/values/" + encodeURIComponent(readRange),
+      "GOOGLE_SHEETS_API_KEY",
+    );
+    const rows = Array.isArray(sheet.values) ? sheet.values : [];
+    if (rows.length < 2) throw new Error("The worksheet has no data rows.");
+
+    const normalize = (value: unknown) => String(value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const headers = rows[0].map((value) => String(value ?? "").trim());
+    const agreementAliases = ["agreementid", "agreementno", "agreementnumber", "loanid", "accountno"];
+    const agreementColumn = headers.findIndex((header) => agreementAliases.includes(normalize(header)));
+    if (agreementColumn < 0) throw new Error("Agreement ID column was not found. No rows were updated.");
+
+    const rowIndexByAgreement = new Map<string, number[]>();
+    for (let index = 1; index < rows.length; index++) {
+      const id = String(rows[index]?.[agreementColumn] ?? "").trim();
+      if (!id) continue;
+      const matches = rowIndexByAgreement.get(id) ?? [];
+      matches.push(index + 1);
+      rowIndexByAgreement.set(id, matches);
+    }
+
+    const columnIndexByName = new Map<string, number>();
+    headers.forEach((header, index) => {
+      const key = normalize(header);
+      if (key && !columnIndexByName.has(key)) columnIndexByName.set(key, index);
+    });
+    const columnLetter = (zeroBased: number) => {
+      let value = zeroBased + 1;
+      let result = "";
+      while (value > 0) {
+        const remainder = (value - 1) % 26;
+        result = String.fromCharCode(65 + remainder) + result;
+        value = Math.floor((value - 1) / 26);
+      }
+      return result;
+    };
+
+    const dataValues: Array<{ range: string; values: Array<Array<string | number | boolean | null>> }> = [];
+    const missing: string[] = [];
+    const ambiguous: string[] = [];
+    for (const item of data.updates) {
+      const rowMatches = rowIndexByAgreement.get(item.agreementId) ?? [];
+      if (rowMatches.length === 0) { missing.push(item.agreementId); continue; }
+      if (rowMatches.length > 1) { ambiguous.push(item.agreementId); continue; }
+      for (const [field, value] of Object.entries(item.values)) {
+        if (field.endsWith("_source")) continue;
+        const column = columnIndexByName.get(normalize(field));
+        if (column === undefined) throw new Error("Column not found for field: " + field + ". No rows were updated.");
+        dataValues.push({
+          range: escapedTab + "!" + columnLetter(column) + rowMatches[0],
+          values: [[value]],
+        });
+      }
+    }
+    if (missing.length || ambiguous.length) {
+      throw new Error(
+        (missing.length ? "Agreement IDs not found: " + missing.slice(0, 10).join(", ") + ". " : "") +
+        (ambiguous.length ? "Duplicate Agreement IDs; update refused: " + ambiguous.slice(0, 10).join(", ") + "." : "") +
+        " No rows were updated.",
+      );
+    }
+    if (dataValues.length === 0) throw new Error("No writable fields were supplied.");
+
+    const result = await gatewayWriteRequest<{ totalUpdatedCells?: number; totalUpdatedRows?: number }>(
+      SHEETS_GATEWAY,
+      "/spreadsheets/" + encodeURIComponent(data.spreadsheetId) + "/values:batchUpdate",
+      "GOOGLE_SHEETS_API_KEY",
+      "POST",
+      { valueInputOption: "RAW", data: dataValues },
+    );
+    return { success: true, updatedCells: result.totalUpdatedCells ?? 0, updatedRows: result.totalUpdatedRows ?? 0 };
+  });
