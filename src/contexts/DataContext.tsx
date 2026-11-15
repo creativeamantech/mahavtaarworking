@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useServerFn } from "@tanstack/react-start";
 import {
   createContext,
   useContext,
@@ -10,7 +11,6 @@ import {
 } from "react";
 import {
   parseMainFile,
-  mergeMainIntoRecords,
   parsePaidFile,
   mergePaidIntoRecords,
   parseAdditionalFile,
@@ -26,6 +26,8 @@ import {
   atomicBulkUpdateLoanRecords,
 } from "../lib/repositories/loanRepository";
 import { setTargetRecord, deleteTargetRecord } from "../lib/repositories/targetRepository";
+import { fetchMahavtaarWorkspaceSheet } from "../lib/googleSheets.functions";
+import { sheetValuesToXlsxBuffer } from "../lib/masterSyncStore";
 
 interface DataStateContextType {
   isLoading: boolean;
@@ -41,11 +43,6 @@ interface DataStateContextType {
 }
 
 interface DataDispatchContextType {
-  loadMainFile: (
-    buffer: ArrayBuffer,
-    fileName: string,
-    userName: string,
-  ) => Promise<{ rowCount: number }>;
   loadMainSheetSource: (buffer: ArrayBuffer, sourceName: string) => Promise<{ rowCount: number }>;
   loadPaidFile: (
     buffer: ArrayBuffer,
@@ -85,6 +82,7 @@ const DataDispatchContext = createContext<DataDispatchContextType | null>(null);
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const fetchMasterSheet = useServerFn(fetchMahavtaarWorkspaceSheet);
   const [records, setRecords] = useState<LoanRecord[]>([]);
 
   const [schema, setSchema] = useState<string[]>([]);
@@ -114,7 +112,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   }, [records]);
 
-  // Load from Dexie on mount
+  // Load auxiliary local state and hydrate master data from its authoritative source
   useEffect(() => {
     async function loadData() {
       // 1. Migrate legacy localStorage targets if present
@@ -151,11 +149,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
         );
         setTargets(targetsMap);
 
-        // 3. Load authorized records (Enforcing Executive Scope at Repository boundary)
-        const { fetchAuthorizedLoanRecords } = await import("../lib/repositories/loanRepository");
-        const dbRecords = await fetchAuthorizedLoanRecords(user);
-        setRecords(dbRecords);
-
+        // The connected current-month Google Sheet is authoritative for Admin master data.
+        // Dexie is retained only as a compatibility cache for non-admin/offline workflows.
+        if (String(user?.role || "").toLowerCase() === "admin") {
+          try {
+            const source = await fetchMasterSheet({ data: { source: "master" } });
+            const buffer = sheetValuesToXlsxBuffer(source.values, source.sheetTitle);
+            const sheetRecords = parseMainFile(buffer);
+            if (sheetRecords.length === 0) throw new Error("Connected Master Allocation has no recognizable records.");
+            setRecords(sheetRecords);
+            await db.loan_records.clear();
+            await db.loan_records.bulkPut(sheetRecords);
+          } catch (sheetError) {
+            console.error("Live Master Sheet load failed:", sheetError);
+            setRecords([]);
+          }
+        } else if (user) {
+          const { fetchAuthorizedLoanRecords } = await import("../lib/repositories/loanRepository");
+          const dbRecords = await fetchAuthorizedLoanRecords(user);
+          setRecords(dbRecords);
+        }
         // 4. Load history and audit logs
         const dbUploads = await db.upload_sessions.orderBy("createdAt").reverse().toArray();
         setUploadHistory(dbUploads);
@@ -169,47 +182,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-  }, [user]);
+  }, [user, fetchMasterSheet]);
 
-  const loadMainFile = useCallback(
-    async (buffer: ArrayBuffer, fileName: string, userName: string) => {
-      const parsed = parseMainFile(buffer);
-      const allDbRecords = await db.loan_records.toArray();
-      const { mergedRows, newCount, updatedCount } = mergeMainIntoRecords(allDbRecords, parsed);
-
-      const entry = {
-        id: crypto.randomUUID(),
-        type: "MAIN_DATA",
-        fileName,
-        recordCount: parsed.length,
-        uploadedBy: userName,
-        createdAt: new Date().toISOString(),
-      };
-      setUploadHistory((prev) => [entry, ...prev]);
-
-      await atomicFileImport(mergedRows, entry as UploadSession);
-
-      const { fetchAuthorizedLoanRecords } = await import("../lib/repositories/loanRepository");
-      const dbRecords = await fetchAuthorizedLoanRecords(user);
-      setRecords(dbRecords);
-
-      return { rowCount: parsed.length, newCount, updatedCount, totalRecords: dbRecords.length };
-    },
-    [user],
-  );
-
-  // Use the Google Sheet as the current in-memory portfolio source.
-  // Unlike loadMainFile, this deliberately does not merge or write rows to Dexie.
+  // Google Sheets is the authoritative master source. Dexie is refreshed only as a local operational cache.
   const loadMainSheetSource = useCallback(async (buffer: ArrayBuffer, sourceName: string) => {
     const parsed = parseMainFile(buffer);
     if (parsed.length === 0) {
       throw new Error("The connected Master Allocation sheet contains no recognizable loan IDs.");
     }
+    const cacheEntry = {
+      id: crypto.randomUUID(),
+      type: "MASTER_SHEET_CACHE",
+      fileName: sourceName,
+      recordCount: parsed.length,
+      uploadedBy: user?.name || "Google Sheets",
+      createdAt: new Date().toISOString(),
+    };
+    await db.loan_records.clear();
+    await atomicFileImport(parsed, cacheEntry as UploadSession);
+    setUploadHistory((prev) => [cacheEntry, ...prev.filter((entry) => entry.type !== "MASTER_SHEET_CACHE")]);
     setRecords(parsed);
     setUndoStack([]);
     setRedoStack([]);
     return { rowCount: parsed.length };
-  }, []);
+  }, [user]);
 
   const loadPaidFile = useCallback(
     async (buffer: ArrayBuffer, fileName: string, userName: string) => {
@@ -504,7 +500,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         () => ({
           undo,
           redo,
-          loadMainFile,
           loadMainSheetSource,
           loadPaidFile,
           loadAdditionalFile,
@@ -517,7 +512,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         [
           undo,
           redo,
-          loadMainFile,
           loadMainSheetSource,
           loadPaidFile,
           loadAdditionalFile,

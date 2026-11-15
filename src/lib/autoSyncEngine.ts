@@ -6,7 +6,7 @@
 
 import { getSavedSheets, previewGoogleSheet, saveSheetPreset, SavedSheetPreset } from './googleSheets';
 import { db } from './db';
-import { parseMainFile, mergeMainIntoRecords, parsePaidFile, mergePaidIntoRecords, parseAdditionalFile, mergeAdditionalIntoRecords, parseCorrectedFile, mergeCorrectedIntoRecords } from './fileParser';
+import { parsePaidFile, mergePaidIntoRecords, parseAdditionalFile, mergeAdditionalIntoRecords, parseCorrectedFile, mergeCorrectedIntoRecords } from './fileParser';
 import { atomicFileImport } from './repositories/loanRepository';
 import { getLinkedModuleSheets, syncAllLinkedModuleSheets } from './multiSpreadsheetManager';
 
@@ -158,28 +158,15 @@ export async function executeAutoSync(userName = 'Auto-Sync Scheduler'): Promise
       }
     }
     for (const preset of sheets) {
+      if (preset.type === 'MAIN_DATA') {
+        // Master Allocation is loaded only by the live current-month Google Sheets source.
+        // Ignore legacy MAIN_DATA presets to prevent a second master-data path.
+        continue;
+      }
       try {
         const preview = await previewGoogleSheet(preset.url);
 
-        if (preset.type === 'MAIN_DATA') {
-          const parsed = parseMainFile(preview.buffer);
-          const allDbRecords = await db.loan_records.toArray();
-          const { mergedRows, newCount, updatedCount } = mergeMainIntoRecords(allDbRecords, parsed);
-
-          const entry = {
-            id: crypto.randomUUID(),
-            type: 'MAIN_DATA' as const,
-            fileName: preset.name,
-            recordCount: parsed.length,
-            uploadedBy: userName,
-            createdAt: new Date().toISOString(),
-          };
-
-          await atomicFileImport(mergedRows, entry);
-          totalRows += parsed.length;
-          newRows += newCount;
-          updatedRows += updatedCount;
-        } else if (preset.type === 'PAID_FILE') {
+        if (preset.type === 'PAID_FILE') {
           const paidRows = parsePaidFile(preview.buffer);
           const allDbRecords = await db.loan_records.toArray();
           const mergedData = mergePaidIntoRecords(allDbRecords, paidRows);
