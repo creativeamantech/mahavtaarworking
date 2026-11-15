@@ -29,6 +29,8 @@ import { AutoSyncBar } from "./AutoSyncBar";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { GoogleDriveBrowserModal } from "./GoogleDriveBrowserModal";
 import { FolderOpen } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { getWorkspaceConnectorStatus } from "@/lib/googleSheets.functions";
 
 interface GoogleSheetsConnectorProps {
   onImport: (
@@ -65,11 +67,24 @@ export function GoogleSheetsConnector({
   const [savedSheets, setSavedSheets] = useState<SavedSheetPreset[]>([]);
   const [activeSyncingId, setActiveSyncingId] = useState<string | null>(null);
   const [driveBrowserOpen, setDriveBrowserOpen] = useState(false);
+  const checkConnectorStatus = useServerFn(getWorkspaceConnectorStatus);
+  const [lovableConfigured, setLovableConfigured] = useState<boolean | null>(null);
 
-  // Load saved presets on mount
+  // Load saved presets and check Lovable connector status on mount
   useEffect(() => {
     setSavedSheets(getSavedSheets());
-  }, []);
+    let active = true;
+    void checkConnectorStatus()
+      .then((res) => {
+        if (active) setLovableConfigured(res.lovableConfigured);
+      })
+      .catch(() => {
+        if (active) setLovableConfigured(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [checkConnectorStatus]);
 
   const handleFetchPreview = async (overrideUrl?: string) => {
     const targetUrl = (overrideUrl ?? urlInput).trim();
@@ -206,7 +221,7 @@ export function GoogleSheetsConnector({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          <GoogleSignInButton compact />
+          {lovableConfigured === false && <GoogleSignInButton compact />}
           <button
             type="button"
             onClick={() => setDriveBrowserOpen(true)}

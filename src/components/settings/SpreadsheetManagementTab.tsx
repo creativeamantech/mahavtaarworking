@@ -31,6 +31,8 @@ import {
 } from '@/lib/autoSyncEngine';
 import { useGoogleWorkspaceAuth } from '@/lib/googleWorkspaceAuth';
 import { createGoogleSpreadsheet } from '@/lib/googleWorkspaceApi';
+import { getWorkspaceConnectorStatus } from '@/lib/googleSheets.functions';
+import { useServerFn } from '@tanstack/react-start';
 import { GoogleSignInButton } from '@/components/sync/GoogleSignInButton';
 import { GoogleDriveBrowserModal } from '@/components/sync/GoogleDriveBrowserModal';
 import { GoogleActionConfirmModal } from '@/components/sync/GoogleActionConfirmModal';
@@ -71,10 +73,26 @@ export function SpreadsheetManagementTab() {
   const [copiedHeaders, setCopiedHeaders] = useState(false);
 
   // Google Drive OAuth, Browser & Direct Creation Confirm State
+  const checkConnectorStatus = useServerFn(getWorkspaceConnectorStatus);
+  const [lovableConfigured, setLovableConfigured] = useState<boolean | null>(null);
   const { isConnected: isGoogleConnected, signIn: signInGoogle } = useGoogleWorkspaceAuth();
   const [driveBrowserOpen, setDriveBrowserOpen] = useState(false);
   const [createConfirmOpen, setCreateConfirmOpen] = useState(false);
   const [isCreatingInDrive, setIsCreatingInDrive] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void checkConnectorStatus()
+      .then((res) => {
+        if (active) setLovableConfigured(res.lovableConfigured);
+      })
+      .catch(() => {
+        if (active) setLovableConfigured(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [checkConnectorStatus]);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -304,7 +322,14 @@ export function SpreadsheetManagementTab() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <GoogleSignInButton compact />
+            {lovableConfigured === true ? (
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Lovable Connectors Active
+              </span>
+            ) : lovableConfigured === false ? (
+              <GoogleSignInButton compact />
+            ) : null}
             <Button
               onClick={handleSyncAll}
               disabled={syncingAll || connectedCount === 0}

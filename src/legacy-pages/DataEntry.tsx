@@ -439,7 +439,11 @@ export default function DataEntry() {
 
       {/* Primary Ingestion View */}
       {activeInputMode === "sheets" ? (
-        <LiveGoogleSheetsSource onLoadMaster={loadMainSheetSource} records={filteredRecords} />
+        <LiveGoogleSheetsSource
+          onLoadMaster={loadMainSheetSource}
+          records={filteredRecords}
+          totalRecordCount={records.length}
+        />
       ) : (
         <UploadStepper
           steps={[

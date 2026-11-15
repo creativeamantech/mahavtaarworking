@@ -1,18 +1,26 @@
 import * as XLSX from "xlsx";
 import { clearGoogleAccessToken, getGoogleAccessToken } from "./googleWorkspaceAuth";
+import {
+  DEFAULT_PINNED_COLLECTIONS,
+  DEFAULT_PINNED_MASTER,
+  selectCurrentMonthMasterAllocation,
+  type DriveSpreadsheetCandidate,
+  type MasterMatchType,
+  type MasterPeriodTarget,
+} from "./masterAllocationMatcher";
 
 const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3";
 const SHEETS_API_BASE = "https://sheets.googleapis.com/v4";
 
 export const APPROVED_WORKSPACE_SHEETS = {
   master: {
-    id: "1w4ROwnbOmDlzCOfLAuWIQRpKQR3sa3f8GNDGFqb-P_Q",
-    name: "Mahavtaar Master Allocation November 2026",
+    id: DEFAULT_PINNED_MASTER.id,
+    name: DEFAULT_PINNED_MASTER.name,
     preferredTab: "Data",
   },
   collections: {
-    id: "1AXLakW3subO9H-O9iWIpXJyjT4JLXRTG5uiL3dWsY5g",
-    name: "Mahavtaar Daily Collection",
+    id: DEFAULT_PINNED_COLLECTIONS.id,
+    name: DEFAULT_PINNED_COLLECTIONS.name,
     preferredTab: "Collections",
   },
 } as const;
@@ -368,4 +376,41 @@ export async function trashDriveFile(fileId: string): Promise<void> {
       body: JSON.stringify({ trashed: true }),
     },
   );
+}
+
+/**
+ * Searches Google Drive for the current month and current year Master Allocation spreadsheet.
+ */
+export async function discoverCurrentMonthMasterCandidates(
+  referenceDate: Date = new Date(),
+): Promise<{
+  selected: DriveSpreadsheetCandidate;
+  matchType: MasterMatchType;
+  period: MasterPeriodTarget;
+  candidates: DriveSpreadsheetCandidate[];
+}> {
+  const files = await listDriveSpreadsheets("", 50);
+  return selectCurrentMonthMasterAllocation(files, referenceDate);
+}
+
+/**
+ * Discovers the current month/year Master Allocation via Google Drive API and reads it via Sheets v4.
+ */
+export async function readCurrentMonthMasterAllocation(
+  options: { overrideSpreadsheetId?: string | undefined; referenceDate?: Date | undefined } = {},
+): Promise<{
+  readResult: SheetReadResult;
+  matchType: MasterMatchType;
+  period: MasterPeriodTarget;
+  candidates: DriveSpreadsheetCandidate[];
+}> {
+  const discovery = await discoverCurrentMonthMasterCandidates(options.referenceDate);
+  const targetId = options.overrideSpreadsheetId || discovery.selected.id;
+  const readResult = await readGoogleSheet(targetId, { preferredTab: "Data" });
+  return {
+    readResult,
+    matchType: options.overrideSpreadsheetId ? "PINNED_DEFAULT" : discovery.matchType,
+    period: discovery.period,
+    candidates: discovery.candidates,
+  };
 }
