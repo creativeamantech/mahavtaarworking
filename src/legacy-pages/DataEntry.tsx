@@ -198,7 +198,6 @@ export default function DataEntry() {
     XLSX.writeFile(wb, `DataExport_${new Date().toISOString().split("T")[0]}.xlsx`);
   }, [filteredRecords]);
 
-  const lastMain = uploadHistory.find((u) => u.type === "MAIN_DATA");
   const lastPaid = uploadHistory.find((u) => u.type === "PAID_FILE");
   const lastAdditional = uploadHistory.find((u) => u.type === "ADDITIONAL_COLLECTION_FILE");
   const lastCorrected = uploadHistory.find((u) => u.type === "CORRECTED_DAC_FILE");
