@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useMemo } from "react";
 import { AppLayout } from "../components/layout/AppLayout";
+import { SectionHeader } from "../components/ui/SectionHeader";
 import { BucketFilter } from "../components/BucketFilter";
 import { useDataState, useDataDispatch } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -473,37 +474,25 @@ export default function Assignment() {
   return (
     <AppLayout>
       <div className="mb-4"><BucketFilter /></div>
-      {/* Header & Controls */}
-      <div className="mb-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold uppercase tracking-wider text-foreground">
-              Resource Allocation
-            </h1>
-            <span className="bg-primary/10 text-primary text-xs font-bold px-2.5 py-0.5 rounded-full">
-              Engine v2.0
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Multi-logic portfolio distribution, POS load-balancing, and pending
-            backlog resolution.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
-          {/* Allocate All Direct Button */}
-          <button
-            onClick={handleAssignAllUnallocated}
-            disabled={totalUnallocatedCount === 0}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${
-              totalUnallocatedCount > 0
-                ? "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/20 shadow-md animate-pulse"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
-            }`}
-          >
-            <Sparkles className="h-4 w-4" /> Allocate All (
-            {totalUnallocatedCount})
-          </button>
+      <SectionHeader
+        title="Resource Allocation"
+        subtitle="Multi-logic portfolio distribution, POS load-balancing, and pending backlog resolution."
+        icon={Scale}
+        badge={`${totalPortfolioCount.toLocaleString()} cases`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Allocate All Direct Button */}
+            <button
+              onClick={handleAssignAllUnallocated}
+              disabled={totalUnallocatedCount === 0}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors shadow-xs ${
+                totalUnallocatedCount > 0
+                  ? "bg-amber-600 hover:bg-amber-500 text-white"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Allocate All ({totalUnallocatedCount})
+            </button>
 
           {/* Reports Sidebar */}
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -635,7 +624,7 @@ export default function Assignment() {
                           {dailyReport.length === 0 ? (
                             <tr>
                               <td
-                                colSpan={4}
+                                colSpan={5}
                                 className="px-6 py-12 text-center text-muted-foreground"
                               >
                                 No assignments recorded on this date.
@@ -703,24 +692,25 @@ export default function Assignment() {
             <Download className="h-4 w-4" /> Export
           </button>
         </div>
-      </div>
+        }
+      />
 
       
-      {/* TOP PRIMARY VIEW SWITCHER TABS - Prominently Displayed */}
-      <div className="bg-card border-2 border-primary/20 rounded-2xl p-2 mb-6 shadow-md flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 bg-muted/70 p-1.5 rounded-xl border border-border flex-1">
+      {/* TOP PRIMARY VIEW SWITCHER TABS */}
+      <div className="mv-filter-bar p-1.5 mb-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border border-border/70 flex-1">
           <button
             type="button"
             id="tab-matrix-view"
             onClick={() => setActiveTab('matrix')}
-            className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg text-xs md:text-sm font-bold transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-xs md:text-sm font-semibold transition-colors cursor-pointer ${
               activeTab === 'matrix'
-                ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 font-extrabold'
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/90'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
             }`}
           >
             <Building2 className="h-4 w-4 shrink-0" />
-            <span className="truncate">City & Bucket Portfolio Matrix</span>
+            <span className="truncate">City &amp; Bucket Portfolio Matrix</span>
           </button>
 
           <button
@@ -731,14 +721,14 @@ export default function Assignment() {
               setCaseTableBucketFilter('all');
               setActiveTab('cases');
             }}
-            className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg text-xs md:text-sm font-bold transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-xs md:text-sm font-semibold transition-colors cursor-pointer ${
               activeTab === 'cases'
-                ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30 font-extrabold'
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/90'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
             }`}
           >
             <FileText className="h-4 w-4 shrink-0" />
-            <span className="truncate">Case Information & Specific Assignment</span>
+            <span className="truncate">Case Information &amp; Specific Assignment</span>
           </button>
         </div>
       </div>
@@ -763,18 +753,18 @@ export default function Assignment() {
 
       {/* Prominent Global Unallocated Summary Banner */}
       {totalUnallocatedCount > 0 ? (
-        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-primary/10 border border-amber-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+        <div className="mb-5 p-4 rounded-xl bg-card border border-amber-500/35 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-3.5">
-            <div className="h-11 w-11 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <Scale className="h-5 w-5 animate-pulse" />
+            <div className="h-10 w-10 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Scale className="h-5 w-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-foreground">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-sm text-foreground font-tabular">
                   {totalUnallocatedCount} Unallocated Cases Awaiting Assignment
                 </span>
-                <span className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 text-[11px] font-bold px-2 py-0.5 rounded-full">
-                  Pending POS: {fmtCur(totalUnallocatedPOS)}
+                <span className="text-xs font-semibold font-tabular text-amber-700 dark:text-amber-300">
+                  · Pending POS: {fmtCur(totalUnallocatedPOS)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -787,14 +777,14 @@ export default function Assignment() {
 
           <button
             onClick={handleAssignAllUnallocated}
-            className="w-full md:w-auto bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl shadow-md shrink-0 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"
+            className="w-full md:w-auto bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs px-4 py-2 rounded-lg shadow-xs shrink-0 flex items-center justify-center gap-2 transition-colors"
           >
             <Sparkles className="h-4 w-4" />
             Allocate All ({totalUnallocatedCount}) Cases
           </button>
         </div>
       ) : (
-        <div className="mb-6 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3 text-xs text-emerald-700 dark:text-emerald-300">
+        <div className="mb-5 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between gap-3 text-xs text-emerald-700 dark:text-emerald-300">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             <span className="font-semibold">
@@ -802,8 +792,8 @@ export default function Assignment() {
               to field executives.
             </span>
           </div>
-          <span className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold text-[11px]">
-            0 Pending Cases
+          <span className="font-bold text-xs font-tabular">
+            0 pending cases
           </span>
         </div>
       )}
@@ -814,63 +804,60 @@ export default function Assignment() {
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xs">
+        <div className="metric-kpi-card p-4">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             Total Portfolio
           </p>
-          <h3 className="text-xl font-bold text-foreground mt-0.5">
+          <h3 className="text-xl font-bold font-mono font-tabular text-foreground mt-0.5">
             {totalPortfolioCount} Cases
           </h3>
-          <p className="text-xs font-medium text-muted-foreground mt-0.5">
+          <p className="text-xs font-mono font-tabular font-medium text-muted-foreground mt-0.5">
             {fmtCur(totalPortfolioPOS)}
           </p>
         </div>
 
-        <div className="bg-card border border-amber-500/30 rounded-xl p-4 shadow-xs flex flex-col justify-between">
+        <div className="metric-kpi-card border-amber-500/35 p-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                Total Unallocated
-              </p>
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping"></span>
-            </div>
-            <h3 className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              Total Unallocated
+            </p>
+            <h3 className="text-xl font-bold font-mono font-tabular text-amber-600 dark:text-amber-400 mt-0.5">
               {totalUnallocatedCount} Cases
             </h3>
-            <p className="text-xs font-medium text-muted-foreground mt-0.5">
+            <p className="text-xs font-mono font-tabular font-medium text-muted-foreground mt-0.5">
               {fmtCur(totalUnallocatedPOS)}
             </p>
           </div>
           {totalUnallocatedCount > 0 && (
             <button
               onClick={handleAssignAllUnallocated}
-              className="mt-3 w-full py-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 rounded-md transition-colors flex items-center justify-center gap-1"
+              className="mt-3 w-full py-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 rounded-md transition-colors flex items-center justify-center gap-1"
             >
               <Sparkles className="h-3 w-3" /> Allocate All
             </button>
           )}
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xs">
+        <div className="metric-kpi-card p-4">
           <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
             Allocated Portfolio
           </p>
-          <h3 className="text-xl font-bold text-primary mt-0.5">
+          <h3 className="text-xl font-bold font-mono font-tabular text-primary mt-0.5">
             {totalAllocatedCount} Cases
           </h3>
-          <p className="text-xs font-medium text-muted-foreground mt-0.5">
+          <p className="text-xs font-mono font-tabular font-medium text-muted-foreground mt-0.5">
             {fmtCur(totalAllocatedPOS)}
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 shadow-xs">
+        <div className="metric-kpi-card p-4">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             Active Cities
           </p>
-          <h3 className="text-xl font-bold text-foreground mt-0.5">
+          <h3 className="text-xl font-bold font-mono font-tabular text-foreground mt-0.5">
             {cityStats.length} Regions
           </h3>
-          <p className="text-xs font-medium text-muted-foreground mt-0.5">
+          <p className="text-xs font-tabular font-medium text-muted-foreground mt-0.5">
             {existingExecutives.length} Field Executives
           </p>
         </div>
@@ -922,7 +909,7 @@ export default function Assignment() {
                 {cityStats.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="px-6 py-12 text-center text-muted-foreground"
                     >
                       No cases found matching filters.
@@ -934,21 +921,21 @@ export default function Assignment() {
                       key={stat.city}
                       className="hover:bg-muted/20 transition-colors"
                     >
-                      <td className="px-4 py-3 text-center text-xs font-bold text-muted-foreground">{i + 1}</td>
+                      <td className="px-4 py-3 text-center text-xs font-bold font-tabular text-muted-foreground">{i + 1}</td>
                   <td className="px-6 py-4 font-bold text-foreground">
                         <div>
                           <span>{stat.city}</span>
-                          <p className="text-[11px] font-normal text-muted-foreground">
+                          <p className="text-[11px] font-mono font-tabular font-normal text-muted-foreground">
                             Total POS: {fmtCur(stat.totalPos)}
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center font-semibold">
+                      <td className="px-6 py-4 text-center font-mono font-tabular font-semibold">
                         {stat.total}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex flex-col gap-1 items-center justify-center">
-                          <span className="font-bold text-primary">
+                          <span className="font-mono font-tabular font-bold text-primary">
                             {stat.allocated}
                           </span>
                           {stat.allocated > 0 && (
@@ -957,7 +944,7 @@ export default function Assignment() {
                                 ([exec, count]) => (
                                   <span
                                     key={exec}
-                                    className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary"
+                                    className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-semibold font-tabular text-primary"
                                   >
                                     {exec}: {count}
                                   </span>
@@ -1023,8 +1010,8 @@ export default function Assignment() {
                   Distribute Portfolio:{" "}
                   <span className="text-primary">{assignModal.title}</span>
                 </h2>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="inline-flex items-center rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                <div className="flex items-center gap-2 mt-1.5 font-tabular">
+                  <span className="inline-flex items-center rounded-md bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
                     {assignModal.cases.length} Pending Cases
                   </span>
                   <span className="text-xs font-medium text-muted-foreground">
@@ -1044,7 +1031,7 @@ export default function Assignment() {
               </div>
               <button
                 onClick={() => setAssignModal(null)}
-                className="p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors"
+                className="p-2 text-muted-foreground hover:bg-muted rounded-lg transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>

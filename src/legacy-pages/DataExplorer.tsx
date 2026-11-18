@@ -6,6 +6,7 @@ import { useSearchParams, useNavigate } from "@/lib/router-compat";
 import { useDataState, useDataDispatch } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { AppLayout } from "../components/layout/AppLayout";
+import { SectionHeader } from "../components/ui/SectionHeader";
 import { calculateRow } from "../lib/calculations";
 import { fmtCur } from "../lib/formatters";
 import {
@@ -831,11 +832,11 @@ export default function DataExplorer() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="animate-pulse flex flex-col gap-4">
-          <div className="h-10 w-48 bg-muted rounded-md mb-4" />
+        <div className="flex flex-col gap-4">
+          <div className="h-12 w-56 bg-muted/70 rounded-lg mb-2" />
+          <div className="h-14 w-full bg-card border border-border rounded-xl" />
           <div className="h-16 w-full bg-card border border-border rounded-xl" />
-          <div className="h-20 w-full bg-card border border-border rounded-xl" />
-          <div className="h-[500px] w-full bg-card border border-border rounded-xl" />
+          <div className="h-[460px] w-full bg-card border border-border rounded-xl" />
         </div>
       </AppLayout>
     );
@@ -844,27 +845,14 @@ export default function DataExplorer() {
   return (
     <AppLayout>
       {/* 1. Header Command Bar */}
-      <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-xl font-bold text-foreground flex items-center gap-2">
-            <Database className="h-5 w-5 text-primary" /> Data Explorer
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Real-time portfolio inspection, multi-criteria filtering, and customer drill-down
-          </p>
-        </div>
-
-        {/* Global Dataset KPIs & Auto Sync */}
-        <div className="flex items-center gap-2 shrink-0">
-          <AutoSyncBar compact userName={user?.name} />
-          <div className="bg-muted/40 border border-border px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Dataset:</span>
-            <span className="font-mono font-bold text-foreground">
-              {records.length.toLocaleString()} cases
-            </span>
-          </div>
-        </div>
-      </div>
+      <SectionHeader
+        title="Data Explorer"
+        subtitle="Real-time portfolio inspection, multi-criteria filtering, and customer drill-down"
+        icon={Database}
+        badge={`${records.length.toLocaleString()} cases`}
+        actions={<AutoSyncBar compact userName={user?.name} />}
+        className="mb-4 pb-3"
+      />
 
       {/* 2. Filter Strip */}
       <FilterStrip
@@ -932,7 +920,7 @@ export default function DataExplorer() {
       </div>
 
       {/* 4. Toolbar: Presets & Controls Bar */}
-      <div className="bg-card border border-border rounded-xl p-2.5 mb-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-xs">
+      <div className="mv-filter-bar p-2.5 mb-3 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         {/* Left: Saved Presets & Active Sorts */}
         <div className="flex flex-wrap items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mr-1 shrink-0">
@@ -1747,10 +1735,10 @@ export default function DataExplorer() {
                               if (stats && stats.count > 1) {
                                 return (
                                   <span
-                                    className="text-[9px] font-bold text-muted-foreground mt-0.5 bg-muted/60 px-1 py-0.2 rounded w-fit group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+                                    className="text-[10px] font-semibold font-tabular text-muted-foreground mt-0.5 group-hover:text-primary transition-colors"
                                     title="Multiple cases linked to this customer"
                                   >
-                                    {stats.count} CASES • {fmtCur(stats.totalPos)}
+                                    {stats.count} cases · {fmtCur(stats.totalPos)}
                                   </span>
                                 );
                               }
@@ -1784,19 +1772,19 @@ export default function DataExplorer() {
 
                         {/* POS (Right aligned, Mono) */}
                         <td
-                          className={`px-3 ${tdPad} text-right font-mono font-bold text-foreground`}
+                          className={`px-3 ${tdPad} text-right font-mono font-tabular font-bold text-foreground`}
                         >
                           <div>{fmtCur(pos)}</div>
                           {density === "detailed" && (
-                            <div className="flex items-center justify-end gap-1 mt-0.5">
+                            <div className="flex items-center justify-end gap-1.5 mt-0.5 text-[10px] font-semibold">
                               {pos >= 50000 && (
-                                <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1 py-0.2 rounded">
+                                <span className="text-amber-600 dark:text-amber-400">
                                   High POS
                                 </span>
                               )}
                               {dac > 0 && (
-                                <span className="text-[9px] font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-1 py-0.2 rounded">
-                                  Rec: {((dac / (pos || 1)) * 100).toFixed(0)}%
+                                <span className="text-primary">
+                                  Rec {((dac / (pos || 1)) * 100).toFixed(0)}%
                                 </span>
                               )}
                             </div>
@@ -1804,22 +1792,22 @@ export default function DataExplorer() {
                         </td>
 
                         {/* EMI (Right aligned, Mono) */}
-                        <td className={`px-3 ${tdPad} text-right font-mono text-muted-foreground`}>
+                        <td className={`px-3 ${tdPad} text-right font-mono font-tabular text-muted-foreground`}>
                           <div className="font-semibold text-foreground">{fmtCur(emi)}</div>
                           {density === "detailed" && (
-                            <div className="mt-0.5">
+                            <div className="mt-0.5 text-[10px] font-medium">
                               {ecs > 0 ? (
                                 ecs >= emi ? (
-                                  <span className="inline-flex items-center text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
+                                  <span className="text-emerald-600 dark:text-emerald-400">
                                     ECS Full ({fmtCur(ecs)})
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center text-[9px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1 py-0.2 rounded">
+                                  <span className="text-amber-600 dark:text-amber-400">
                                     ECS Part ({fmtCur(ecs)})
                                   </span>
                                 )
                               ) : (
-                                <span className="inline-flex items-center text-[9px] font-medium text-muted-foreground bg-muted/60 px-1 py-0.2 rounded">
+                                <span className="text-muted-foreground">
                                   No ECS
                                 </span>
                               )}
@@ -1828,13 +1816,13 @@ export default function DataExplorer() {
                         </td>
 
                         {/* ECS (Right aligned, Mono) */}
-                        <td className={`px-3 ${tdPad} text-right font-mono text-muted-foreground`}>
+                        <td className={`px-3 ${tdPad} text-right font-mono font-tabular text-muted-foreground`}>
                           {fmtCur(ecs)}
                         </td>
 
                         {/* DAC (Right aligned, Mono, Info) */}
                         <td
-                          className={`px-3 ${tdPad} text-right font-mono font-bold text-sky-600 dark:text-sky-400`}
+                          className={`px-3 ${tdPad} text-right font-mono font-tabular font-bold text-primary`}
                         >
                           {fmtCur(dac)}
                         </td>

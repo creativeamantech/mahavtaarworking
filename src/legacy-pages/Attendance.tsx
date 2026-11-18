@@ -1,10 +1,11 @@
 // @ts-nocheck
 import React, { useState, useMemo } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { DataTable } from '../components/ui/DataTable';
 import { format, parseISO, differenceInMinutes, subDays, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { Download, CalendarIcon } from 'lucide-react';
+import { Download, CalendarIcon, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -146,19 +147,19 @@ export default function Attendance() {
 
   return (
     <AppLayout title="Attendance Management">
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-headline font-bold tracking-tight mb-2">Attendance Management</h1>
-            <p className="text-muted-foreground">Track user login, logout, break intervals, and working hours.</p>
-          </div>
-        </div>
+      <div className="space-y-5">
+        <SectionHeader
+          title="Attendance Management"
+          subtitle="Track user login, logout, break intervals, and working hours."
+          icon={Clock}
+          badge={`${filteredRecords.length.toLocaleString()} shifts`}
+        />
 
         <ShiftAttendanceCard />
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+        <div className="mv-filter-bar p-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-xl font-headline font-semibold">Attendance Log & Historical Shifts</h2>
+            <h2 className="text-base font-heading font-semibold">Attendance Log &amp; Historical Shifts</h2>
             <p className="text-xs text-muted-foreground">Filter by user, date range, and export reports.</p>
           </div>
           

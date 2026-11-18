@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from 'sonner';
 import { db } from '../lib/db';
 import { ShiftAttendanceCard } from '../components/attendance/ShiftAttendanceCard';
+import { UserCircle2 } from 'lucide-react';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -55,14 +57,12 @@ export default function Profile() {
   return (
     <AppLayout title="Profile">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-headline font-bold tracking-tight">Profile</h1>
-          <p className="text-muted-foreground">
-            Manage your personal account settings.
-          </p>
-        </div>
-        
-        <Separator />
+        <SectionHeader
+          title="Profile"
+          subtitle="Manage your personal account settings and daily shift attendance."
+          icon={UserCircle2}
+          badge={user.role}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">

@@ -3,12 +3,12 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from '@/lib/router-compat';
 import { useDataState } from '../contexts/DataContext';
 import { AppLayout } from '../components/layout/AppLayout';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { fmtCur } from '../lib/formatters';
 import { FileText, Search, Download, ExternalLink, Hash, DollarSign, CreditCard, Layers } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { BucketFilter } from '../components/BucketFilter';
-import { Card, CardContent } from '../components/ui/card';
 import { LoanRecord } from '../types/domain';
 import Papa from 'papaparse';
 import { toast } from 'sonner';
@@ -100,7 +100,7 @@ export default function Ledger() {
     return (
       <AppLayout>
         <div className="mb-4"><BucketFilter /></div>
-        <div className="flex h-[50vh] items-center justify-center text-muted-foreground animate-pulse">
+        <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground">
           Loading ledger data...
         </div>
       </AppLayout>
@@ -113,86 +113,78 @@ export default function Ledger() {
         <BucketFilter />
       </div>
 
-      <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-extrabold uppercase tracking-wide flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" /> Case Ledger
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">Detailed breakdown of EMI, Principal Outstanding, and allocations per agreement</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExportCSV}
-            className="gap-2 text-xs font-semibold"
-          >
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search ID, Name, City, Executive..." 
-              className="pl-9 text-xs"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-            />
+      <SectionHeader
+        title="Case Ledger"
+        subtitle="Detailed breakdown of EMI, Principal Outstanding, and allocations per agreement"
+        icon={FileText}
+        badge={`${filteredRecords.length.toLocaleString()} cases`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              className="gap-2 text-xs font-semibold h-9"
+            >
+              <Download className="h-4 w-4" /> Export CSV
+            </Button>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search ID, Name, City, Executive..."
+                className="pl-9 h-9 text-xs"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Card className="border border-border/70 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-              <Hash className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Filtered Cases</p>
-              <p className="text-lg font-bold font-data">{metrics.totalCases.toLocaleString()}</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 mb-5">
+        <div className="metric-kpi-card p-4 flex items-center gap-3">
+          <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
+            <Hash className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Filtered Cases</p>
+            <p className="text-lg font-bold font-mono font-tabular">{metrics.totalCases.toLocaleString()}</p>
+          </div>
+        </div>
 
-        <Card className="border border-border/70 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600">
-              <DollarSign className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Total POS Exposure</p>
-              <p className="text-lg font-bold font-data text-emerald-600 dark:text-emerald-400">{fmtCur(metrics.totalPOS)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="metric-kpi-card p-4 flex items-center gap-3">
+          <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+            <DollarSign className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Total POS Exposure</p>
+            <p className="text-lg font-bold font-mono font-tabular text-emerald-600 dark:text-emerald-400">{fmtCur(metrics.totalPOS)}</p>
+          </div>
+        </div>
 
-        <Card className="border border-border/70 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-600">
-              <CreditCard className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Total EMI Due</p>
-              <p className="text-lg font-bold font-data text-blue-600 dark:text-blue-400">{fmtCur(metrics.totalEMI)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="metric-kpi-card p-4 flex items-center gap-3">
+          <div className="p-2.5 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 shrink-0">
+            <CreditCard className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Total EMI Due</p>
+            <p className="text-lg font-bold font-mono font-tabular text-sky-600 dark:text-sky-400">{fmtCur(metrics.totalEMI)}</p>
+          </div>
+        </div>
 
-        <Card className="border border-border/70 shadow-sm">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-600">
-              <Layers className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Avg POS / Ticket</p>
-              <p className="text-lg font-bold font-data">{fmtCur(metrics.avgPOS)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="metric-kpi-card p-4 flex items-center gap-3">
+          <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
+            <Layers className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Avg POS / Ticket</p>
+            <p className="text-lg font-bold font-mono font-tabular">{fmtCur(metrics.avgPOS)}</p>
+          </div>
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-320px)]">
@@ -225,7 +217,7 @@ export default function Ledger() {
                       className="hover:bg-muted/40 transition-colors cursor-pointer group"
                       onClick={() => agreementId && navigate(`/customer/${agreementId}`)}
                     >
-                      <td className="px-5 py-3 font-semibold text-primary flex items-center gap-1.5">
+                      <td className="px-5 py-3 font-mono font-tabular font-semibold text-primary flex items-center gap-1.5">
                         {agreementId || '-'}
                       </td>
                       <td className="px-5 py-3 font-medium">
@@ -237,10 +229,10 @@ export default function Ledger() {
                       <td className="px-5 py-3 text-muted-foreground">
                         {r.executive_name || '-'}
                       </td>
-                      <td className="px-5 py-3 text-right font-medium font-data">
+                      <td className="px-5 py-3 text-right font-mono font-tabular font-medium">
                         {fmtCur(Number(r.emi_amt) || 0)}
                       </td>
-                      <td className="px-5 py-3 text-right font-bold font-data text-foreground">
+                      <td className="px-5 py-3 text-right font-mono font-tabular font-bold text-foreground">
                         {fmtCur(Number(r.principal_outstanding) || 0)}
                       </td>
                       <td className="px-4 py-3 text-center">

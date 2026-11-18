@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from '@/lib/router-compat';
+import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "@/lib/router-compat";
 import {
   CommandDialog,
   CommandInput,
@@ -8,10 +8,10 @@ import {
   CommandGroup,
   CommandItem,
   CommandShortcut,
-} from '@/components/ui/command';
-import { useDataState, useDataDispatch } from '@/contexts/DataContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+} from "@/components/ui/command";
+import { useDataState } from "@/contexts/DataContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMasterSheetsSync } from "@/hooks/useMasterSheetsSync";
 import {
   LayoutDashboard,
   Building2,
@@ -23,31 +23,40 @@ import {
   Activity,
   CalendarCheck,
   CreditCard,
-  Target,
-  FileText,
   RefreshCw,
   Database,
-} from 'lucide-react';
-import { fmtCur } from '@/lib/formatters';
+} from "lucide-react";
+import { fmtCur } from "@/lib/formatters";
 
 export function GlobalCommandBar() {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
   const { records } = useDataState();
   const { isExecutive } = useAuth();
+  const { forceRefreshMaster } = useMasterSheetsSync();
 
-  // Keyboard shortcut listener: Cmd+K or Ctrl+K
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && (e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'TEXTAREA')) {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.tagName === "SELECT" ||
+        target?.isContentEditable;
+      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !isInput)) {
         e.preventDefault();
-        setOpen(openState => !openState);
+        setOpen((openState) => !openState);
       }
     };
+    const openEvent = () => setOpen(true);
 
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener("keydown", down);
+    window.addEventListener("mahavtaar:open-command-bar", openEvent);
+    return () => {
+      document.removeEventListener("keydown", down);
+      window.removeEventListener("mahavtaar:open-command-bar", openEvent);
+    };
   }, []);
 
   const handleSelect = (callback: () => void) => {
@@ -55,17 +64,20 @@ export function GlobalCommandBar() {
     callback();
   };
 
-  // Matched records based on search input (Agreement No or Customer Name)
   const matchedRecords = useMemo(() => {
     if (!search || search.trim().length < 2) return [];
     const query = search.toLowerCase().trim();
 
     const results = [];
     for (const r of records || []) {
-      const name = String(r.customer_name || r.CUSTOMERNAME || r['Customer Name'] || r.CUSTOMER_NAME || '').toLowerCase();
-      const id = String(r.agreementid || r.agreement_no || r.AGREEMENTNO || r.AGREEMENTID || '').toLowerCase();
-      const city = String(r.city || r.City || '').toLowerCase();
-      const exec = String(r.executive_name || '').toLowerCase();
+      const name = String(
+        r.customer_name || r.CUSTOMERNAME || r["Customer Name"] || r.CUSTOMER_NAME || "",
+      ).toLowerCase();
+      const id = String(
+        r.agreementid || r.agreement_no || r.AGREEMENTNO || r.AGREEMENTID || "",
+      ).toLowerCase();
+      const city = String(r.city || r.City || "").toLowerCase();
+      const exec = String(r.executive_name || "").toLowerCase();
 
       if (id.includes(query) || name.includes(query) || city.includes(query) || exec.includes(query)) {
         results.push(r);
@@ -75,10 +87,9 @@ export function GlobalCommandBar() {
     return results;
   }, [search, records]);
 
-  // Unique cities
   const cities = useMemo(() => {
     const s = new Set<string>();
-    (records || []).forEach(r => {
+    (records || []).forEach((r) => {
       const c = r.city || r.City;
       if (c) s.add(String(c).trim().toUpperCase());
     });
@@ -88,44 +99,49 @@ export function GlobalCommandBar() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
-        placeholder="Search agreements, customers, pages, cities... (Esc to close)"
+        placeholder="Search agreements, customers, pages, or cities… (Esc to close)"
         value={search}
         onValueChange={setSearch}
       />
       <CommandList className="max-h-[420px]">
         <CommandEmpty>No matching results found.</CommandEmpty>
 
-        {/* Quick Agreement Search Matches */}
         {matchedRecords.length > 0 && (
           <CommandGroup heading="Agreements & Customers">
             {matchedRecords.map((r, i) => {
-              const id = String(r.agreementid || r.agreement_no || r.AGREEMENTNO || r.AGREEMENTID || '-');
-              const name = String(r.customer_name || r.CUSTOMERNAME || r['Customer Name'] || r.CUSTOMER_NAME || '-');
-              const city = String(r.city || r.City || '-');
+              const id = String(
+                r.agreementid || r.agreement_no || r.AGREEMENTNO || r.AGREEMENTID || "-",
+              );
+              const name = String(
+                r.customer_name || r.CUSTOMERNAME || r["Customer Name"] || r.CUSTOMER_NAME || "-",
+              );
+              const city = String(r.city || r.City || "-");
               const pos = Number(r.principal_outstanding || 0);
               const bkt = r.bom_bkt;
 
               return (
                 <CommandItem
-                  key={id + '-' + i}
+                  key={id + "-" + i}
                   value={`agreement ${id} ${name} ${city}`}
                   onSelect={() => handleSelect(() => navigate(`/customer/${encodeURIComponent(id)}`))}
                   className="flex items-center justify-between py-2 cursor-pointer"
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="p-1 rounded bg-primary/10 text-primary">
-                      <CreditCard className="h-4 w-4" />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
+                      <CreditCard className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="font-bold text-foreground text-xs truncate">{name}</span>
+                      <span className="font-semibold text-foreground text-xs truncate">{name}</span>
                       <span className="text-[11px] text-muted-foreground truncate font-mono">
-                        {id} · {city} {bkt ? `· Bkt ${bkt}` : ''}
+                        {id} · {city} {bkt ? `· Bkt ${String(bkt)}` : ""}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className="text-xs font-semibold tabular-nums text-foreground">{fmtCur(pos)}</span>
-                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">View 360°</span>
+                  <div className="flex items-center gap-2.5 shrink-0 ml-2">
+                    <span className="text-xs font-semibold tabular-nums text-foreground">
+                      {fmtCur(pos)}
+                    </span>
+                    <span className="text-[11px] font-medium text-primary">Open →</span>
                   </div>
                 </CommandItem>
               );
@@ -133,130 +149,126 @@ export function GlobalCommandBar() {
           </CommandGroup>
         )}
 
-        {/* System Quick Actions */}
         <CommandGroup heading="Quick Actions">
           <CommandItem
-            value="sync all spreadsheets now auto sync google sheets"
-            onSelect={() => handleSelect(async () => {
-              toast.info("Triggering full spreadsheet sync...");
-              try {
-                const { syncAllLinkedModuleSheets } = await import('@/lib/multiSpreadsheetManager');
-                await syncAllLinkedModuleSheets();
-                toast.success("All Google Spreadsheets synchronized successfully!");
-              } catch (e: any) {
-                toast.error("Sync error: " + (e.message || "Failed to sync"));
-              }
-            })}
+            value="force refresh master allocation google sheets sync now"
+            onSelect={() =>
+              handleSelect(() => {
+                void forceRefreshMaster();
+              })
+            }
           >
-            <RefreshCw className="mr-2 h-4 w-4 text-emerald-500 animate-spin-hover" />
-            <span>Sync All Google Spreadsheets Now</span>
-            <CommandShortcut>⌘S</CommandShortcut>
+            <RefreshCw className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Force Refresh Master Allocation (Google Sheets)</span>
+            <CommandShortcut>Sync</CommandShortcut>
           </CommandItem>
 
           <CommandItem
             value="spreadsheet management settings google sheets drive"
-            onSelect={() => handleSelect(() => navigate('/settings?tab=spreadsheets'))}
+            onSelect={() => handleSelect(() => navigate("/settings?tab=spreadsheets"))}
           >
-            <Database className="mr-2 h-4 w-4 text-blue-500" />
+            <Database className="mr-2 h-4 w-4 text-primary" />
             <span>Open Spreadsheet Management</span>
           </CommandItem>
 
           <CommandItem
             value="user management team roles settings"
-            onSelect={() => handleSelect(() => navigate('/settings?tab=users'))}
+            onSelect={() => handleSelect(() => navigate("/settings?tab=users"))}
           >
-            <Users className="mr-2 h-4 w-4 text-amber-500" />
-            <span>Manage Team Members & Access</span>
+            <Users className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span>Manage Team Members &amp; Access</span>
           </CommandItem>
         </CommandGroup>
 
-        {/* Navigation Pages */}
-        <CommandGroup heading="Navigation Pages">
+        <CommandGroup heading="Navigation">
           <CommandItem
             value="dashboard global analytics overview strategy"
-            onSelect={() => handleSelect(() => navigate(isExecutive() ? '/exec-dashboard' : '/dashboard'))}
+            onSelect={() =>
+              handleSelect(() => navigate(isExecutive() ? "/exec-dashboard" : "/dashboard"))
+            }
           >
             <LayoutDashboard className="mr-2 h-4 w-4 text-primary" />
-            <span>Admin Strategy Dashboard</span>
+            <span>{isExecutive() ? "Executive Strategy" : "Portfolio Dashboard"}</span>
             <CommandShortcut>G D</CommandShortcut>
           </CommandItem>
 
           <CommandItem
             value="city pivot matrix geographical reports ledger"
-            onSelect={() => handleSelect(() => navigate('/city-pivot'))}
+            onSelect={() => handleSelect(() => navigate("/city-pivot"))}
           >
-            <Building2 className="mr-2 h-4 w-4 text-emerald-500" />
-            <span>City Ledger & Pivot</span>
+            <Building2 className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span>City Ledger &amp; Pivot</span>
             <CommandShortcut>G C</CommandShortcut>
           </CommandItem>
 
           <CommandItem
             value="team pivot executive performance rankings ledger"
-            onSelect={() => handleSelect(() => navigate('/team-pivot'))}
+            onSelect={() => handleSelect(() => navigate("/team-pivot"))}
           >
-            <Users className="mr-2 h-4 w-4 text-indigo-500" />
-            <span>Team Ledger & Pivot</span>
+            <Users className="mr-2 h-4 w-4 text-[#81258c] dark:text-purple-400" />
+            <span>Team Ledger &amp; Pivot</span>
             <CommandShortcut>G T</CommandShortcut>
           </CommandItem>
 
           <CommandItem
             value="data explorer records search filter grid cases"
-            onSelect={() => handleSelect(() => navigate('/explorer'))}
+            onSelect={() => handleSelect(() => navigate("/explorer"))}
           >
-            <Search className="mr-2 h-4 w-4 text-blue-500" />
-            <span>Data Explorer & Cases</span>
+            <Search className="mr-2 h-4 w-4 text-primary" />
+            <span>Data Explorer &amp; Cases</span>
             <CommandShortcut>G E</CommandShortcut>
           </CommandItem>
 
           <CommandItem
             value="data entry feedback update payment ingestion"
-            onSelect={() => handleSelect(() => navigate('/data-entry'))}
+            onSelect={() => handleSelect(() => navigate("/data-entry"))}
           >
-            <FileSpreadsheet className="mr-2 h-4 w-4 text-amber-500" />
-            <span>Data Ingestion & Entry</span>
+            <FileSpreadsheet className="mr-2 h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span>Data Ingestion &amp; Entry</span>
           </CommandItem>
 
           <CommandItem
             value="pos band explorer slabs analysis"
-            onSelect={() => handleSelect(() => navigate('/band-explorer'))}
+            onSelect={() => handleSelect(() => navigate("/band-explorer"))}
           >
-            <Layers className="mr-2 h-4 w-4 text-purple-500" />
+            <Layers className="mr-2 h-4 w-4 text-[#81258c] dark:text-purple-400" />
             <span>POS Band Analysis</span>
           </CommandItem>
 
           <CommandItem
             value="live field monitoring real time updates"
-            onSelect={() => handleSelect(() => navigate('/live-monitoring'))}
+            onSelect={() => handleSelect(() => navigate("/live-monitoring"))}
           >
-            <Activity className="mr-2 h-4 w-4 text-rose-500" />
-            <span>Live Field Monitoring</span>
+            <Activity className="mr-2 h-4 w-4 text-rose-600 dark:text-rose-400" />
+            <span>Live Field Tracking</span>
           </CommandItem>
 
           <CommandItem
             value="attendance punch daily tracking logs"
-            onSelect={() => handleSelect(() => navigate('/attendance'))}
+            onSelect={() => handleSelect(() => navigate("/attendance"))}
           >
-            <CalendarCheck className="mr-2 h-4 w-4 text-teal-500" />
-            <span>Attendance & Punch Logs</span>
+            <CalendarCheck className="mr-2 h-4 w-4 text-teal-600 dark:text-teal-400" />
+            <span>Attendance &amp; Punch Logs</span>
           </CommandItem>
 
           <CommandItem
             value="settings users targets configuration spreadsheets"
-            onSelect={() => handleSelect(() => navigate('/settings'))}
+            onSelect={() => handleSelect(() => navigate("/settings"))}
           >
-            <Settings className="mr-2 h-4 w-4 text-slate-500" />
+            <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
             <span>System Settings</span>
           </CommandItem>
         </CommandGroup>
 
-        {/* Filter Quick Links */}
         {cities.length > 0 && (
           <CommandGroup heading="Filter By City">
-            {cities.slice(0, 8).map(city => (
+            {cities.slice(0, 8).map((city) => (
               <CommandItem
                 key={city}
                 value={`city filter ${city}`}
-                onSelect={() => handleSelect(() => navigate(`/explorer?city=${encodeURIComponent(city)}`))}
+                onSelect={() =>
+                  handleSelect(() => navigate(`/explorer?city=${encodeURIComponent(city)}`))
+                }
               >
                 <Building2 className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                 <span>Explore City: {city}</span>

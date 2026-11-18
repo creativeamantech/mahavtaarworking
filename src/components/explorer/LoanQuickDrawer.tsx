@@ -113,21 +113,21 @@ export function LoanQuickDrawer({
               <IndianRupee className="h-3.5 w-3.5 text-primary" /> Key Financial Figures
             </h4>
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-card border border-border/60 p-2.5 rounded-lg">
+              <div className="bg-card border border-border/70 p-2.5 rounded-lg">
                 <span className="text-[10px] uppercase font-semibold text-muted-foreground">POS Outstanding</span>
-                <div className="text-sm font-bold font-mono text-foreground mt-0.5">{fmtCur(pos)}</div>
+                <div className="text-sm font-bold font-mono font-tabular text-foreground mt-0.5">{fmtCur(pos)}</div>
               </div>
-              <div className="bg-card border border-border/60 p-2.5 rounded-lg">
+              <div className="bg-card border border-border/70 p-2.5 rounded-lg">
                 <span className="text-[10px] uppercase font-semibold text-muted-foreground">EMI Amount</span>
-                <div className="text-sm font-bold font-mono text-foreground mt-0.5">{fmtCur(emi)}</div>
+                <div className="text-sm font-bold font-mono font-tabular text-foreground mt-0.5">{fmtCur(emi)}</div>
               </div>
-              <div className="bg-card border border-border/60 p-2.5 rounded-lg">
+              <div className="bg-card border border-border/70 p-2.5 rounded-lg">
                 <span className="text-[10px] uppercase font-semibold text-muted-foreground">DAC Collected</span>
-                <div className="text-sm font-bold font-mono text-sky-600 dark:text-sky-400 mt-0.5">{fmtCur(dac)}</div>
+                <div className="text-sm font-bold font-mono font-tabular text-primary mt-0.5">{fmtCur(dac)}</div>
               </div>
-              <div className="bg-card border border-border/60 p-2.5 rounded-lg">
+              <div className="bg-card border border-border/70 p-2.5 rounded-lg">
                 <span className="text-[10px] uppercase font-semibold text-muted-foreground">ECS Cleared</span>
-                <div className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">{fmtCur(ecs)}</div>
+                <div className="text-sm font-bold font-mono font-tabular text-emerald-600 dark:text-emerald-400 mt-0.5">{fmtCur(ecs)}</div>
               </div>
             </div>
 

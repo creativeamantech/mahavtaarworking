@@ -11,7 +11,8 @@ import { fmtCur, fmtPct, pctColor } from '../lib/formatters';
 import { DollarSign, AlertCircle, Database, BarChart3, TrendingUp, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, ComposedChart, Line } from 'recharts';
 import { AgentLiveDashboard } from '../components/agent/AgentLiveDashboard';
-import { BucketFilter, FloatingBucketFilter } from '../components/BucketFilter';
+import { BucketFilter } from '../components/BucketFilter';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { LoanRecord } from '../types/domain';
 
 type ExecCityPivotItem = ExecCityPivotRow & { globalRank?: number };
@@ -270,8 +271,8 @@ export default function ExecDashboard() {
   if (isLoading) {
     return (
       <AppLayout>
-      <div className="mb-4"><BucketFilter /></div>
-        <div className="flex h-[50vh] items-center justify-center text-muted-foreground animate-pulse">
+        <div className="mb-4"><BucketFilter /></div>
+        <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground font-medium">
           Loading dashboard metrics...
         </div>
       </AppLayout>
@@ -280,248 +281,273 @@ export default function ExecDashboard() {
 
   return (
     <AppLayout>
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-sans text-2xl font-extrabold uppercase tracking-wide flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" /> Executive Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">Live agent metrics, collection details, and geographical analytics</p>
+      <div className="mv-dashboard-page">
+        <SectionHeader
+          title="Executive Dashboard"
+          subtitle="Live agent metrics, collection details, and geographical analytics"
+          icon={BarChart3}
+          badge={`${filteredRecords.length.toLocaleString()} cases`}
+        />
+        <div className="mb-5">
+          <BucketFilter showCounts={true} />
         </div>
-        <BucketFilter showCounts={true} />
-      </div>
 
-      <AgentLiveDashboard />
+        <AgentLiveDashboard />
 
-      {filteredRecords.length === 0 ? (
-        <div className="my-8 p-8 border border-dashed border-border rounded-2xl bg-card/40 text-center flex flex-col items-center justify-center space-y-3">
-          <Database className="h-10 w-10 text-muted-foreground/40" />
-          <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">No Portfolio Data Assigned</h3>
-            <p className="text-xs text-muted-foreground max-w-md">
-              There are no active loan records matched with your executive profile in the current view. Contact your manager or system administrator to allocate cases to your account.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="my-10 border-t border-border"></div>
-
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="font-sans text-xl font-bold uppercase tracking-wide flex items-center gap-2">
-                Advanced Analytics
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">Deep dive into collection, buckets, and geographical metrics</p>
+        {filteredRecords.length === 0 ? (
+          <div className="my-8 p-8 border border-border rounded-xl bg-card text-center flex flex-col items-center justify-center space-y-3">
+            <Database className="h-10 w-10 text-muted-foreground/40" />
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-foreground">No Portfolio Data Assigned</h3>
+              <p className="text-xs text-muted-foreground max-w-md">
+                There are no active loan records matched with your executive profile in the current view. Contact your manager or system administrator to allocate cases to your account.
+              </p>
             </div>
           </div>
+        ) : (
+          <>
+            <div className="my-8 border-t border-border/70" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col justify-center">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2 font-medium">
-            <DollarSign className="h-4 w-4" /> Total Collection (DAC)
-          </div>
-          <div className="text-3xl font-bold text-success">{fmtCur(stats.totalCollection)}</div>
-        </div>
-        
-        <div className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col justify-center">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2 font-medium">
-            <AlertCircle className="h-4 w-4" /> Total Small Cases
-          </div>
-          <div className="text-3xl font-bold text-warning">{stats.totalSmallCases.toLocaleString()}</div>
-          <div className="text-xs text-muted-foreground mt-1">
-            Accounts with EMI &lt; ₹500 <strong>or</strong> POS &lt; ₹1k
-          </div>
-          <div className="text-[10px] text-muted-foreground mt-1 flex justify-between">
-            <span>EMI only: {(stats.smallCasesEMI - stats.smallCasesBoth).toLocaleString()}</span>
-            <span>POS only: {(stats.smallCasesPOS - stats.smallCasesBoth).toLocaleString()}</span>
-            <span>Both: {stats.smallCasesBoth.toLocaleString()}</span>
-          </div>
-        </div>
+            <SectionHeader
+              title="Advanced Analytics"
+              subtitle="Deep dive into collection, buckets, and geographical metrics"
+              icon={TrendingUp}
+            />
 
-        <div className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col justify-center">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2 font-medium">
-            <Database className="h-4 w-4" /> Total Outstanding (POS)
-          </div>
-          <div className="text-3xl font-bold text-destructive">{fmtCur(stats.bucketData.reduce((acc, b) => acc + b.pos, 0))}</div>
-          <div className="text-xs text-muted-foreground mt-1">Total principal across all cases</div>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="metric-kpi-card flex flex-col justify-between">
+                <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                  <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> Total Collection (DAC)
+                </div>
+                <div className="text-2xl font-bold font-tabular text-emerald-600 dark:text-emerald-400 tracking-tight">
+                  {fmtCur(stats.totalCollection)}
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border/60 font-tabular">
+                  Paid POS: <strong className="text-foreground">{fmtCur(stats.teamPaidPosSum)}</strong>
+                </div>
+              </div>
 
-        <div className="bg-card border border-border p-6 rounded-xl shadow-sm flex flex-col justify-center">
-          <div className="flex items-center gap-2 text-muted-foreground mb-2 font-medium">
-            <TrendingUp className="h-4 w-4" /> Total Cases Analyzed
-          </div>
-          <div className="text-3xl font-bold text-primary">{filteredRecords.length.toLocaleString()}</div>
-        </div>
-      </div>
+              <div className="metric-kpi-card flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-500" /> Total Small Cases
+                  </div>
+                  <div className="text-2xl font-bold font-tabular text-amber-600 dark:text-amber-400 tracking-tight">
+                    {stats.totalSmallCases.toLocaleString()}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    EMI &lt; ₹500 or POS &lt; ₹1k
+                  </div>
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-2 pt-2 border-t border-border/60 flex justify-between font-tabular">
+                  <span>EMI: <strong className="text-foreground">{(stats.smallCasesEMI - stats.smallCasesBoth).toLocaleString()}</strong></span>
+                  <span>POS: <strong className="text-foreground">{(stats.smallCasesPOS - stats.smallCasesBoth).toLocaleString()}</strong></span>
+                  <span>Both: <strong className="text-foreground">{stats.smallCasesBoth.toLocaleString()}</strong></span>
+                </div>
+              </div>
 
-      <div className="grid grid-cols-1 gap-6 mb-8">
-        {/* Bucket Breakdown */}
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-border bg-muted/20">
-            <h3 className="font-semibold flex items-center gap-2">Bucket wise Collections & POS</h3>
-          </div>
-          <div className="p-4 h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={stats.bucketData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="bucket" tick={{fontSize: 12}} stroke="hsl(var(--muted-foreground))" />
-                <YAxis yAxisId="left" tickFormatter={(v) => `${v/1000}k`} tick={{fontSize: 12}} stroke="hsl(var(--muted-foreground))" />
-                <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v/1000}k`} tick={{fontSize: 12}} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip 
-                  formatter={(value: number) => fmtCur(value)}
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
-                <Bar yAxisId="left" dataKey="pos" name="Total POS" fill="hsl(var(--primary)/0.7)" radius={[4, 4, 0, 0]} />
-                <Bar yAxisId="right" dataKey="teamPaid" name="Team Paid Cases" fill="hsl(var(--success)/0.8)" radius={[4, 4, 0, 0]} />
-                <Bar yAxisId="right" dataKey="posPaidOnly" name="POS Paid Only Cases" fill="hsl(var(--info)/0.8)" radius={[4, 4, 0, 0]} />
-                <Line yAxisId="right" type="monotone" dataKey="collection" name="Collection (DAC)" stroke="hsl(var(--success))" strokeWidth={3} dot={{r: 4}} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="overflow-x-auto border-t border-border">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
-                <tr>
-                  <th className="px-4 py-3 font-semibold text-center w-12 bg-muted/90 text-muted-foreground uppercase text-[10px]">S.No.</th>
-                  <th className="px-4 py-2 font-semibold">Bucket<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right">Cases<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right hidden sm:table-cell">POS Amount<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right text-success">Paid Count<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right text-success hidden sm:table-cell">Paid POS<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right text-info">POS Paid Only Count<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right text-info hidden sm:table-cell">POS Paid Only POS<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-2 font-semibold text-right hidden sm:table-cell">Unpaid<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {stats.bucketData.map((b, i) => (
-                  <tr key={b.bucket} className="hover:bg-muted/30">
-                    <td className="px-4 py-3 text-center text-xs font-bold text-muted-foreground">{i + 1}</td>
-                  <td className="px-4 py-2 font-medium cursor-pointer hover:text-primary transition-colors hover:underline" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.bucket}</td>
-                    <td className="px-4 py-2 text-right cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.cases.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{fmtCur(b.pos)}</td>
-                    <td className="px-4 py-2 text-right text-success font-medium cursor-pointer hover:bg-success/10 transition-colors" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.teamPaid.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right text-success hidden sm:table-cell cursor-pointer hover:bg-success/10 transition-colors" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{fmtCur(b.paidPOS)}</td>
-                    <td className="px-4 py-2 text-right text-info font-medium cursor-pointer hover:bg-info/10 transition-colors" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.posPaidOnly.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right text-info hidden sm:table-cell cursor-pointer hover:bg-info/10 transition-colors" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{fmtCur(b.posPaidOnlyPOS)}</td>
-                    <td className="px-4 py-2 text-right text-muted-foreground cursor-pointer hover:bg-primary/5 hover:text-primary transition-colors hidden sm:table-cell" onClick={() => navigateToExplorer({ bucket: b.bucket, paid: 'Unpaid' })}>{b.unpaid.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-primary/10 font-bold sticky bottom-0 z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => navigateToExplorer({})}>
-                <tr>
-                  <td className="px-4 py-2 text-center text-xs text-muted-foreground"></td>
-                  <td className="px-4 py-2 text-primary uppercase">Grand Total</td>
-                  <td className="px-4 py-2 text-right">{stats.bucketData.reduce((a, b) => a + b.cases, 0).toLocaleString()}</td>
-                  <td className="px-4 py-2 text-right">{fmtCur(stats.bucketData.reduce((a, b) => a + b.pos, 0))}</td>
-                  <td className="px-4 py-2 text-right text-success font-bold">{stats.bucketData.reduce((a, b) => a + b.teamPaid, 0).toLocaleString()}</td>
-                  <td className="px-4 py-2 text-right text-success hidden sm:table-cell">{fmtCur(stats.bucketData.reduce((a, b) => a + b.paidPOS, 0))}</td>
-                  <td className="px-4 py-2 text-right text-info font-bold">{stats.bucketData.reduce((a, b) => a + b.posPaidOnly, 0).toLocaleString()}</td>
-                  <td className="px-4 py-2 text-right text-info hidden sm:table-cell">{fmtCur(stats.bucketData.reduce((a, b) => a + b.posPaidOnlyPOS, 0))}</td>
-                  <td className="px-4 py-2 text-right text-muted-foreground hover:bg-primary/10 transition-colors hidden sm:table-cell" onClick={(e) => { e.stopPropagation(); navigateToExplorer({ paid: 'Unpaid' }); }}>{stats.bucketData.reduce((a, b) => a + b.unpaid, 0).toLocaleString()}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          <div className="p-3 border-t border-border bg-muted/10 text-right">
-             <button onClick={() => {
-                 const csv = ['Bucket,Cases,POS Amount,Paid Count,Paid POS,POS Paid Only Count,POS Paid Only POS,Unpaid', ...stats.bucketData.map((b, i) => `"${b.bucket}",${b.cases},${b.pos},${b.teamPaid},${b.paidPOS},${b.posPaidOnly},${b.posPaidOnlyPOS},${b.unpaid}`)].join('\n');
-                 const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'Bucket_Performance.csv'; a.click();
-             }} className="inline-flex items-center gap-1.5 text-xs font-bold bg-card border border-border px-3 py-1.5 rounded hover:bg-muted text-primary transition-colors">
-               <Download className="h-3.5 w-3.5" /> Export Data
-             </button>
-          </div>
-        </div>
+              <div className="metric-kpi-card flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    <Database className="h-3.5 w-3.5 text-rose-500" /> Total Outstanding (POS)
+                  </div>
+                  <div className="text-2xl font-bold font-tabular text-rose-600 dark:text-rose-400 tracking-tight">
+                    {fmtCur(stats.bucketData.reduce((acc, b) => acc + b.pos, 0))}
+                  </div>
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border/60">
+                  Total principal across assigned cases
+                </div>
+              </div>
 
-        </div>
-      <div className="mb-10">
-        {/* City Top Level */}
-        <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-border bg-muted/20">
-            <h3 className="font-semibold flex items-center gap-2">Top Cities & Bandwise Bifurcation</h3>
-          </div>
-          <div className="overflow-x-auto flex-1 h-[450px]">
-            <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="bg-muted/50 text-muted-foreground text-xs uppercase sticky top-0 z-10 shadow-sm">
-                <tr>
-                  <th className="px-4 py-3 font-semibold text-center w-12 bg-muted/90 text-muted-foreground uppercase text-[10px]">S.No.</th>
-                  <th className="px-4 py-3 font-semibold bg-muted/90">City<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-3 font-semibold text-right bg-muted/90">Cases<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-3 font-semibold text-right bg-muted/90">Total POS<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                  <th className="px-4 py-3 font-semibold text-center bg-muted" colSpan={stats.sortedBands.length}>POS Bands (Cases)<span className="inline-flex items-center ml-1 opacity-40 hover:opacity-100 cursor-pointer transition-opacity"></span></th>
-                </tr>
-                <tr className="border-t border-border/50 text-[10px]">
-                  <th colSpan={6} className="bg-muted/90"></th>
-                  {stats.sortedBands.map((band, idx) => (
-                      <th key={band} className={`px-2 py-1 text-center font-medium bg-muted ${idx === 0 ? 'border-l border-border/30' : ''} ${idx === stats.sortedBands.length - 1 ? 'border-r border-border/30' : ''}`}>
-                          {band}
-                      </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {stats.cityData.slice(0, 50).map((c, i) => (
-                  <tr key={c.city} className="hover:bg-muted/30">
-                    <td className="px-4 py-3 text-center text-xs font-bold text-muted-foreground">{i + 1}</td>
-                  <td className="px-4 py-2 font-medium cursor-pointer hover:text-primary transition-colors hover:underline" onClick={() => navigateToExplorer({ city: c.city })}>{c.city}</td>
-                    <td className="px-4 py-2 text-right cursor-pointer hover:text-primary transition-colors hover:bg-primary/5" onClick={() => navigateToExplorer({ city: c.city })}>{c.cases.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-right font-medium cursor-pointer hover:text-primary transition-colors hover:bg-primary/5" onClick={() => navigateToExplorer({ city: c.city })}>{fmtCur(c.pos)}</td>
-                    {stats.sortedBands.map((band, idx) => {
-                        const cell = c.bands[band];
-                        const val = cell ? cell.cases : 0;
-                        const isSelected = selectedCells.has(`${c.city}:::${band}`);
-                        return (
-                          <td 
-                            key={band} 
-                            className={`px-2 py-2 text-center text-xs cursor-pointer transition-colors ${idx === 0 ? 'border-l border-border/30' : ''} ${idx === stats.sortedBands.length - 1 ? 'border-r border-border/30' : ''} ${isSelected ? 'bg-primary text-primary-foreground font-bold' : 'bg-muted/10 hover:bg-primary/10 hover:text-primary'}`} 
-                            onClick={() => handleCellClick(c.city, band)}
-                          >
-                              {val > 0 ? val : '-'}
+              <div className="metric-kpi-card flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" /> Total Cases Analyzed
+                  </div>
+                  <div className="text-2xl font-bold font-tabular text-primary tracking-tight">
+                    {filteredRecords.length.toLocaleString()}
+                  </div>
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border/60 font-tabular">
+                  Buckets: <strong className="text-foreground">{stats.bucketData.length}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 mb-6">
+              {/* Bucket Breakdown */}
+              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+                <div className="px-4 py-3 border-b border-border bg-muted/25">
+                  <h3 className="font-semibold text-sm text-foreground">Bucket-wise Collections & POS</h3>
+                </div>
+                <div className="p-4 h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={stats.bucketData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-border/60" />
+                      <XAxis dataKey="bucket" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis yAxisId="left" tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v / 1000}k`} tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip
+                        formatter={(value: number) => fmtCur(value)}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '10px', fontSize: '12px', color: 'hsl(var(--foreground))' }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      <Bar yAxisId="left" dataKey="pos" name="Total POS" fill="#0D74B5" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="teamPaid" name="Team Paid Cases" fill="#55A94F" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="posPaidOnly" name="POS Paid Only Cases" fill="#81258C" radius={[4, 4, 0, 0]} />
+                      <Line yAxisId="right" type="monotone" dataKey="collection" name="Collection (DAC)" stroke="#EF8424" strokeWidth={2.5} dot={{ r: 3.5 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="overflow-x-auto border-t border-border">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-muted/50 text-muted-foreground text-[10px] uppercase tracking-wider border-b border-border">
+                      <tr>
+                        <th className="px-4 py-2.5 font-semibold text-center w-12">S.No.</th>
+                        <th className="px-4 py-2.5 font-semibold">Bucket</th>
+                        <th className="px-4 py-2.5 font-semibold text-right">Cases</th>
+                        <th className="px-4 py-2.5 font-semibold text-right hidden sm:table-cell">POS Amount</th>
+                        <th className="px-4 py-2.5 font-semibold text-right text-emerald-600 dark:text-emerald-400">Paid Count</th>
+                        <th className="px-4 py-2.5 font-semibold text-right text-emerald-600 dark:text-emerald-400 hidden sm:table-cell">Paid POS</th>
+                        <th className="px-4 py-2.5 font-semibold text-right text-sky-600 dark:text-sky-400">POS Paid Only</th>
+                        <th className="px-4 py-2.5 font-semibold text-right text-sky-600 dark:text-sky-400 hidden sm:table-cell">POS Paid POS</th>
+                        <th className="px-4 py-2.5 font-semibold text-right hidden sm:table-cell">Unpaid</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/70">
+                      {stats.bucketData.map((b, i) => (
+                        <tr key={b.bucket} className="hover:bg-muted/35 transition-colors">
+                          <td className="px-4 py-2.5 text-center font-tabular text-muted-foreground">{i + 1}</td>
+                          <td className="px-4 py-2.5 font-semibold cursor-pointer hover:text-primary hover:underline" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.bucket}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular cursor-pointer hover:text-primary" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.cases.toLocaleString()}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular cursor-pointer hover:text-primary hidden sm:table-cell" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{fmtCur(b.pos)}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular text-emerald-600 dark:text-emerald-400 font-semibold cursor-pointer" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.teamPaid.toLocaleString()}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular text-emerald-600 dark:text-emerald-400 hidden sm:table-cell cursor-pointer" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{fmtCur(b.paidPOS)}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular text-sky-600 dark:text-sky-400 font-medium cursor-pointer" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{b.posPaidOnly.toLocaleString()}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular text-sky-600 dark:text-sky-400 hidden sm:table-cell cursor-pointer" onClick={() => navigateToExplorer({ bucket: b.bucket })}>{fmtCur(b.posPaidOnlyPOS)}</td>
+                          <td className="px-4 py-2.5 text-right font-tabular text-muted-foreground cursor-pointer hover:text-primary hidden sm:table-cell" onClick={() => navigateToExplorer({ bucket: b.bucket, paid: 'Unpaid' })}>{b.unpaid.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-[#1B1E35] text-white font-bold sticky bottom-0 z-10 cursor-pointer" onClick={() => navigateToExplorer({})}>
+                      <tr>
+                        <td className="px-4 py-2.5 text-center" />
+                        <td className="px-4 py-2.5 text-sky-300 uppercase">Grand Total</td>
+                        <td className="px-4 py-2.5 text-right font-tabular">{stats.bucketData.reduce((a, b) => a + b.cases, 0).toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-right font-tabular hidden sm:table-cell">{fmtCur(stats.bucketData.reduce((a, b) => a + b.pos, 0))}</td>
+                        <td className="px-4 py-2.5 text-right font-tabular text-emerald-400">{stats.bucketData.reduce((a, b) => a + b.teamPaid, 0).toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-right font-tabular text-emerald-400 hidden sm:table-cell">{fmtCur(stats.bucketData.reduce((a, b) => a + b.paidPOS, 0))}</td>
+                        <td className="px-4 py-2.5 text-right font-tabular text-sky-300">{stats.bucketData.reduce((a, b) => a + b.posPaidOnly, 0).toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-right font-tabular text-sky-300 hidden sm:table-cell">{fmtCur(stats.bucketData.reduce((a, b) => a + b.posPaidOnlyPOS, 0))}</td>
+                        <td className="px-4 py-2.5 text-right font-tabular text-slate-300 hidden sm:table-cell" onClick={(e) => { e.stopPropagation(); navigateToExplorer({ paid: 'Unpaid' }); }}>{stats.bucketData.reduce((a, b) => a + b.unpaid, 0).toLocaleString()}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div className="px-4 py-2.5 border-t border-border bg-muted/15 text-right">
+                  <button
+                    onClick={() => {
+                      const csv = ['Bucket,Cases,POS Amount,Paid Count,Paid POS,POS Paid Only Count,POS Paid Only POS,Unpaid', ...stats.bucketData.map(b => `"${b.bucket}",${b.cases},${b.pos},${b.teamPaid},${b.paidPOS},${b.posPaidOnly},${b.posPaidOnlyPOS},${b.unpaid}`)].join('\n');
+                      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'Bucket_Performance.csv'; a.click();
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-card border border-border px-3 py-1.5 rounded-lg hover:bg-muted text-foreground transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" /> Export Data
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              {/* City Top Level */}
+              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+                <div className="px-4 py-3 border-b border-border bg-muted/25">
+                  <h3 className="font-semibold text-sm text-foreground">Top Cities & Bandwise Bifurcation</h3>
+                </div>
+                <div className="overflow-x-auto flex-1 h-[450px] scrollbar-thin">
+                  <table className="w-full text-xs text-left whitespace-nowrap">
+                    <thead className="bg-muted/85 text-muted-foreground text-[10px] uppercase tracking-wider sticky top-0 z-10 border-b border-border">
+                      <tr>
+                        <th className="px-4 py-2.5 font-semibold text-center w-12">S.No.</th>
+                        <th className="px-4 py-2.5 font-semibold">City</th>
+                        <th className="px-4 py-2.5 font-semibold text-right">Cases</th>
+                        <th className="px-4 py-2.5 font-semibold text-right">Total POS</th>
+                        <th className="px-4 py-2.5 font-semibold text-center" colSpan={stats.sortedBands.length}>POS Bands (Cases)</th>
+                      </tr>
+                      <tr className="border-t border-border/50 text-[9px] bg-muted/95">
+                        <th colSpan={4} />
+                        {stats.sortedBands.map((band, idx) => (
+                          <th key={band} className={`px-2 py-1 text-center font-semibold ${idx === 0 ? 'border-l border-border/40' : ''} ${idx === stats.sortedBands.length - 1 ? 'border-r border-border/40' : ''}`}>
+                            {band}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/70">
+                      {stats.cityData.slice(0, 50).map((c, i) => (
+                        <tr key={c.city} className="hover:bg-muted/35 transition-colors">
+                          <td className="px-4 py-2 text-center font-tabular text-muted-foreground">{i + 1}</td>
+                          <td className="px-4 py-2 font-semibold cursor-pointer hover:text-primary hover:underline" onClick={() => navigateToExplorer({ city: c.city })}>{c.city}</td>
+                          <td className="px-4 py-2 text-right font-tabular cursor-pointer hover:text-primary" onClick={() => navigateToExplorer({ city: c.city })}>{c.cases.toLocaleString()}</td>
+                          <td className="px-4 py-2 text-right font-tabular font-medium cursor-pointer hover:text-primary" onClick={() => navigateToExplorer({ city: c.city })}>{fmtCur(c.pos)}</td>
+                          {stats.sortedBands.map((band, idx) => {
+                            const cell = c.bands[band];
+                            const val = cell ? cell.cases : 0;
+                            const isSelected = selectedCells.has(`${c.city}:::${band}`);
+                            return (
+                              <td
+                                key={band}
+                                className={`px-2 py-2 text-center font-tabular cursor-pointer transition-colors ${idx === 0 ? 'border-l border-border/40' : ''} ${idx === stats.sortedBands.length - 1 ? 'border-r border-border/40' : ''} ${isSelected ? 'bg-primary text-primary-foreground font-bold' : 'hover:bg-primary/10 hover:text-primary'}`}
+                                onClick={() => handleCellClick(c.city, band)}
+                              >
+                                {val > 0 ? val : '—'}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-[#1B1E35] text-white font-bold sticky bottom-0 z-10 cursor-pointer" onClick={() => window.location.href = globalBucket === 'ALL' ? '/explorer' : `/explorer?bucket=${globalBucket}`}>
+                      <tr>
+                        <td className="px-4 py-2 text-center" />
+                        <td className="px-4 py-2 text-sky-300 uppercase">Grand Total</td>
+                        <td className="px-4 py-2 text-right font-tabular">{stats.cityData.reduce((a, c) => a + c.cases, 0).toLocaleString()}</td>
+                        <td className="px-4 py-2 text-right font-tabular">{fmtCur(stats.cityData.reduce((a, c) => a + c.pos, 0))}</td>
+                        {stats.sortedBands.map((band) => (
+                          <td key={'ft' + band} className="px-2 py-2 text-center font-tabular hover:bg-white/10 hover:text-sky-300 transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); navigateToExplorer({ band }); }}>
+                            {stats.cityData.reduce((a, c) => a + (c.bands[band] ? c.bands[band].cases : 0), 0).toLocaleString()}
                           </td>
-                        )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-primary/10 font-bold sticky bottom-0 z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] cursor-pointer hover:bg-primary/20 transition-colors" onClick={() => window.location.href = globalBucket === 'ALL' ? '/explorer' : `/explorer?bucket=${globalBucket}`}>
-                <tr>
-                  <td className="px-4 py-2 text-center text-xs text-muted-foreground"></td>
-                  <td className="px-4 py-2 text-primary uppercase">Grand Total</td>
-                  <td className="px-4 py-2 text-right hover:text-primary transition-colors hover:bg-primary/5">{stats.cityData.reduce((a, c) => a + c.cases, 0).toLocaleString()}</td>
-                  <td className="px-4 py-2 text-right hover:text-primary transition-colors hover:bg-primary/5">{fmtCur(stats.cityData.reduce((a, c) => a + c.pos, 0))}</td>
-                  {stats.sortedBands.map((band, idx) => (
-                      <td key={'ft'+band} className="px-2 py-2 text-center hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); navigateToExplorer({ band }); }}>
-                          {stats.cityData.reduce((a, c) => a + (c.bands[band] ? c.bands[band].cases : 0), 0).toLocaleString()}
-                      </td>
-                  ))}
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-          <div className="p-3 border-t border-border bg-muted/10 flex justify-between items-center">
-             <span className="text-xs text-muted-foreground">{stats.cityData.length > 50 ? `Showing top 50 of ${stats.cityData.length} cities` : `Showing all ${stats.cityData.length} cities`}</span>
-             <button onClick={() => {
-                 const csv = ['City,Cases,Total POS,' + stats.sortedBands.join(','), ...stats.cityData.map((c, i) => `"${c.city}",${c.cases},${c.pos},${stats.sortedBands.map((b, i) => c.bands[b] ? c.bands[b].cases : 0).join(',')}`)].join('\n');
-                 const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'City_Bandwise.csv'; a.click();
-             }} className="inline-flex items-center gap-1.5 text-xs font-bold bg-card border border-border px-3 py-1.5 rounded hover:bg-muted text-primary transition-colors">
-               <Download className="h-3.5 w-3.5" /> Export Full Data
-             </button>
-          </div>
-        </div>
-      </div>
-      
-      </>
-      )}
+                        ))}
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+                <div className="px-4 py-2.5 border-t border-border bg-muted/15 flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">{stats.cityData.length > 50 ? `Showing top 50 of ${stats.cityData.length} cities` : `Showing all ${stats.cityData.length} cities`}</span>
+                  <button
+                    onClick={() => {
+                      const csv = ['City,Cases,Total POS,' + stats.sortedBands.join(','), ...stats.cityData.map(c => `"${c.city}",${c.cases},${c.pos},${stats.sortedBands.map(b => c.bands[b] ? c.bands[b].cases : 0).join(',')}`)].join('\n');
+                      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'City_Bandwise.csv'; a.click();
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-card border border-border px-3 py-1.5 rounded-lg hover:bg-muted text-foreground transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" /> Export Full Data
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
-      {/* Performance-Based Paid Cases */}
-      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden mb-8">
-        <div className="p-4 border-b border-border bg-muted/20">
-          <h3 className="font-semibold flex items-center gap-2">Performance-Based Paid Cases</h3>
-          <p className="text-xs text-muted-foreground mt-1">Detailed performance tracking against collection targets</p>
-        </div>
-        <div className="rounded-xl border border-border/80 bg-card shadow-xs flex flex-col flex-1 min-h-0 overflow-hidden mb-8"><div className="overflow-auto flex-1 max-h-[600px] scrollbar-thin">
-          <table className="w-full table-fixed border-collapse font-sans min-w-[1360px]">
+        {/* Performance-Based Paid Cases */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden mb-8">
+          <div className="px-4 py-3 border-b border-border bg-muted/25">
+            <h3 className="font-semibold text-sm text-foreground">Performance-Based Paid Cases</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Detailed performance tracking against collection targets</p>
+          </div>
+          <div className="overflow-auto max-h-[600px] scrollbar-thin">
+            <table className="w-full table-fixed border-collapse font-sans min-w-[1360px] text-xs">
               <colgroup>
                 <col style={{ width: '60px' }} />
                 <col style={{ width: '160px' }} />
@@ -538,118 +564,110 @@ export default function ExecDashboard() {
                 <col style={{ width: '95px' }} />
                 <col style={{ width: '95px' }} />
               </colgroup>
-            <thead className="sticky top-0 z-30 bg-slate-50 dark:bg-slate-900 border-b border-border shadow-sm">
-              <tr>
-                <th className="px-3 py-3 text-center uppercase tracking-wider text-[11px] align-middle w-12 text-muted-foreground font-semibold">Rank</th>
-                <th className="px-3 py-3 text-left uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">City</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Collection</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Total Cases</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Paid Count</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">POS Paid Only Count</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Total POS</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Paid POS</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Needed / DRR</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Target Date</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">DRR</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">POS Paid Only POS</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Actual %</th>
-                <th className="px-3 py-3 text-right uppercase tracking-wider text-[11px] align-middle text-muted-foreground font-semibold">Recovery %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamPerfGrouped.map(([bkt, items]) => {
-                const sub = {
-                  collection: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.collection, 0),
-                  count: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.count, 0),
-                  paid: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.paid, 0),
-                  totalPOS: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.totalPOS, 0),
-                  paidPOS: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.paidPOS, 0),
-                  posPaidOnlyCount: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.posPaidOnlyCount, 0),
-                  posPaidOnlyPOS: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.posPaidOnlyPOS, 0),
-                  target: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + i.target, 0),
-                  dailyRequiredPOS: items.reduce((s: number, i: import('../lib/pivots').ExecCityPivotRow) => s + (i.dailyRequiredPOS || 0), 0),
-                };
-                const subActualPct = sub.totalPOS ? (sub.paidPOS + sub.posPaidOnlyPOS) / sub.totalPOS : 0;
-                const subRecoveryPct = sub.totalPOS ? sub.collection / sub.totalPOS : 0;
-                return (
-                  <Fragment key={bkt}>
-                    <tr className="bg-primary/10 border-b border-border">
-                      <td colSpan={14} className="px-3 py-2.5 font-sans text-[11px] font-bold text-primary uppercase tracking-[0.1em]">BUCKET {bkt}</td>
-                    </tr>
-                    {items.map((item: import('../lib/pivots').ExecCityPivotRow) => (
-                      <tr key={item.city} className="border-b border-border transition-colors hover:bg-muted/30">
-                        <td className="px-3 py-2 text-center font-bold text-muted-foreground text-xs">{item.globalRank}</td>
-                        <td className="px-3 py-2 font-medium cursor-pointer hover:text-primary transition-colors hover:underline" onClick={() => navigateToExplorer({ city: item.city })}>{item.city}</td>
-                        <td className="px-3 py-2 text-right text-primary font-tabular-nums font-semibold">{fmtCur(item.collection)}</td>
-                        <td className="px-3 py-2 text-right cursor-pointer hover:text-primary transition-colors hover:bg-primary/5" onClick={() => navigateToExplorer({ city: item.city })}>{item.count}</td>
-                        <td className="px-3 py-2 text-right font-tabular-nums font-medium text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-success/10 transition-colors" onClick={() => navigateToExplorer({ city: item.city })}>{item.paid}</td>
-                        <td className="px-3 py-2 text-right font-tabular-nums font-medium text-blue-600 dark:text-blue-400 cursor-pointer hover:bg-info/10 transition-colors" onClick={() => navigateToExplorer({ city: item.city })}>{item.posPaidOnlyCount}</td>
-                        <td className="px-3 py-2 text-right font-tabular-nums">{fmtCur(item.totalPOS)}</td>
-                        <td className="px-3 py-2 text-right font-tabular-nums text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-success/10 transition-colors" onClick={() => navigateToExplorer({ city: item.city })}>{fmtCur(item.paidPOS)}</td>
-                        <td className="px-3 py-2 text-right">{item.target <= 0 ? <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span> : <span className="text-rose-600 dark:text-rose-400 font-tabular-nums font-bold tracking-tight">{fmtCur(item.target)}</span>}</td>
-                        <td className="px-3 py-2 text-right text-xs text-muted-foreground">{item.targetDate || "-"}</td>
-                        <td className="px-3 py-2 text-right font-tabular-nums font-bold tracking-tight text-amber-600">{fmtCur(item.dailyRequiredPOS || 0)}</td>
-                        <td className="px-3 py-2 text-right font-tabular-nums font-medium text-blue-600 dark:text-blue-400 cursor-pointer hover:bg-info/10 transition-colors" onClick={() => navigateToExplorer({ city: item.city })}>{fmtCur(item.posPaidOnlyPOS)}</td>
-                        <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(item.actualPct ?? item.pct)}`}>{fmtPct(item.actualPct ?? item.pct)}</td>
-                        <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(item.recoveryPct ?? 0)}`}>{fmtPct(item.recoveryPct ?? 0)}</td>
+              <thead className="sticky top-0 z-30 bg-muted/90 backdrop-blur-xs border-b border-border text-muted-foreground uppercase tracking-wider text-[10px]">
+                <tr>
+                  <th className="px-3 py-2.5 text-center w-12 font-semibold">Rank</th>
+                  <th className="px-3 py-2.5 text-left font-semibold">City</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Collection</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Total Cases</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Paid Count</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">POS Paid Only</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Total POS</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Paid POS</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Needed / DRR</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Target Date</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">DRR</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">POS Paid Only Amt</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Actual %</th>
+                  <th className="px-3 py-2.5 text-right font-semibold">Recovery %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamPerfGrouped.map(([bkt, items]) => {
+                  const sub = {
+                    collection: items.reduce((s: number, i: ExecCityPivotRow) => s + i.collection, 0),
+                    count: items.reduce((s: number, i: ExecCityPivotRow) => s + i.count, 0),
+                    paid: items.reduce((s: number, i: ExecCityPivotRow) => s + i.paid, 0),
+                    totalPOS: items.reduce((s: number, i: ExecCityPivotRow) => s + i.totalPOS, 0),
+                    paidPOS: items.reduce((s: number, i: ExecCityPivotRow) => s + i.paidPOS, 0),
+                    posPaidOnlyCount: items.reduce((s: number, i: ExecCityPivotRow) => s + i.posPaidOnlyCount, 0),
+                    posPaidOnlyPOS: items.reduce((s: number, i: ExecCityPivotRow) => s + i.posPaidOnlyPOS, 0),
+                    target: items.reduce((s: number, i: ExecCityPivotRow) => s + i.target, 0),
+                    dailyRequiredPOS: items.reduce((s: number, i: ExecCityPivotRow) => s + (i.dailyRequiredPOS || 0), 0),
+                  };
+                  const subActualPct = sub.totalPOS ? (sub.paidPOS + sub.posPaidOnlyPOS) / sub.totalPOS : 0;
+                  const subRecoveryPct = sub.totalPOS ? sub.collection / sub.totalPOS : 0;
+                  return (
+                    <Fragment key={bkt}>
+                      <tr className="bg-primary/10 border-b border-border">
+                        <td colSpan={14} className="px-3 py-2 text-[11px] font-bold text-primary uppercase tracking-wider">BUCKET {bkt}</td>
                       </tr>
-                    ))}
-                    <tr className="border-b border-border bg-muted/10 font-medium">
-                      <td className="px-3 py-2 text-center"></td>
-                      <td className="px-3 py-2.5 text-muted-foreground uppercase text-xs tracking-wider">Bucket {bkt} Total</td>
-                      <td className="px-3 py-2 text-right text-primary">{fmtCur(sub.collection)}</td>
-                      <td className="px-3 py-2 text-right">{sub.count}</td>
-                      <td className="px-3 py-2 text-right font-tabular-nums font-medium text-emerald-600 dark:text-emerald-400">{sub.paid}</td>
-                      <td className="px-3 py-2 text-right font-tabular-nums font-medium text-blue-600 dark:text-blue-400">{sub.posPaidOnlyCount}</td>
-                      <td className="px-3 py-2 text-right">{fmtCur(sub.totalPOS)}</td>
-                      <td className="px-3 py-2 text-right">{fmtCur(sub.paidPOS)}</td>
-                      <td className="px-3 py-2 text-right">{sub.target <= 0 ? <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span> : <span className="text-rose-600 dark:text-rose-400 font-tabular-nums font-bold tracking-tight">{fmtCur(sub.target)}</span>}</td>
-                      <td className="px-3 py-2 text-right text-xs text-muted-foreground">-</td>
-                      <td className="px-3 py-2 text-right font-tabular-nums font-bold tracking-tight text-amber-600">{fmtCur(sub.dailyRequiredPOS || 0)}</td>
-                      <td className="px-3 py-2 text-right font-tabular-nums font-medium text-blue-600 dark:text-blue-400">{fmtCur(sub.posPaidOnlyPOS)}</td>
-                      <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(subActualPct)}`}>{fmtPct(subActualPct)}</td>
-                      <td className={`px-3 py-2 text-right font-tabular-nums font-bold ${pctColor(subRecoveryPct)}`}>{fmtPct(subRecoveryPct)}</td>
-                    </tr>
-                  </Fragment>
-                );
-              })}
-            </tbody>
-            <tfoot className="sticky bottom-0 z-20 bg-slate-900 dark:bg-[#070910] text-slate-50 dark:text-slate-100 shadow-[0_-3px_10px_rgba(0,0,0,0.25)] cursor-pointer transition-colors" onClick={() => navigateToExplorer({})}>
-              <tr>
-                <td className="px-3 py-2 text-center"></td>
-                <td className="px-3 py-2.5 font-bold uppercase text-primary">Grand Total</td>
-                <td className="px-3 py-2.5 text-right text-primary font-tabular-nums">{fmtCur(teamPerfGrandTotal.collection)}</td>
-                <td className="px-3 py-2.5 text-right font-tabular-nums">{teamPerfGrandTotal.count}</td>
-                <td className="px-3 py-2.5 text-right font-tabular-nums text-emerald-600 dark:text-emerald-400">{teamPerfGrandTotal.paid}</td>
-                <td className="px-3 py-2.5 text-right font-tabular-nums text-blue-600 dark:text-blue-400">{teamPerfGrandTotal.posPaidOnlyCount}</td>
-                <td className="px-3 py-2.5 text-right font-tabular-nums">{fmtCur(teamPerfGrandTotal.totalPOS)}</td>
-                <td className="px-3 py-2.5 text-right font-tabular-nums text-emerald-600 dark:text-emerald-400">{fmtCur(teamPerfGrandTotal.paidPOS)}</td>
-                <td className="px-3 py-2.5 text-right">
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-rose-600 dark:text-rose-400 font-tabular-nums font-bold tracking-tight">{fmtCur(teamPerfGrandTotal.target)}</span>
-                  </div>
-                </td>
-                <td className="px-3 py-2.5 text-right text-xs text-muted-foreground">-</td>
-                <td className="px-3 py-2.5 text-right">
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] font-tabular-nums font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900/50 px-1.5 py-0.5 rounded-sm shadow-sm">DRR: {fmtCur(teamPerfGrandTotal.dailyRequiredPOS || 0)}/d</span>
-                  </div>
-                </td>
-                <td className="px-3 py-2.5 text-right font-tabular-nums text-blue-600 dark:text-blue-400">{fmtCur(teamPerfGrandTotal.posPaidOnlyPOS)}</td>
-                <td className={"px-3 py-2.5 text-right font-tabular-nums font-bold " + pctColor(teamPerfGrandTotal.totalPOS ? (teamPerfGrandTotal.paidPOS + teamPerfGrandTotal.posPaidOnlyPOS) / teamPerfGrandTotal.totalPOS : 0)}>
-                  {fmtPct(teamPerfGrandTotal.totalPOS ? (teamPerfGrandTotal.paidPOS + teamPerfGrandTotal.posPaidOnlyPOS) / teamPerfGrandTotal.totalPOS : 0)}
-                </td>
-                <td className={"px-3 py-2.5 text-right font-tabular-nums font-bold " + pctColor(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.collection / teamPerfGrandTotal.totalPOS : 0)}>
-                  {fmtPct(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.collection / teamPerfGrandTotal.totalPOS : 0)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+                      {items.map((item: ExecCityPivotItem) => (
+                        <tr key={item.city} className="border-b border-border/70 transition-colors hover:bg-muted/35">
+                          <td className="px-3 py-2 text-center font-semibold text-muted-foreground font-tabular">{item.globalRank}</td>
+                          <td className="px-3 py-2 font-medium cursor-pointer hover:text-primary hover:underline" onClick={() => navigateToExplorer({ city: item.city })}>{item.city}</td>
+                          <td className="px-3 py-2 text-right text-primary font-tabular font-semibold">{fmtCur(item.collection)}</td>
+                          <td className="px-3 py-2 text-right font-tabular cursor-pointer hover:text-primary" onClick={() => navigateToExplorer({ city: item.city })}>{item.count}</td>
+                          <td className="px-3 py-2 text-right font-tabular font-medium text-emerald-600 dark:text-emerald-400 cursor-pointer" onClick={() => navigateToExplorer({ city: item.city })}>{item.paid}</td>
+                          <td className="px-3 py-2 text-right font-tabular font-medium text-sky-600 dark:text-sky-400 cursor-pointer" onClick={() => navigateToExplorer({ city: item.city })}>{item.posPaidOnlyCount}</td>
+                          <td className="px-3 py-2 text-right font-tabular">{fmtCur(item.totalPOS)}</td>
+                          <td className="px-3 py-2 text-right font-tabular text-emerald-600 dark:text-emerald-400 cursor-pointer" onClick={() => navigateToExplorer({ city: item.city })}>{fmtCur(item.paidPOS)}</td>
+                          <td className="px-3 py-2 text-right font-tabular">{item.target <= 0 ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span> : <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtCur(item.target)}</span>}</td>
+                          <td className="px-3 py-2 text-right text-xs text-muted-foreground font-tabular">{item.targetDate || "-"}</td>
+                          <td className="px-3 py-2 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(item.dailyRequiredPOS || 0)}</td>
+                          <td className="px-3 py-2 text-right font-tabular font-medium text-sky-600 dark:text-sky-400 cursor-pointer" onClick={() => navigateToExplorer({ city: item.city })}>{fmtCur(item.posPaidOnlyPOS)}</td>
+                          <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.actualPct ?? item.pct)}`}>{fmtPct(item.actualPct ?? item.pct)}</td>
+                          <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.recoveryPct ?? 0)}`}>{fmtPct(item.recoveryPct ?? 0)}</td>
+                        </tr>
+                      ))}
+                      <tr className="border-b border-border bg-muted/25 font-semibold">
+                        <td className="px-3 py-2 text-center" />
+                        <td className="px-3 py-2 text-muted-foreground uppercase text-[11px] tracking-wider">Bucket {bkt} Total</td>
+                        <td className="px-3 py-2 text-right font-tabular text-primary">{fmtCur(sub.collection)}</td>
+                        <td className="px-3 py-2 text-right font-tabular">{sub.count}</td>
+                        <td className="px-3 py-2 text-right font-tabular text-emerald-600 dark:text-emerald-400">{sub.paid}</td>
+                        <td className="px-3 py-2 text-right font-tabular text-sky-600 dark:text-sky-400">{sub.posPaidOnlyCount}</td>
+                        <td className="px-3 py-2 text-right font-tabular">{fmtCur(sub.totalPOS)}</td>
+                        <td className="px-3 py-2 text-right font-tabular">{fmtCur(sub.paidPOS)}</td>
+                        <td className="px-3 py-2 text-right font-tabular">{sub.target <= 0 ? <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span> : <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtCur(sub.target)}</span>}</td>
+                        <td className="px-3 py-2 text-right text-xs text-muted-foreground">-</td>
+                        <td className="px-3 py-2 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(sub.dailyRequiredPOS || 0)}</td>
+                        <td className="px-3 py-2 text-right font-tabular text-sky-600 dark:text-sky-400">{fmtCur(sub.posPaidOnlyPOS)}</td>
+                        <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subActualPct)}`}>{fmtPct(subActualPct)}</td>
+                        <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subRecoveryPct)}`}>{fmtPct(subRecoveryPct)}</td>
+                      </tr>
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+              <tfoot className="sticky bottom-0 z-20 bg-[#1B1E35] text-white cursor-pointer" onClick={() => navigateToExplorer({})}>
+                <tr>
+                  <td className="px-3 py-2.5 text-center" />
+                  <td className="px-3 py-2.5 font-bold uppercase text-sky-300">Grand Total</td>
+                  <td className="px-3 py-2.5 text-right text-sky-300 font-tabular font-bold">{fmtCur(teamPerfGrandTotal.collection)}</td>
+                  <td className="px-3 py-2.5 text-right font-tabular">{teamPerfGrandTotal.count}</td>
+                  <td className="px-3 py-2.5 text-right font-tabular text-emerald-400">{teamPerfGrandTotal.paid}</td>
+                  <td className="px-3 py-2.5 text-right font-tabular text-sky-300">{teamPerfGrandTotal.posPaidOnlyCount}</td>
+                  <td className="px-3 py-2.5 text-right font-tabular">{fmtCur(teamPerfGrandTotal.totalPOS)}</td>
+                  <td className="px-3 py-2.5 text-right font-tabular text-emerald-400">{fmtCur(teamPerfGrandTotal.paidPOS)}</td>
+                  <td className="px-3 py-2.5 text-right font-tabular text-rose-400 font-bold">{fmtCur(teamPerfGrandTotal.target)}</td>
+                  <td className="px-3 py-2.5 text-right text-xs text-slate-300">-</td>
+                  <td className="px-3 py-2.5 text-right font-tabular text-[11px] font-semibold text-amber-300">
+                    {fmtCur(teamPerfGrandTotal.dailyRequiredPOS || 0)}/d
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-tabular text-sky-300">{fmtCur(teamPerfGrandTotal.posPaidOnlyPOS)}</td>
+                  <td className={"px-3 py-2.5 text-right font-tabular font-bold " + pctColor(teamPerfGrandTotal.totalPOS ? (teamPerfGrandTotal.paidPOS + teamPerfGrandTotal.posPaidOnlyPOS) / teamPerfGrandTotal.totalPOS : 0)}>
+                    {fmtPct(teamPerfGrandTotal.totalPOS ? (teamPerfGrandTotal.paidPOS + teamPerfGrandTotal.posPaidOnlyPOS) / teamPerfGrandTotal.totalPOS : 0)}
+                  </td>
+                  <td className={"px-3 py-2.5 text-right font-tabular font-bold " + pctColor(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.collection / teamPerfGrandTotal.totalPOS : 0)}>
+                    {fmtPct(teamPerfGrandTotal.totalPOS ? teamPerfGrandTotal.collection / teamPerfGrandTotal.totalPOS : 0)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
-      </div>
-
-      
     </AppLayout>
   );
 }

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { AppLayout } from "../components/layout/AppLayout";
+import { SectionHeader } from "../components/ui/SectionHeader";
 import { UploadStepper } from "../components/ui/UploadStepper";
 import { DataTable } from "../components/ui/DataTable";
 import { StatusBadge } from "../components/ui/StatusBadge";
@@ -17,8 +18,9 @@ import {
   FileSpreadsheet,
   UploadCloud,
   Database,
-  RefreshCw,
-  CheckCircle2,
+  AlertTriangle,
+  Lock,
+  Check,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { LiveGoogleSheetsSource } from "../components/sync/LiveGoogleSheetsSource";
@@ -289,7 +291,9 @@ export default function DataEntry() {
           >
             {fmtCur(Number(row.provisional_dac_raw || row.provisional_dac) || 0)}
             {row.is_conflict && (
-              <span title={`Conflict with Confirmed DAC (${fmtCur(row.dac || 0)})`}>⚠️</span>
+              <span title={`Conflict with Confirmed DAC (${fmtCur(row.dac || 0)})`} className="inline-flex">
+                <AlertTriangle className="h-3 w-3 text-destructive shrink-0" />
+              </span>
             )}
           </span>
         );
@@ -370,21 +374,20 @@ export default function DataEntry() {
   return (
     <AppLayout>
       <div className="data-entry-page">
-      <div className="mv-data-heading mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
-        <div>
-          <div className="mb-1 flex items-center gap-2"><span className="mv-data-mark" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span><span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Mahavtaar Workspace</span></div>
-          <h1 className="font-sans text-xl font-extrabold tracking-tight">Data Entry</h1>
-          <p className="font-sans text-xs text-muted-foreground">
-            Upload files & manage payment data
-          </p>
-        </div>
-        <button
-          onClick={exportFilteredData}
-          className="mv-data-export flex h-9 items-center gap-2 rounded-lg bg-primary px-4 font-sans text-xs font-bold text-primary-foreground hover:bg-primary/90"
-        >
-          <Download className="h-3.5 w-3.5" /> Export Data
-        </button>
-      </div>
+      <SectionHeader
+        title="Data Entry"
+        subtitle="Upload files & manage payment data"
+        icon={Database}
+        badge={`${records.length.toLocaleString()} records`}
+        actions={
+          <button
+            onClick={exportFilteredData}
+            className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 font-sans text-xs font-semibold text-primary-foreground hover:bg-primary/90 shadow-xs transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" /> Export Data
+          </button>
+        }
+      />
 
       {/* Mode Switcher & Portfolio Summary Ribbon */}
       <div className="mv-data-toolbar flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -484,7 +487,7 @@ export default function DataEntry() {
       )}
 
       {/* Filters */}
-      <div className="mv-data-filters mb-4 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+      <div className="mv-filter-bar mb-4 grid grid-cols-2 gap-2 p-3 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
         <div className="relative col-span-2 w-full sm:col-span-1 sm:flex-1 sm:min-w-[200px] sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -550,7 +553,7 @@ export default function DataEntry() {
               setCityFilter("all");
               setConflictFilter("all");
             }}
-            className="flex h-9 items-center gap-1.5 rounded-md border border-[rgba(255,255,255,0.1)] bg-white/5 px-3 font-sans text-xs text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors"
+            className="flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 font-sans text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="h-3.5 w-3.5" /> Reset
           </button>
@@ -578,8 +581,8 @@ export default function DataEntry() {
                   <p className="mt-1 truncate text-xs text-muted-foreground">{row.customer_name || "Customer"}{row.city ? ` · ${row.city}` : ""}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">BKT {row.bom_bkt ?? "—"}</span>
-                  <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${calc.mainPaid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{calc.mainPaid ? "PAID" : "UNPAID"}</span>
+                  <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold font-tabular text-primary">BKT {row.bom_bkt ?? "—"}</span>
+                  <span className={`text-[11px] font-bold tracking-wide ${calc.mainPaid ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>{calc.mainPaid ? "PAID" : "UNPAID"}</span>
                 </div>
               </div>
               {row.is_conflict && <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">Payment conflict detected — review provisional DAC</p>}
@@ -654,9 +657,15 @@ function EditableCell({
         ? "border-success text-success"
         : source === "CORRECTED"
           ? "border-info text-info"
-          : "border-[rgba(255,255,255,0.1)] text-muted-foreground hover:border-primary/50 hover:text-foreground";
-  const icon =
-    source === "MANUAL" ? "🔒" : source === "PAID_FILE" ? "📁" : source === "CORRECTED" ? "✓" : "";
+          : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground";
+  const SourceIcon =
+    source === "MANUAL"
+      ? Lock
+      : source === "PAID_FILE"
+        ? FileSpreadsheet
+        : source === "CORRECTED"
+          ? Check
+          : null;
 
   if (editing) {
     return (
@@ -674,7 +683,7 @@ function EditableCell({
             onSave(val);
           }
         }}
-        className="h-6 w-20 rounded border border-primary bg-[rgba(255,255,255,0.05)] px-1 text-right font-sans text-xs text-foreground outline-none shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+        className="h-6 w-20 rounded border border-primary bg-background px-1.5 text-right font-mono font-tabular text-xs text-foreground outline-none ring-2 ring-primary/15"
       />
     );
   }
@@ -682,9 +691,9 @@ function EditableCell({
   return (
     <span
       onClick={() => setEditing(true)}
-      className={`inline-flex cursor-pointer items-center gap-1 rounded border bg-card px-1.5 py-0.5 text-right transition-colors ${borderClass}`}
+      className={`inline-flex cursor-pointer items-center gap-1 rounded border bg-card px-1.5 py-0.5 text-right font-mono font-tabular transition-colors ${borderClass}`}
     >
-      {fmtCur(value)} {icon && <span className="text-[9px] opacity-80">{icon}</span>}
+      {fmtCur(value)} {SourceIcon && <SourceIcon className="h-2.5 w-2.5 opacity-80 shrink-0" />}
     </span>
   );
 }

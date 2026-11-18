@@ -122,7 +122,7 @@ export function FilterStrip({
     : 'POS Range';
 
   return (
-    <div className="bg-card border border-border rounded-xl p-3 mb-3 shadow-xs">
+    <div className="mv-filter-bar p-3 mb-3">
       <div className="flex flex-wrap items-center gap-2">
         {/* Bucket Filter */}
         <div className="relative">

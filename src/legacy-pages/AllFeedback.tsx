@@ -1,11 +1,12 @@
 // @ts-nocheck
 import React, { useState, useMemo } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { DataTable } from '../components/ui/DataTable';
 import { db, CustomerFeedback } from '../lib/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
-import { Download, Eye, CalendarIcon, Layers, FileText } from 'lucide-react';
+import { Download, Eye, CalendarIcon, Layers, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -109,15 +110,22 @@ export default function AllFeedback() {
   return (
     <AppLayout title="Feedback Log">
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-headline font-bold tracking-tight mb-2">All Feedback</h1>
-            <p className="text-muted-foreground">View and export all agent feedback records.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
+        <SectionHeader
+          title="All Feedback"
+          subtitle="View and export all agent feedback records."
+          icon={MessageSquare}
+          badge={`${filteredFeedbacks.length.toLocaleString()} logs`}
+          actions={
+            <Button onClick={handleExportCSV} variant="outline" size="sm" className="h-9">
+              <Download className="mr-2 h-4 w-4" /> Export CSV
+            </Button>
+          }
+        />
+
+        <div className="mv-filter-bar p-3 flex flex-wrap items-center gap-2.5">
             {/* Availability Filter */}
             <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px] h-9">
                 <SelectValue placeholder="Availability" />
               </SelectTrigger>
               <SelectContent>
@@ -130,7 +138,7 @@ export default function AllFeedback() {
 
             {/* Standard Feedbacks Filter */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[200px] h-9">
                 <SelectValue placeholder="Standard Feedback" />
               </SelectTrigger>
               <SelectContent>
@@ -146,7 +154,7 @@ export default function AllFeedback() {
                 <Button
                   id="date"
                   variant={"outline"}
-                  className={cn("w-[260px] justify-start text-left font-normal", !dateRange && "text-muted-foreground")}
+                  className={cn("w-[260px] h-9 justify-start text-left font-normal", !dateRange && "text-muted-foreground")}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {dateRange?.from ? (
@@ -174,11 +182,6 @@ export default function AllFeedback() {
                 />
               </PopoverContent>
             </Popover>
-
-            <Button onClick={handleExportCSV} variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" /> Export CSV
-            </Button>
-          </div>
         </div>
 
         <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">

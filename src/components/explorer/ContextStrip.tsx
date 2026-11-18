@@ -28,41 +28,41 @@ export function ContextStrip({
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-border border-l-4 border-l-primary rounded-xl px-4 py-2.5 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-medium">
+    <div className="mv-filter-bar w-full px-4 py-2.5 mb-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs font-medium">
         <div className="flex items-center gap-1.5">
-          <span className="font-mono tabular-nums font-semibold text-foreground text-sm">
+          <span className="font-mono font-tabular font-bold text-foreground text-sm">
             {totalRecords.toLocaleString()}
           </span>
-          <span className="text-muted-foreground uppercase text-[10px] font-bold tracking-wider">records</span>
+          <span className="text-muted-foreground uppercase text-[10px] font-semibold tracking-wider">records</span>
         </div>
 
-        <span className="text-muted-foreground/40 hidden sm:inline">·</span>
+        <span className="text-muted-foreground/40 hidden sm:inline" aria-hidden="true">·</span>
 
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground text-[11px]">POS:</span>
-          <span className="font-mono tabular-nums font-bold text-foreground text-sm">
+          <span className="font-mono font-tabular font-bold text-foreground text-sm">
             {fmtCur(totalPos)}
           </span>
         </div>
 
-        <span className="text-muted-foreground/40 hidden sm:inline">·</span>
+        <span className="text-muted-foreground/40 hidden sm:inline" aria-hidden="true">·</span>
 
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground text-[11px]">Paid:</span>
-          <span className={`font-mono tabular-nums font-bold text-sm ${getPaidPctColor()}`}>
+          <span className={`font-mono font-tabular font-bold text-sm ${getPaidPctColor()}`}>
             {paidPct.toFixed(1)}%
           </span>
-          <span className="text-[10px] text-muted-foreground font-mono">
+          <span className="text-[11px] text-muted-foreground font-mono font-tabular">
             ({paidCount.toLocaleString()}/{totalRecords.toLocaleString()})
           </span>
         </div>
 
-        <span className="text-muted-foreground/40 hidden sm:inline">·</span>
+        <span className="text-muted-foreground/40 hidden sm:inline" aria-hidden="true">·</span>
 
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground text-[11px]">Cleared:</span>
-          <span className="font-mono tabular-nums font-bold text-sky-600 dark:text-sky-400 text-sm">
+          <span className="font-mono font-tabular font-bold text-primary text-sm">
             {fmtCur(clearedAmount)}
           </span>
         </div>
@@ -72,7 +72,7 @@ export function ContextStrip({
         <button
           onClick={onExport}
           disabled={totalRecords === 0 || isLoading}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-all shadow-xs"
+          className="inline-flex h-8 items-center gap-1.5 px-3 text-[11px] font-semibold bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-xs"
           title="Export current filtered view to CSV (Ctrl+E)"
         >
           <Download className="h-3.5 w-3.5" />

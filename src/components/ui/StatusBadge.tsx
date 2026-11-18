@@ -138,7 +138,7 @@ interface StatusBadgeProps {
 export function StatusBadge({
   variant,
   children,
-  showDot = true,
+  showDot = false,
   className,
 }: StatusBadgeProps) {
   const normalizedKey = (variant?.toLowerCase() || 'info') as StatusBadgeVariant;
@@ -147,7 +147,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-sans text-[10px] font-semibold uppercase tracking-wider',
+        'inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-sans text-[10px] font-semibold uppercase tracking-wider font-tabular',
         config.bg,
         config.text,
         config.border,

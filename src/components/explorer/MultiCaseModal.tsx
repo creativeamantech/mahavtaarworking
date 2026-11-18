@@ -40,19 +40,20 @@ export function MultiCaseModal({ data, onClose, onSelectRecord }: MultiCaseModal
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            className="p-1.5 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Summary Strip */}
-        <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex flex-wrap items-center gap-4 text-xs">
+        <div className="bg-muted/40 border-b border-border px-4 py-2.5 flex flex-wrap items-center gap-3 text-xs font-tabular">
           <div className="flex items-center gap-1.5">
             <span className="text-muted-foreground">Total POS:</span>
             <span className="font-mono font-bold text-foreground">{fmtCur(totalPos)}</span>
           </div>
-          <span className="text-muted-foreground/30">|</span>
+          <span className="text-muted-foreground/40" aria-hidden="true">·</span>
           <div className="flex items-center gap-1.5">
             <span className="text-muted-foreground">Total EMI:</span>
             <span className="font-mono font-semibold text-foreground">{fmtCur(totalEmi)}</span>

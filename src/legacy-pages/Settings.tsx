@@ -2,6 +2,7 @@
 import { AdvancedTargetsTab } from '../components/AdvancedTargetsTab';
 import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { DataTable } from '../components/ui/DataTable';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +21,7 @@ import { SystemHealthDiagnostics } from '../components/settings/SystemHealthDiag
 import { SpreadsheetManagementTab } from '../components/settings/SpreadsheetManagementTab';
 import { SupabaseConnectionTab } from '../components/settings/SupabaseConnectionTab';
 import { useSearchParams } from '@/lib/router-compat';
-import { Database, Cloud } from 'lucide-react';
+import { Database, Cloud, Settings as SettingsIcon } from 'lucide-react';
 
 
 function SystemTab() {
@@ -262,19 +263,20 @@ export default function Settings() {
   return (
     <AppLayout title="Settings">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-headline font-bold tracking-tight mb-2">Settings</h1>
-          <p className="text-muted-foreground">Manage multi-spreadsheet cloud linkages, user credentials, diagnostics, and system targets.</p>
-        </div>
+        <SectionHeader
+          title="Settings"
+          subtitle="Manage multi-spreadsheet cloud linkages, user credentials, diagnostics, and system targets."
+          icon={SettingsIcon}
+        />
 
-        <div className="flex gap-2 border-b overflow-x-auto">
+        <div className="flex gap-2 border-b border-border overflow-x-auto">
           <button
             onClick={() => handleTabChange('supabase')}
             className={`px-4 py-2 font-semibold text-sm border-b-2 whitespace-nowrap transition-colors flex items-center gap-2 ${activeTab === 'supabase' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
           >
             <Cloud className="h-4 w-4 text-emerald-500" />
             <span>Supabase Cloud</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/30">PostgreSQL</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-500/25">PostgreSQL</span>
           </button>
           <button
             onClick={() => handleTabChange('spreadsheets')}

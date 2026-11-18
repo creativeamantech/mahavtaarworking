@@ -25,6 +25,7 @@ import { Checkbox } from '../components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { HeatBar } from '../components/ui/HeatBar';
 import { PivotColumn, PivotDensity } from '../components/ui/EnterprisePivotTable';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { LoanRecord } from '../types/domain';
 
 type BucketCityPivotItem = BucketCityPivotRow & { globalRank: number };
@@ -202,70 +203,65 @@ export default function CityPivot() {
 
   return (
     <AppLayout>
-      <div className="space-y-3 flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-128px)] min-h-0">
-        {/* Page Title & Controls Strip */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-border">
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-primary" /> City Ledger & Pivot Matrix
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Geographical collection breakdown with unified freeze-panes, actual vs recovery pacing, and bucket rollups
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Density Selector */}
-            <div className="hidden sm:flex items-center bg-muted/50 p-0.5 rounded-lg border border-border">
-              {(['compact', 'comfortable', 'detailed'] as PivotDensity[]).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDensity(d)}
-                  className={`px-2.5 py-1 text-[11px] font-medium rounded-md capitalize transition-colors ${
-                    density === d
-                      ? 'bg-card text-foreground shadow-xs font-semibold'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
+      <div className="space-y-4 flex flex-col h-[calc(100vh-160px)] md:h-[calc(100vh-128px)] min-h-0">
+        <SectionHeader
+          title="City Ledger & Pivot Matrix"
+          subtitle="Geographical collection breakdown with unified freeze-panes, actual vs recovery pacing, and bucket rollups"
+          icon={Building2}
+          actions={
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="hidden sm:flex items-center bg-muted/50 p-0.5 rounded-lg border border-border">
+                {(['compact', 'comfortable', 'detailed'] as PivotDensity[]).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDensity(d)}
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-md capitalize transition-colors ${
+                      density === d
+                        ? 'bg-card text-foreground shadow-xs font-semibold'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
 
-            <button
-              onClick={() => setViewMode('main')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/15 transition-colors shadow-xs"
-            >
-              Main Performance
-            </button>
-            <button
-              onClick={() => exportBucketCityPivot(cityData, targets)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-xs"
-            >
-              <Download className="h-3.5 w-3.5" /> Export Excel
-            </button>
-          </div>
-        </div>
+              <button
+                onClick={() => setViewMode('main')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-xs font-semibold text-primary hover:bg-primary/15 transition-colors"
+              >
+                Main Performance
+              </button>
+              <button
+                onClick={() => exportBucketCityPivot(cityData, targets)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+              >
+                <Download className="h-3.5 w-3.5 text-muted-foreground" /> Export Excel
+              </button>
+            </div>
+          }
+        />
 
         {/* Executive Summary Metrics Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Assigned POS', value: fmtCur(grandTotal.totalPOS), sub: `${grandTotal.count.toLocaleString()} cases`, color: 'text-foreground' },
             { label: 'Total Recovered', value: fmtCur(grandTotal.paidPOS), sub: `${grandTotal.paid.toLocaleString()} accounts paid`, color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Needed Target', value: fmtCur(grandTotal.target), sub: `DRR: ₹${fmtCur(grandTotal.dailyRequiredPOS)}/day`, color: 'text-rose-600 dark:text-rose-400' },
+            { label: 'Needed Target', value: fmtCur(grandTotal.target), sub: `DRR: ${fmtCur(grandTotal.dailyRequiredPOS)}/day`, color: 'text-rose-600 dark:text-rose-400' },
             { label: 'Actual & Recovery', value: fmtPct(grandActualPct), sub: `Cash Rec: ${fmtPct(grandRecoveryPct)}`, color: pctColor(grandActualPct) },
           ].map((card, i) => (
-            <div key={i} className="bg-card border border-border/80 rounded-lg p-3 shadow-xs">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">{card.label}</span>
+            <div key={i} className="metric-kpi-card">
+              <span className="text-[11px] uppercase font-semibold text-muted-foreground tracking-wider block">{card.label}</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className={`text-base sm:text-lg font-bold font-mono ${card.color}`}>{card.value}</span>
+                <span className={`text-base sm:text-lg font-bold font-tabular ${card.color}`}>{card.value}</span>
               </div>
-              <span className="text-[11px] text-muted-foreground block mt-0.5 font-mono">{card.sub}</span>
+              <span className="text-[11px] text-muted-foreground block mt-0.5 font-tabular">{card.sub}</span>
             </div>
           ))}
         </div>
 
-        {/* Search & Sort Pill Strip */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Search & Sort Strip */}
+        <div className="mv-filter-bar">
           <div className="relative min-w-[220px] max-w-sm flex-1">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <input
@@ -273,7 +269,7 @@ export default function CityPivot() {
               placeholder="Search by city name..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full pl-8 pr-7 py-1.5 text-xs bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-primary shadow-xs"
+              className="w-full pl-8 pr-7 py-1.5 text-xs bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
             {filterText && (
               <button
@@ -287,7 +283,7 @@ export default function CityPivot() {
 
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex h-8 items-center gap-1.5 px-3 bg-card border border-border rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground shadow-xs">
+              <button className="flex h-8 items-center gap-1.5 px-3 bg-background border border-border rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                 <Plus className="h-3.5 w-3.5" /> Add Column Sort
               </button>
             </PopoverTrigger>
@@ -337,7 +333,7 @@ export default function CityPivot() {
               dailyRequiredPOS: 'DRR'
             };
             return (
-              <div key={sort.key} className="flex h-8 items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary px-2.5 rounded-lg text-xs font-bold uppercase tracking-wider">
+              <div key={sort.key} className="flex h-8 items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary px-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider">
                 <span>{labels[sort.key] || sort.key}</span>
                 <button onClick={() => toggleSort(sort.key)} className="hover:opacity-75">
                   {sort.direction === 'asc' ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
@@ -354,26 +350,26 @@ export default function CityPivot() {
         </div>
 
         {/* Single Enterprise Data Grid */}
-        <div className="flex-1 min-h-0 bg-card border border-border/80 shadow-xs rounded-xl flex flex-col overflow-hidden relative">
-          <div className="overflow-auto flex-1 scrollbar-thin ">
+        <div className="flex-1 min-h-0 bg-card border border-border rounded-xl flex flex-col overflow-hidden relative">
+          <div className="overflow-auto flex-1 scrollbar-thin">
             <table className="w-full table-fixed min-w-[900px] text-xs">
               <colgroup>
                 {columns.map(col => <col key={col.key} style={{ width: col.width, minWidth: col.minWidth }} />)}
               </colgroup>
-              <thead className="bg-[#f8f9fc] dark:bg-[#0d0f14] shadow-[0_1px_2px_rgba(0,0,0,0.05)] sticky top-0 z-30 h-[40px]">
+              <thead className="bg-muted/85 backdrop-blur-xs sticky top-0 z-30 h-[40px] border-b border-border">
                 <tr>
                   {columns.map(col => (
-                    <th key={col.key} className={`px-3 py-2 font-bold text-muted-foreground uppercase tracking-wider border-b border-border/80 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}>
+                    <th key={col.key} className={`px-3 py-2 font-semibold text-[10px] text-muted-foreground uppercase tracking-wider border-b border-border ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}>
                       {col.label}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/40">
+              <tbody className="divide-y divide-border/60">
                 {grouped.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="text-center py-10 text-muted-foreground">
-                      {filterText ? `No ` + "city" + ` matching "${filterText}".` : 'No portfolio records in current view.'}
+                      {filterText ? `No city matching "${filterText}".` : 'No portfolio records in current view.'}
                     </td>
                   </tr>
                 ) : (
@@ -396,24 +392,23 @@ export default function CityPivot() {
                     return (
                       <React.Fragment key={bkt}>
                         {/* Sticky Bucket Subheader */}
-                        <tr className="sticky top-[40px] z-20 bg-muted/95 backdrop-blur-md shadow-[0_1px_2px_rgba(0,0,0,0.05)] border-b border-border/60">
+                        <tr className="sticky top-[40px] z-20 bg-muted/95 backdrop-blur-md border-b border-border">
                           <td colSpan={2} className={`${cellPadding} font-bold text-foreground`}>
                             <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-primary" />
-                              Bucket {bkt}
-                              <span className="text-muted-foreground font-mono font-medium ml-1">({items.length} Citys)</span>
+                              <span className="text-primary font-bold">Bucket {bkt}</span>
+                              <span className="text-muted-foreground font-tabular font-medium">· {items.length} cities</span>
                             </div>
                           </td>
-                          <td className={`${cellPadding} text-right font-mono font-bold text-muted-foreground`}>{fmtCur(sub.collection)}</td>
-                          <td className={`${cellPadding} text-right font-mono font-bold text-muted-foreground`}>{sub.count.toLocaleString()}</td>
-                          <td className={`${cellPadding} text-right font-mono font-bold text-muted-foreground`}>{sub.paid.toLocaleString()}</td>
-                          <td className={`${cellPadding} text-right font-mono font-bold text-muted-foreground`}>{fmtCur(sub.totalPOS)}</td>
-                          <td className={`${cellPadding} text-right font-mono font-bold text-emerald-600 dark:text-emerald-400`}>{fmtCur(sub.paidPOS)}</td>
-                          <td className={`${cellPadding} text-right font-mono font-bold text-rose-600 dark:text-rose-400`}>{fmtCur(sub.target)}</td>
-                          <td className={`${cellPadding} text-right font-mono font-bold`}>
+                          <td className={`${cellPadding} text-right font-tabular font-bold text-muted-foreground`}>{fmtCur(sub.collection)}</td>
+                          <td className={`${cellPadding} text-right font-tabular font-bold text-muted-foreground`}>{sub.count.toLocaleString()}</td>
+                          <td className={`${cellPadding} text-right font-tabular font-bold text-muted-foreground`}>{sub.paid.toLocaleString()}</td>
+                          <td className={`${cellPadding} text-right font-tabular font-bold text-muted-foreground`}>{fmtCur(sub.totalPOS)}</td>
+                          <td className={`${cellPadding} text-right font-tabular font-bold text-emerald-600 dark:text-emerald-400`}>{fmtCur(sub.paidPOS)}</td>
+                          <td className={`${cellPadding} text-right font-tabular font-bold text-rose-600 dark:text-rose-400`}>{fmtCur(sub.target)}</td>
+                          <td className={`${cellPadding} text-right font-tabular font-bold`}>
                             <HeatBar pct={subActualPct} showBar={false} showBadge={true} />
                           </td>
-                          <td className={`${cellPadding} text-right font-mono font-bold`}>
+                          <td className={`${cellPadding} text-right font-tabular font-bold`}>
                             <HeatBar pct={subRecoveryPct} showBar={false} showBadge={true} />
                           </td>
                         </tr>
@@ -424,32 +419,32 @@ export default function CityPivot() {
                           const rowRecoveryPct = item.totalPOS > 0 ? item.collection / item.totalPOS : 0;
                           const isAchieved = item.paidPOS >= item.targetPOS;
                           return (
-                            <tr key={i} className="hover:bg-muted/30 transition-colors group">
-                              <td className={`${cellPadding} text-center font-mono text-muted-foreground`}>{item.globalRank}</td>
+                            <tr key={i} className="hover:bg-muted/35 transition-colors group">
+                              <td className={`${cellPadding} text-center font-tabular text-muted-foreground`}>{item.globalRank}</td>
                               <td className={`${cellPadding}`}>
                                 <span onClick={() => navigateToExplorer({ city: item.city, bucket: bkt })} className="cursor-pointer hover:text-primary hover:underline text-left font-semibold text-foreground">
                                   {item.city}
                                 </span>
                               </td>
-                              <td className={`${cellPadding} text-right font-mono font-semibold`}>{fmtCur(item.collection)}</td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums text-muted-foreground`}>{item.count.toLocaleString()}</td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold`}>{item.paid.toLocaleString()}</td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums text-foreground`}>{fmtCur(item.totalPOS)}</td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-bold`}>{fmtCur(item.paidPOS)}</td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums`}>
+                              <td className={`${cellPadding} text-right font-tabular font-semibold`}>{fmtCur(item.collection)}</td>
+                              <td className={`${cellPadding} text-right font-tabular text-muted-foreground`}>{item.count.toLocaleString()}</td>
+                              <td className={`${cellPadding} text-right font-tabular text-emerald-600 dark:text-emerald-400 font-semibold`}>{item.paid.toLocaleString()}</td>
+                              <td className={`${cellPadding} text-right font-tabular text-foreground`}>{fmtCur(item.totalPOS)}</td>
+                              <td className={`${cellPadding} text-right font-tabular text-emerald-600 dark:text-emerald-400 font-bold`}>{fmtCur(item.paidPOS)}</td>
+                              <td className={`${cellPadding} text-right font-tabular`}>
                                 {isAchieved ? (
-                                  <span className="text-[10px] font-bold text-emerald-500">Achieved</span>
+                                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Achieved</span>
                                 ) : (
                                   <div className="flex flex-col items-end leading-tight">
                                     <span className="font-bold text-rose-600 dark:text-rose-400">{fmtCur(item.target)}</span>
-                                    {item.dailyRequiredPOS > 0 && <span className="text-[9px] text-amber-600 dark:text-amber-400">DRR: ₹{fmtCur(item.dailyRequiredPOS)}</span>}
+                                    {item.dailyRequiredPOS > 0 && <span className="text-[10px] text-amber-600 dark:text-amber-400">DRR: {fmtCur(item.dailyRequiredPOS)}</span>}
                                   </div>
                                 )}
                               </td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums font-bold`}>
+                              <td className={`${cellPadding} text-right font-tabular font-bold`}>
                                 <HeatBar pct={item.actualPct ?? rowActualPct} showBar={false} showBadge={true} />
                               </td>
-                              <td className={`${cellPadding} text-right font-mono tabular-nums font-bold`}>
+                              <td className={`${cellPadding} text-right font-tabular font-bold`}>
                                 <HeatBar pct={item.recoveryPct ?? rowRecoveryPct} showBar={false} showBadge={true} />
                               </td>
                             </tr>
@@ -463,25 +458,25 @@ export default function CityPivot() {
               
               {/* Grand Total Footer */}
               {grouped.length > 0 && (
-                <tfoot className="sticky bottom-0 z-30 bg-slate-900 dark:bg-[#070910] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] border-t border-primary/40">
+                <tfoot className="sticky bottom-0 z-30 bg-[#1B1E35] text-white border-t border-white/10">
                   <tr>
                     <td className={`${cellPadding}`}></td>
-                    <td className={`${cellPadding} font-extrabold uppercase text-xs tracking-wider text-primary cursor-pointer hover:underline`} onClick={() => navigateToExplorer({})}>Grand Total</td>
-                    <td className={`${cellPadding} text-right font-mono font-bold text-emerald-400`}>{fmtCur(grandTotal.collection)}</td>
-                    <td className={`${cellPadding} text-right font-mono font-bold text-slate-200`}>{grandTotal.count.toLocaleString()}</td>
-                    <td className={`${cellPadding} text-right font-mono font-bold text-emerald-400`}>{grandTotal.paid.toLocaleString()}</td>
-                    <td className={`${cellPadding} text-right font-mono font-bold text-slate-200`}>{fmtCur(grandTotal.totalPOS)}</td>
-                    <td className={`${cellPadding} text-right font-mono font-bold text-emerald-400`}>{fmtCur(grandTotal.paidPOS)}</td>
-                    <td className={`${cellPadding} text-right font-mono font-bold text-rose-400`}>
+                    <td className={`${cellPadding} font-bold uppercase text-xs tracking-wider text-sky-300 cursor-pointer hover:underline`} onClick={() => navigateToExplorer({})}>Grand Total</td>
+                    <td className={`${cellPadding} text-right font-tabular font-bold text-emerald-400`}>{fmtCur(grandTotal.collection)}</td>
+                    <td className={`${cellPadding} text-right font-tabular font-bold text-slate-200`}>{grandTotal.count.toLocaleString()}</td>
+                    <td className={`${cellPadding} text-right font-tabular font-bold text-emerald-400`}>{grandTotal.paid.toLocaleString()}</td>
+                    <td className={`${cellPadding} text-right font-tabular font-bold text-slate-200`}>{fmtCur(grandTotal.totalPOS)}</td>
+                    <td className={`${cellPadding} text-right font-tabular font-bold text-emerald-400`}>{fmtCur(grandTotal.paidPOS)}</td>
+                    <td className={`${cellPadding} text-right font-tabular font-bold text-rose-400`}>
                       <div className="flex flex-col items-end leading-tight">
                         <span>{fmtCur(grandTotal.target)}</span>
-                        <span className="text-[9px] text-amber-300 font-mono">DRR: ₹{fmtCur(grandTotal.dailyRequiredPOS)}</span>
+                        <span className="text-[10px] text-amber-300 font-tabular">DRR: {fmtCur(grandTotal.dailyRequiredPOS)}</span>
                       </div>
                     </td>
-                    <td className={`${cellPadding} text-right font-mono font-bold`}>
+                    <td className={`${cellPadding} text-right font-tabular font-bold`}>
                       <HeatBar pct={grandActualPct} showBar={false} showBadge={true} />
                     </td>
-                    <td className={`${cellPadding} text-right font-mono font-bold`}>
+                    <td className={`${cellPadding} text-right font-tabular font-bold`}>
                       <HeatBar pct={grandRecoveryPct} showBar={false} showBadge={true} />
                     </td>
                   </tr>

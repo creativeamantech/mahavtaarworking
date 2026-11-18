@@ -42,14 +42,13 @@ export function AppLayout({ children }: AppLayoutProps) {
       resetTimer();
     };
 
-    // Attach activity listeners
     window.addEventListener("mousemove", handleUserActivity);
     window.addEventListener("keydown", handleUserActivity);
     window.addEventListener("click", handleUserActivity);
     window.addEventListener("scroll", handleUserActivity);
     window.addEventListener("touchstart", handleUserActivity);
 
-    resetTimer(); // Start the timer initially
+    resetTimer();
 
     return () => {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
@@ -75,13 +74,15 @@ export function AppLayout({ children }: AppLayoutProps) {
         />
       </div>
       <div
-        className={`flex flex-col min-w-0 min-h-screen transition-all duration-300 ease-out md:pl-[72px] ${collapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"}`}
+        className={`flex flex-col min-w-0 min-h-screen transition-all duration-200 ease-out md:pl-[72px] ${
+          collapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
+        }`}
       >
         <MobileHeader />
         <DesktopHeader collapsed={collapsed} setCollapsed={setCollapsed} />
         <WorkspaceTabStrip />
-        <main className="mobile-main-content flex-1 pb-16 md:pb-0 animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out fill-mode-both">
-          <div className="mx-auto max-w-[1600px] p-4 sm:p-5 lg:p-8">{children}</div>
+        <main className="mv-workspace-main mobile-main-content flex-1 pb-16 md:pb-0">
+          <div className="mx-auto max-w-[1640px] p-4 sm:p-5 lg:p-7">{children}</div>
         </main>
       </div>
       <BottomNav />

@@ -260,8 +260,8 @@ export default function CustomerDetail() {
             </div>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Current Status</span>
-            <span className={`px-3 py-1 rounded-full text-sm font-bold ${getStatusColor(currentFeedbackStatus)}`}>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Current Status</span>
+            <span className={`px-2.5 py-1 rounded-md border border-border/60 text-xs font-bold ${getStatusColor(currentFeedbackStatus)}`}>
               {currentFeedbackStatus}
             </span>
           </div>
@@ -337,15 +337,15 @@ export default function CustomerDetail() {
               {/* Financials */}
               <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
                 <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2"><CreditCard className="h-4 w-4" /> Financial Overview</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted-foreground">POS</span><span className="font-bold">{fmtCur(record.principal_outstanding || 0)}</span></div>
-                  {record.bcc_pending && <div className="flex justify-between"><span className="text-muted-foreground">BCC Pending</span><span className="font-medium">{fmtCur(record.bcc_pending)}</span></div>}
-                  {record.penal_pending && <div className="flex justify-between"><span className="text-muted-foreground">Penal Pending</span><span className="font-medium">{fmtCur(record.penal_pending)}</span></div>}
-                  <div className="flex justify-between"><span className="text-muted-foreground">EMI</span><span className="font-medium">{fmtCur(record.emi_amt || 0)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">DAC</span><span className="font-medium text-info">{fmtCur(record.dac || record.DAC || 0)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">ECS</span><span className="font-medium">{fmtCur(record.ecs || record.ECS || 0)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Special</span><span className="font-medium">{fmtCur(record.special || record.Special || record.SPECIAL || 0)}</span></div>
-                  {record.approx_forclosure && <div className="flex justify-between"><span className="text-muted-foreground">Foreclosure</span><span className="font-medium">{fmtCur(record.approx_forclosure)}</span></div>}
+                <div className="space-y-2 text-sm font-tabular">
+                  <div className="flex justify-between"><span className="text-muted-foreground">POS</span><span className="font-bold font-mono">{fmtCur(record.principal_outstanding || 0)}</span></div>
+                  {record.bcc_pending && <div className="flex justify-between"><span className="text-muted-foreground">BCC Pending</span><span className="font-medium font-mono">{fmtCur(record.bcc_pending)}</span></div>}
+                  {record.penal_pending && <div className="flex justify-between"><span className="text-muted-foreground">Penal Pending</span><span className="font-medium font-mono">{fmtCur(record.penal_pending)}</span></div>}
+                  <div className="flex justify-between"><span className="text-muted-foreground">EMI</span><span className="font-medium font-mono">{fmtCur(record.emi_amt || 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">DAC</span><span className="font-semibold font-mono text-primary">{fmtCur(record.dac || record.DAC || 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">ECS</span><span className="font-medium font-mono">{fmtCur(record.ecs || record.ECS || 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Special</span><span className="font-medium font-mono">{fmtCur(record.special || record.Special || record.SPECIAL || 0)}</span></div>
+                  {record.approx_forclosure && <div className="flex justify-between"><span className="text-muted-foreground">Foreclosure</span><span className="font-medium font-mono">{fmtCur(record.approx_forclosure)}</span></div>}
                 </div>
               </div>
 
@@ -409,7 +409,7 @@ export default function CustomerDetail() {
             
             {/* Quick Action Prompt if phone available */}
             {phones.length > 0 && (
-              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+              <div className="bg-card border border-primary/25 rounded-xl p-4 flex items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-primary/20 text-primary">
                     <PhoneCall className="h-5 w-5" />
@@ -462,11 +462,11 @@ export default function CustomerDetail() {
 
                       return (
                         <div key={f.id} className="relative pl-4 border-l-2 border-primary/30 pb-4 last:pb-0">
-                          <div className="absolute w-2 h-2 rounded-full bg-primary -left-[5px] top-1"></div>
+                          <div className="absolute w-2 h-2 rounded-xs bg-primary -left-[5px] top-1.5"></div>
                           
                           <div className="flex justify-between items-start mb-1">
                             <span className="font-bold text-sm text-foreground">{displayStatus}</span>
-                            <span className="text-[10px] text-muted-foreground">{format(new Date(f.createdAt), 'MMM d, h:mm a')}</span>
+                            <span className="text-[10px] font-tabular text-muted-foreground">{format(new Date(f.createdAt), 'MMM d, h:mm a')}</span>
                           </div>
 
                           <div className="text-xs text-muted-foreground space-y-1.5">

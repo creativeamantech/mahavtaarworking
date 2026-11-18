@@ -33,9 +33,9 @@ export function UploadStepper({ steps }: { steps: Step[] }) {
                 <div className="hidden lg:block absolute left-[50%] right-[-50%] top-4 h-[1px] bg-border -z-10" />
               )}
               
-              <div className={`cursor-pointer rounded-xl border ${isActive ? 'border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : 'border-border bg-card/50'} p-3 sm:p-5 flex flex-col ${isActive ? 'items-center text-center' : 'lg:items-center lg:text-center flex-row items-center gap-3'} h-full backdrop-blur-md`}>
-                <div className={`flex shrink-0 h-8 w-8 items-center justify-center rounded-full border ${isDone ? 'border-success bg-success/10 text-success' : isUploading ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'} ${isActive ? 'mb-2' : ''}`}>
-                  {isDone ? <CheckCircle2 className="h-4 w-4" /> : isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="font-sans text-xs font-bold">{index + 1}</span>}
+              <div className={`cursor-pointer rounded-xl border ${isActive ? 'border-primary/50 bg-primary/5 shadow-xs' : 'border-border bg-card/60'} p-3 sm:p-5 flex flex-col ${isActive ? 'items-center text-center' : 'lg:items-center lg:text-center flex-row items-center gap-3'} h-full backdrop-blur-md`}>
+                <div className={`flex shrink-0 h-8 w-8 items-center justify-center rounded-lg border ${isDone ? 'border-success bg-success/10 text-success' : isUploading ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'} ${isActive ? 'mb-2' : ''}`}>
+                  {isDone ? <CheckCircle2 className="h-4 w-4" /> : isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span className="font-sans text-xs font-bold font-tabular">{index + 1}</span>}
                 </div>
                 
                 <h4 className={`font-sans text-xs font-bold tracking-wider uppercase mb-1 ${isActive ? 'text-primary' : 'text-foreground'}`}>
@@ -82,7 +82,7 @@ function FileDropzone({ onFileSelect, disabled }: { onFileSelect: (f: File) => v
         const file = e.dataTransfer.files[0];
         if (file) onFileSelect(file);
       }}
-      className={`w-full rounded-md border border-dashed p-3 flex flex-col items-center justify-center transition-colors ${dragging ? 'border-primary bg-primary/10' : 'border-[rgba(255,255,255,0.15)] hover:border-primary/50'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`w-full rounded-lg border border-dashed p-3 flex flex-col items-center justify-center transition-colors ${dragging ? 'border-primary bg-primary/10' : 'border-border bg-muted/20 hover:border-primary/50 hover:bg-muted/35'} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <input 
         ref={inputRef} 

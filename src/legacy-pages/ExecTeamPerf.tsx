@@ -121,7 +121,7 @@ export default function ExecTeamPerf() {
     return (
       <AppLayout>
         <div className="mb-4"><BucketFilter /></div>
-        <div className="flex h-[50vh] items-center justify-center text-muted-foreground animate-pulse font-medium">
+        <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground font-medium">
           Loading team performance matrix...
         </div>
       </AppLayout>
@@ -135,43 +135,41 @@ export default function ExecTeamPerf() {
         subtitle="Granular bucket-by-location recovery, daily run rates, and clearance metrics"
         icon={Users}
         actions={
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => exportExecCityPivot(rawCityData)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 shadow-xs transition-colors"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export Matrix</span>
-            </button>
-          </div>
+          <button
+            onClick={() => exportExecCityPivot(rawCityData)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export Matrix</span>
+          </button>
         }
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-xs">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total POS</div>
-          <div className="text-2xl font-extrabold font-tabular text-foreground">{fmtCur(grandTotal.totalPOS)}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div className="metric-kpi-card">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Total POS</div>
+          <div className="text-xl sm:text-2xl font-bold font-tabular text-foreground">{fmtCur(grandTotal.totalPOS)}</div>
         </div>
-        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-xs">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Paid POS</div>
-          <div className="text-2xl font-extrabold font-tabular text-emerald-600 dark:text-emerald-400">{fmtCur(grandTotal.paidPOS)}</div>
+        <div className="metric-kpi-card">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Paid POS</div>
+          <div className="text-xl sm:text-2xl font-bold font-tabular text-emerald-600 dark:text-emerald-400">{fmtCur(grandTotal.paidPOS)}</div>
         </div>
-        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-xs">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Needed POS</div>
-          <div className="text-2xl font-extrabold font-tabular text-rose-600 dark:text-rose-400">{fmtCur(grandTotal.target)}</div>
+        <div className="metric-kpi-card">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Needed POS</div>
+          <div className="text-xl sm:text-2xl font-bold font-tabular text-rose-600 dark:text-rose-400">{fmtCur(grandTotal.target)}</div>
         </div>
-        <div className="bg-card border border-border/80 rounded-xl p-4 shadow-xs">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Recovery %</div>
-          <div className="text-2xl font-extrabold font-tabular text-primary">
+        <div className="metric-kpi-card">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Recovery %</div>
+          <div className="text-xl sm:text-2xl font-bold font-tabular text-primary">
             {fmtPct(grandTotal.totalPOS ? grandTotal.paidPOS / grandTotal.totalPOS : 0)}
           </div>
         </div>
       </div>
 
       {/* Filters Strip */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="mv-filter-bar mb-4 justify-between">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
@@ -179,13 +177,13 @@ export default function ExecTeamPerf() {
               placeholder="Filter location..."
               value={filterText}
               onChange={e => setFilterText(e.target.value)}
-              className="pl-8 pr-3 py-1.5 h-8 text-xs bg-card border border-border rounded-lg outline-none focus:border-primary w-48 shadow-2xs font-medium"
+              className="pl-8 pr-3 py-1.5 h-8 text-xs bg-background border border-border rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 w-52 font-medium"
             />
           </div>
 
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex h-8 items-center gap-1.5 px-3 rounded-lg border border-dashed border-border hover:bg-muted text-xs font-bold text-muted-foreground uppercase tracking-wider bg-card shadow-2xs">
+              <button className="flex h-8 items-center gap-1.5 px-3 rounded-lg border border-border hover:bg-muted text-xs font-semibold text-muted-foreground hover:text-foreground uppercase tracking-wider bg-background transition-colors">
                 <Plus className="h-3.5 w-3.5" /> Add Sort
               </button>
             </PopoverTrigger>
@@ -242,7 +240,7 @@ export default function ExecTeamPerf() {
           {sortConfig.map(s => (
             <div
               key={s.key}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold bg-muted px-2 py-1 rounded-md border border-border"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold bg-primary/10 text-primary px-2 py-1 rounded-md border border-primary/20"
             >
               <span className="capitalize">{s.key}</span>
               <button
@@ -266,7 +264,7 @@ export default function ExecTeamPerf() {
       </div>
 
       {/* Table Container */}
-      <div className="bg-card border border-border rounded-xl shadow-xs overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto max-h-[calc(100vh-280px)] scrollbar-thin">
           <table className="w-full text-xs text-left whitespace-nowrap">
             <colgroup>
@@ -283,26 +281,27 @@ export default function ExecTeamPerf() {
               <col className="w-28" />
               <col className="w-32" />
               <col className="w-24" />
+              <col className="w-24" />
             </colgroup>
-            <thead className="sticky top-0 z-30 bg-muted/80 backdrop-blur-xs border-b border-border shadow-xs text-muted-foreground uppercase text-[10px] tracking-wider">
+            <thead className="sticky top-0 z-30 bg-muted/85 backdrop-blur-xs border-b border-border text-muted-foreground uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="px-3 py-2.5 text-center font-bold">Rank</th>
-                <th className="px-3 py-2.5 font-bold">Bucket / Location</th>
-                <th className="px-3 py-2.5 text-right font-bold">Collection</th>
-                <th className="px-3 py-2.5 text-right font-bold">Total Count</th>
-                <th className="px-3 py-2.5 text-right font-bold text-emerald-600 dark:text-emerald-400">Paid Count</th>
-                <th className="px-3 py-2.5 text-right font-bold">POS Paid Only</th>
-                <th className="px-3 py-2.5 text-right font-bold">Total POS</th>
-                <th className="px-3 py-2.5 text-right font-bold">Paid POS</th>
-                <th className="px-3 py-2.5 text-right font-bold">Needed POS</th>
-                <th className="px-3 py-2.5 text-right font-bold">Target Date</th>
-                <th className="px-3 py-2.5 text-right font-bold text-amber-600 dark:text-amber-400">DRR</th>
-                <th className="px-3 py-2.5 text-right font-bold">POS Paid Only Amt</th>
-                <th className="px-3 py-2.5 text-right font-bold">Actual %</th>
-                <th className="px-3 py-2.5 text-right font-bold">Recovery %</th>
+                <th className="px-3 py-2.5 text-center font-semibold">Rank</th>
+                <th className="px-3 py-2.5 font-semibold">Bucket / Location</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Collection</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Total Count</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-emerald-600 dark:text-emerald-400">Paid Count</th>
+                <th className="px-3 py-2.5 text-right font-semibold">POS Paid Only</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Total POS</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Paid POS</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Needed POS</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Target Date</th>
+                <th className="px-3 py-2.5 text-right font-semibold text-amber-600 dark:text-amber-400">DRR</th>
+                <th className="px-3 py-2.5 text-right font-semibold">POS Paid Only Amt</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Actual %</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Recovery %</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/70">
               {grouped.map(([bkt, items]) => {
                 const sub = {
                   collection: items.reduce((s, i) => s + i.collection, 0),
@@ -321,13 +320,13 @@ export default function ExecTeamPerf() {
                 return (
                   <React.Fragment key={bkt}>
                     <tr className="bg-primary/10 border-b border-border">
-                      <td colSpan={14} className="px-3 py-2 font-sans text-[11px] font-bold text-primary uppercase tracking-wider">
+                      <td colSpan={14} className="px-3 py-2 text-[11px] font-bold text-primary uppercase tracking-wider">
                         BUCKET {bkt}
                       </td>
                     </tr>
                     {items.map((item) => (
-                      <tr key={item.city} className="hover:bg-muted/30 transition-colors">
-                        <td className="px-3 py-2 text-center font-bold text-muted-foreground font-tabular">{item.globalRank}</td>
+                      <tr key={item.city} className="hover:bg-muted/35 transition-colors">
+                        <td className="px-3 py-2 text-center font-semibold text-muted-foreground font-tabular">{item.globalRank}</td>
                         <td
                           className="px-3 py-2 font-medium text-foreground hover:text-primary cursor-pointer hover:underline"
                           onClick={() => navigateToExplorer({ city: item.city, bucket: bkt })}
@@ -337,42 +336,42 @@ export default function ExecTeamPerf() {
                         <td className="px-3 py-2 text-right font-tabular font-semibold text-primary">{fmtCur(item.collection)}</td>
                         <td className="px-3 py-2 text-right font-tabular">{item.count}</td>
                         <td className="px-3 py-2 text-right font-tabular font-semibold text-emerald-600 dark:text-emerald-400">{item.paid}</td>
-                        <td className="px-3 py-2 text-right font-tabular text-blue-600 dark:text-blue-400">{item.posPaidOnlyCount}</td>
+                        <td className="px-3 py-2 text-right font-tabular text-sky-600 dark:text-sky-400">{item.posPaidOnlyCount}</td>
                         <td className="px-3 py-2 text-right font-tabular font-medium">{fmtCur(item.totalPOS)}</td>
                         <td className="px-3 py-2 text-right font-tabular">{fmtCur(item.paidPOS)}</td>
                         <td className="px-3 py-2 text-right font-tabular">
                           {item.target <= 0 ? (
-                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span>
+                            <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span>
                           ) : (
                             <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtCur(item.target)}</span>
                           )}
                         </td>
-                        <td className="px-3 py-2 text-right text-[11px] text-muted-foreground">{item.targetDate || '—'}</td>
+                        <td className="px-3 py-2 text-right text-[11px] text-muted-foreground font-tabular">{item.targetDate || '—'}</td>
                         <td className="px-3 py-2 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(item.dailyRequiredPOS || 0)}</td>
-                        <td className="px-3 py-2 text-right font-tabular text-blue-600 dark:text-blue-400">{fmtCur(item.posPaidOnlyPOS)}</td>
+                        <td className="px-3 py-2 text-right font-tabular text-sky-600 dark:text-sky-400">{fmtCur(item.posPaidOnlyPOS)}</td>
                         <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.actualPct ?? item.pct)}`}>{fmtPct(item.actualPct ?? item.pct)}</td>
                         <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(item.recoveryPct ?? 0)}`}>{fmtPct(item.recoveryPct ?? 0)}</td>
                       </tr>
                     ))}
-                    <tr className="bg-muted/40 font-semibold border-b border-border">
+                    <tr className="bg-muted/35 font-semibold border-b border-border">
                       <td className="px-3 py-2 text-center"></td>
                       <td className="px-3 py-2 text-muted-foreground uppercase text-[11px]">Bucket {bkt} Total</td>
                       <td className="px-3 py-2 text-right font-tabular text-primary">{fmtCur(sub.collection)}</td>
                       <td className="px-3 py-2 text-right font-tabular">{sub.count}</td>
                       <td className="px-3 py-2 text-right font-tabular text-emerald-600 dark:text-emerald-400">{sub.paid}</td>
-                      <td className="px-3 py-2 text-right font-tabular text-blue-600 dark:text-blue-400">{sub.posPaidOnlyCount}</td>
+                      <td className="px-3 py-2 text-right font-tabular text-sky-600 dark:text-sky-400">{sub.posPaidOnlyCount}</td>
                       <td className="px-3 py-2 text-right font-tabular">{fmtCur(sub.totalPOS)}</td>
                       <td className="px-3 py-2 text-right font-tabular">{fmtCur(sub.paidPOS)}</td>
                       <td className="px-3 py-2 text-right font-tabular">
                         {sub.target <= 0 ? (
-                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span>
+                          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span>
                         ) : (
                           <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtCur(sub.target)}</span>
                         )}
                       </td>
                       <td className="px-3 py-2 text-right text-muted-foreground">—</td>
                       <td className="px-3 py-2 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(sub.dailyRequiredPOS)}</td>
-                      <td className="px-3 py-2 text-right font-tabular text-blue-600 dark:text-blue-400">{fmtCur(sub.posPaidOnlyPOS)}</td>
+                      <td className="px-3 py-2 text-right font-tabular text-sky-600 dark:text-sky-400">{fmtCur(sub.posPaidOnlyPOS)}</td>
                       <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subActualPct)}`}>{fmtPct(subActualPct)}</td>
                       <td className={`px-3 py-2 text-right font-tabular font-bold ${pctColor(subRecoveryPct)}`}>{fmtPct(subRecoveryPct)}</td>
                     </tr>
@@ -380,26 +379,26 @@ export default function ExecTeamPerf() {
                 );
               })}
             </tbody>
-            <tfoot className="sticky bottom-0 z-20 bg-muted/90 backdrop-blur-xs font-bold border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+            <tfoot className="sticky bottom-0 z-20 bg-[#1B1E35] text-white font-bold border-t border-white/10">
               <tr>
                 <td className="px-3 py-2.5 text-center"></td>
-                <td className="px-3 py-2.5 uppercase text-primary text-[11px]">Grand Total</td>
-                <td className="px-3 py-2.5 text-right font-tabular text-primary">{fmtCur(grandTotal.collection)}</td>
+                <td className="px-3 py-2.5 uppercase text-sky-300 text-[11px]">Grand Total</td>
+                <td className="px-3 py-2.5 text-right font-tabular text-sky-300">{fmtCur(grandTotal.collection)}</td>
                 <td className="px-3 py-2.5 text-right font-tabular">{grandTotal.count}</td>
-                <td className="px-3 py-2.5 text-right font-tabular text-emerald-600 dark:text-emerald-400">{grandTotal.paid}</td>
-                <td className="px-3 py-2.5 text-right font-tabular text-blue-600 dark:text-blue-400">{grandTotal.posPaidOnlyCount}</td>
+                <td className="px-3 py-2.5 text-right font-tabular text-emerald-400">{grandTotal.paid}</td>
+                <td className="px-3 py-2.5 text-right font-tabular text-sky-300">{grandTotal.posPaidOnlyCount}</td>
                 <td className="px-3 py-2.5 text-right font-tabular">{fmtCur(grandTotal.totalPOS)}</td>
-                <td className="px-3 py-2.5 text-right font-tabular">{fmtCur(grandTotal.paidPOS)}</td>
+                <td className="px-3 py-2.5 text-right font-tabular text-emerald-400">{fmtCur(grandTotal.paidPOS)}</td>
                 <td className="px-3 py-2.5 text-right font-tabular">
                   {grandTotal.target <= 0 ? (
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Achieved</span>
+                    <span className="text-[11px] font-semibold text-emerald-400 uppercase">Achieved</span>
                   ) : (
-                    <span className="text-rose-600 dark:text-rose-400 font-bold">{fmtCur(grandTotal.target)}</span>
+                    <span className="text-rose-400 font-bold">{fmtCur(grandTotal.target)}</span>
                   )}
                 </td>
-                <td className="px-3 py-2.5 text-right text-muted-foreground">—</td>
-                <td className="px-3 py-2.5 text-right font-tabular font-bold text-amber-600 dark:text-amber-400">{fmtCur(grandTotal.dailyRequiredPOS)}</td>
-                <td className="px-3 py-2.5 text-right font-tabular text-blue-600 dark:text-blue-400">{fmtCur(grandTotal.posPaidOnlyPOS)}</td>
+                <td className="px-3 py-2.5 text-right text-slate-300">—</td>
+                <td className="px-3 py-2.5 text-right font-tabular font-bold text-amber-300">{fmtCur(grandTotal.dailyRequiredPOS)}</td>
+                <td className="px-3 py-2.5 text-right font-tabular text-sky-300">{fmtCur(grandTotal.posPaidOnlyPOS)}</td>
                 <td className={`px-3 py-2.5 text-right font-tabular font-bold ${pctColor(grandTotal.totalPOS ? (grandTotal.paidPOS + grandTotal.posPaidOnlyPOS) / grandTotal.totalPOS : 0)}`}>
                   {fmtPct(grandTotal.totalPOS ? (grandTotal.paidPOS + grandTotal.posPaidOnlyPOS) / grandTotal.totalPOS : 0)}
                 </td>

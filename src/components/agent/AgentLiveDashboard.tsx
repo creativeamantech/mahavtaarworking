@@ -11,7 +11,7 @@ import { AgentLiveDetailsSheet } from "./AgentLiveDetailsSheet";
 import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
 import { Link } from '@/lib/router-compat';
-import { MessageSquare, IndianRupee as Rupee, UserCheck, Users, Clock } from "lucide-react";
+import { MessageSquare, IndianRupee as Rupee, UserCheck, Users, Clock, CheckCircle2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -154,7 +154,7 @@ export function AgentLiveDashboard() {
     const chartConfig = {
         value: { label: "Count" },
         ...Object.keys(statusCounts).reduce((acc, status, index) => {
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6b7280'];
+            const colors = ['#0D74B5', '#55A94F', '#EFC51E', '#E33E32', '#81258C', '#EF8424', '#64748B'];
             acc[status.toLowerCase().replace(/[^a-z0-9]/g, '')] = {
                 label: status,
                 color: colors[index % colors.length]
@@ -170,34 +170,40 @@ export function AgentLiveDashboard() {
       
       {/* Attendance Card */}
       <div className="mb-6">
-        <Card className={attendanceRecord && !attendanceRecord.logoutTime ? "border-primary shadow-sm" : ""}>
+        <Card className={attendanceRecord && !attendanceRecord.logoutTime ? "border-primary/50" : ""}>
           <CardHeader className="pb-2">
-            <CardTitle className="flex justify-between items-center text-lg">
-              <span>Today's Attendance</span>
+            <CardTitle className="flex justify-between items-center text-base font-semibold">
+              <span>Today&apos;s Attendance</span>
               {attendanceRecord?.logoutTime ? (
-                <Badge variant="secondary"><CheckCircle2 className="w-3 h-3 mr-1"/> Shift Completed</Badge>
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Shift Completed
+                </span>
               ) : attendanceRecord?.currentBreakStart ? (
-                <Badge variant="secondary" className="bg-amber-500 text-white animate-pulse hover:bg-amber-600">On Break</Badge>
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  <Clock className="w-3.5 h-3.5" /> On Break
+                </span>
               ) : attendanceRecord?.loginTime ? (
-                <Badge variant="default" className="bg-success text-white animate-pulse hover:bg-success/90">Active Shift</Badge>
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Active Shift
+                </span>
               ) : null}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-muted-foreground flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+              <div className="text-sm text-muted-foreground flex items-center gap-2 font-tabular">
+                <Clock className="w-4 h-4 shrink-0" />
                 {attendanceRecord?.loginTime ? (
                    <span>Punched in at: <strong className="text-foreground">{new Date(attendanceRecord.loginTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong></span>
                 ) : (
-                   <span>You haven't punched in yet today.</span>
+                   <span>You haven&apos;t punched in yet today.</span>
                 )}
                 {attendanceRecord?.logoutTime && (
                    <span className="ml-2">| Punched out at: <strong className="text-foreground">{new Date(attendanceRecord.logoutTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong></span>
                 )}
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 {!attendanceRecord ? (
                   <Button onClick={handlePunchIn} disabled={isPunching} className="w-full sm:w-auto">Punch In</Button>
                 ) : !attendanceRecord.logoutTime ? (
@@ -218,50 +224,50 @@ export function AgentLiveDashboard() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 
-        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleCardClick("Feedback Submitted Today", getCustomersFromFeedback(feedbackToday))}>
+        <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => handleCardClick("Feedback Submitted Today", getCustomersFromFeedback(feedbackToday))}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Feedback Submitted</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Feedback Submitted</CardTitle>
+                <MessageSquare className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{feedbackToday.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">Total feedback you submitted today</p>
+                <div className="text-2xl font-bold font-tabular">{feedbackToday.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">Total feedback submitted today</p>
             </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleCardClick("Your Customers with PTP Status", uniquePtpCustomers)}>
+        <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => handleCardClick("Your Customers with PTP Status", uniquePtpCustomers)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Your PTP Amount</CardTitle>
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your PTP Amount</CardTitle>
+                <UserCheck className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold flex items-center">
-                    <Rupee className="h-5 w-5 mr-1" />
+                <div className="text-2xl font-bold font-tabular flex items-center text-amber-600 dark:text-amber-400">
+                    <Rupee className="h-5 w-5 mr-0.5" />
                     {totalPTP.toLocaleString('en-IN')}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Total amount in "Promise to Pay"</p>
+                <p className="text-xs text-muted-foreground mt-1">Total in Promise to Pay</p>
             </CardContent>
         </Card>
-        <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleCardClick("Your Customers with Paid Status", uniquePaidCustomers)}>
+        <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => handleCardClick("Your Customers with Paid Status", uniquePaidCustomers)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Your Collections</CardTitle>
-                 <Rupee className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your Collections</CardTitle>
+                 <Rupee className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-                 <div className="text-2xl font-bold flex items-center">
-                    <Rupee className="h-5 w-5 mr-1" />
+                 <div className="text-2xl font-bold font-tabular flex items-center text-emerald-600 dark:text-emerald-400">
+                    <Rupee className="h-5 w-5 mr-0.5" />
                     {totalPaid.toLocaleString('en-IN')}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Total DAC collected from paid accounts</p>
             </CardContent>
         </Card>
-         <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => handleCardClick("Your Not Yet Contacted Customers", notContactedCustomers)}>
+         <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => handleCardClick("Your Not Yet Contacted Customers", notContactedCustomers)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Not Yet Contacted</CardTitle>
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Not Yet Contacted</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{notContactedCustomers.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">Your assigned cases not yet contacted</p>
+                <div className="text-2xl font-bold font-tabular">{notContactedCustomers.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">Assigned cases not yet contacted</p>
             </CardContent>
         </Card>
       </div>
@@ -269,8 +275,8 @@ export function AgentLiveDashboard() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
             <CardHeader>
-                <CardTitle>Feedback Status Distribution</CardTitle>
-                <CardDescription>A pie chart showing your overall feedback statuses.</CardDescription>
+                <CardTitle className="text-base">Feedback Status Distribution</CardTitle>
+                <CardDescription>Overall feedback disposition breakdown.</CardDescription>
             </CardHeader>
             <CardContent className="flex items-center justify-center">
                  <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px] w-full max-w-[300px]">
@@ -292,8 +298,8 @@ export function AgentLiveDashboard() {
         </Card>
         <Card>
             <CardHeader>
-                <CardTitle>Your Recent Activity</CardTitle>
-                <CardDescription>A live feed of your most recent feedback submissions.</CardDescription>
+                <CardTitle className="text-base">Your Recent Activity</CardTitle>
+                <CardDescription>Recent feedback submissions.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ScrollArea className="h-72">
@@ -302,25 +308,23 @@ export function AgentLiveDashboard() {
                             {recentActivities.map(activity => (
                                 <TableRow key={activity.id}>
                                     <TableCell className="p-0">
-                                       <Link to={`/customer/${activity.agreementid}`} className="flex items-center gap-4 p-4">
-                                            <div className='flex-1'>
-                                                <p className='font-medium'>
+                                       <Link to={`/customer/${activity.agreementid}`} className="flex items-center justify-between gap-4 p-3.5 hover:bg-muted/35 transition-colors">
+                                            <div className='flex-1 min-w-0'>
+                                                <p className='font-medium text-sm truncate'>
                                                     {`Feedback for ${getCustomerName(activity.agreementid)}`}
                                                 </p>
-                                                <p className='text-sm text-muted-foreground'>
+                                                <p className='text-xs text-muted-foreground'>
                                                     {formatDistanceToNow(parseISO(activity.createdAt), { addSuffix: true })}
                                                 </p>
                                             </div>
-                                            <div className="text-right">
-                                                <Badge>{activity.status}</Badge>
-                                            </div>
+                                            <span className="text-xs font-semibold text-primary shrink-0">{activity.status}</span>
                                         </Link>
                                     </TableCell>
                                 </TableRow>
                             ))}
                              {recentActivities.length === 0 && (
                                 <TableRow>
-                                    <TableCell className="text-center text-muted-foreground py-8">
+                                    <TableCell className="text-center text-muted-foreground py-8 text-sm">
                                         You have no recent activity.
                                     </TableCell>
                                 </TableRow>

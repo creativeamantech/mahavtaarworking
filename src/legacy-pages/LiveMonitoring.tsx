@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState, useMemo } from 'react';
 import { AppLayout } from '../components/layout/AppLayout';
+import { SectionHeader } from '../components/ui/SectionHeader';
 import { useDataState } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import { db, CustomerFeedback, LoanRecord } from '../lib/db';
@@ -98,7 +99,7 @@ export default function LiveMonitoring() {
       acc[f.status] = (acc[f.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    const colors = ['#2563eb', '#16a34a', '#dc2626', '#d97706', '#9333ea', '#0891b2', '#be123c'];
+    const colors = ['#0D74B5', '#55A94F', '#E33E32', '#EFC51E', '#81258C', '#EF8424', '#64748B'];
     return Object.entries(counts).map(([name, value], i) => ({
       name, value, fill: colors[i % colors.length]
     }));
@@ -124,89 +125,92 @@ export default function LiveMonitoring() {
           title={sheetData.title}
           customers={sheetData.customers}
         />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
+        <SectionHeader
+          title="Live Monitoring"
+          subtitle="Real-time overview of agent field productivity, PTP promises, and direct collections."
+          icon={Activity}
+          badge="Live Stream"
+          actions={
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-headline font-bold tracking-tight">Live Monitoring</h1>
-              <Badge variant="outline" className="gap-1.5 bg-emerald-500/10 text-emerald-600 border-emerald-300 text-xs py-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live Stream
-              </Badge>
+              <span className="text-xs text-muted-foreground font-medium">Time Window:</span>
+              <select
+                className="h-9 px-3 rounded-lg border border-input bg-background text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as 'today' | 'all')}
+              >
+                <option value="today">Today&apos;s Shift</option>
+                <option value="all">All-Time Cumulative</option>
+              </select>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">Real-time overview of agent field productivity, PTP promises, and direct collections.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium">Time Window:</span>
-            <select 
-              className="h-9 px-3 rounded-md border border-input bg-background text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as 'today' | 'all')}
-            >
-              <option value="today">Today's Shift</option>
-              <option value="all">All-Time Cumulative</option>
-            </select>
-          </div>
-        </div>
+          }
+        />
 
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Card className="cursor-pointer hover:bg-muted/40 transition-colors border-border/80 shadow-sm" onClick={() => handleCardClick("Customers with Feedback", uniqueFeedbackCustomers)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Touchpoints Logged</CardTitle>
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600">
+        <div className="grid gap-3.5 grid-cols-2 lg:grid-cols-4">
+          <button
+            type="button"
+            className="metric-kpi-card p-4 text-left cursor-pointer"
+            onClick={() => handleCardClick("Customers with Feedback", uniqueFeedbackCustomers)}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Touchpoints Logged</span>
+              <span className="p-2 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400">
                 <MessageSquare className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-data text-foreground">{filteredFeedbacks.length.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">Total feedback calls & visits</p>
-            </CardContent>
-          </Card>
+              </span>
+            </div>
+            <div className="text-2xl font-bold font-mono font-tabular text-foreground">{filteredFeedbacks.length.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total feedback calls &amp; visits</p>
+          </button>
 
-          <Card className="border-border/80 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Executives</CardTitle>
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600">
+          <div className="metric-kpi-card p-4">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Active Executives</span>
+              <span className="p-2 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
                 <Users className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-data text-foreground">{agentPerformance.filter(a => a.feedbackCount > 0).length} <span className="text-sm font-normal text-muted-foreground">/ {agentPerformance.length}</span></div>
-              <p className="text-xs text-muted-foreground mt-1">Executives actively submitting</p>
-            </CardContent>
-          </Card>
+              </span>
+            </div>
+            <div className="text-2xl font-bold font-mono font-tabular text-foreground">
+              {agentPerformance.filter(a => a.feedbackCount > 0).length} <span className="text-sm font-normal text-muted-foreground">/ {agentPerformance.length}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Executives actively submitting</p>
+          </div>
 
-          <Card className="cursor-pointer hover:bg-muted/40 transition-colors border-border/80 shadow-sm" onClick={() => handleCardClick("Customers with PTP Status", uniquePtpCustomers)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">PTP Exposure Pipeline</CardTitle>
-              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600">
+          <button
+            type="button"
+            className="metric-kpi-card p-4 text-left cursor-pointer"
+            onClick={() => handleCardClick("Customers with PTP Status", uniquePtpCustomers)}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">PTP Exposure Pipeline</span>
+              <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
                 <UserCheck className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-data text-amber-600 dark:text-amber-400">
-                {fmtCur(uniquePtpAmount)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{uniquePtpCustomers.length} commitments promised</p>
-            </CardContent>
-          </Card>
+              </span>
+            </div>
+            <div className="text-2xl font-bold font-mono font-tabular text-amber-600 dark:text-amber-400">
+              {fmtCur(uniquePtpAmount)}
+            </div>
+            <p className="text-xs font-tabular text-muted-foreground mt-1">{uniquePtpCustomers.length} commitments promised</p>
+          </button>
 
-          <Card className="cursor-pointer hover:bg-muted/40 transition-colors border-border/80 shadow-sm" onClick={() => handleCardClick("Customers with Paid Status", uniquePaidCustomers)}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Collected</CardTitle>
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+          <button
+            type="button"
+            className="metric-kpi-card p-4 text-left cursor-pointer"
+            onClick={() => handleCardClick("Customers with Paid Status", uniquePaidCustomers)}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Total Collected</span>
+              <span className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <TrendingUp className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold font-data text-emerald-600 dark:text-emerald-400">
-                {fmtCur(totalCollected)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{uniquePaidCustomers.length} cases paid & verified</p>
-            </CardContent>
-          </Card>
+              </span>
+            </div>
+            <div className="text-2xl font-bold font-mono font-tabular text-emerald-600 dark:text-emerald-400">
+              {fmtCur(totalCollected)}
+            </div>
+            <p className="text-xs font-tabular text-muted-foreground mt-1">{uniquePaidCustomers.length} cases paid &amp; verified</p>
+          </button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="lg:col-span-4 border-border/80 shadow-sm">
+          <Card className="lg:col-span-4 border-border/80 shadow-xs">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" /> Agent Productivity Volume
@@ -219,8 +223,8 @@ export default function LiveMonitoring() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
-                  <Bar dataKey="feedbackCount" fill="#3b82f6" name="Feedback Count" radius={[4, 4, 0, 0]} />
+                  <Tooltip cursor={{ fill: 'rgba(13,116,181,0.06)' }} />
+                  <Bar dataKey="feedbackCount" fill="#0D74B5" name="Feedback Count" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

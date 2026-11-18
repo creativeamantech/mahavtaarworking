@@ -1,11 +1,8 @@
-import { useLocation, useNavigate } from '@/lib/router-compat';
-import { ChevronLeft, ChevronRight, Search, UserCircle, LogOut, Bell } from 'lucide-react';
-import { useDataState, useDataDispatch } from '@/contexts/DataContext';
-import { useMemo, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { ThemeToggle } from '../ThemeToggle';
-import { MasterSheetsSyncStatus } from '../sync/MasterSheetsSyncStatus';
-import { AgentNotifications } from '../agent/AgentNotifications';
+import { useLocation, useNavigate } from "@/lib/router-compat";
+import { ChevronLeft, ChevronRight, Search, UserCircle, LogOut, Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "../ThemeToggle";
+import { MasterSheetsSyncStatus } from "../sync/MasterSheetsSyncStatus";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,73 +13,103 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/exec-dashboard': 'Exec Dashboard',
-  '/exec-team-perf': 'Team Overall Perf',
-  '/data-entry': 'Data Entry',
-  '/explorer': 'Explorer',
-  '/assignment': 'Allocation',
-  '/city-pivot': 'City Pivot',
-  '/team-pivot': 'Team Pivot',
-  '/band-explorer': 'Bands',
-  '/settings': 'Settings',
-  '/audit': 'Audit Log',
-  '/live-monitoring': 'Live Monitoring',
-  '/feedbacks': 'All Feedback',
-  '/attendance': 'Attendance',
+  "/dashboard": "Dashboard",
+  "/exec-dashboard": "Exec Strategy",
+  "/exec-team-perf": "Team Performance",
+  "/data-entry": "Data Entry",
+  "/explorer": "Explorer",
+  "/assignment": "Assignment",
+  "/city-pivot": "City Ledger",
+  "/team-pivot": "Team Ledger",
+  "/band-explorer": "Band Analysis",
+  "/settings": "Settings",
+  "/audit": "Audit Log",
+  "/live-monitoring": "Live Tracking",
+  "/feedbacks": "All Feedback",
+  "/attendance": "Attendance",
+  "/connectivity": "Connectivity",
+  "/profile": "Profile",
 };
 
 export function MobileHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  
-  const { records } = useDataState();
-  const isExplorer = location.pathname === '/explorer';
 
-  
+  const title =
+    PAGE_TITLES[location.pathname] ||
+    (location.pathname.startsWith("/customer/") ? "Customer 360°" : "Workspace");
 
-  const title = PAGE_TITLES[location.pathname] || 'CRM';
+  const initials =
+    user?.name
+      ?.split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "MV";
 
   return (
-    <div className="sticky top-0 z-40 flex flex-col border-b border-border bg-card/95 backdrop-blur md:hidden shadow-sm">
-      <div className="flex h-14 items-center justify-between px-3">
-        {/* Navigation & Undo/Redo Group */}
-        <div className="flex items-center gap-0.5 bg-muted/40 p-1 rounded-lg border border-border/50">
-          <button 
+    <header className="sticky top-0 z-40 flex flex-col border-b border-border bg-card/95 backdrop-blur-md md:hidden">
+      <div className="mv-brand-ribbon" />
+      <div className="flex h-13 items-center justify-between gap-2 px-3">
+        <div className="flex items-center gap-0.5 bg-muted/45 p-0.5 rounded-lg border border-border/80 shrink-0">
+          <button
             type="button"
             onClick={() => {
               if (window.history.state && window.history.state.idx > 0) {
                 navigate(-1);
               } else {
-                navigate('/dashboard', { replace: true });
+                navigate("/dashboard", { replace: true });
               }
-            }} 
-            className="p-1.5 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground" 
+            }}
+            className="p-1.5 hover:bg-card rounded-md transition-colors text-muted-foreground hover:text-foreground"
             title="Go Back"
+            aria-label="Go Back"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <button type="button" onClick={() => navigate(1)} className="p-1.5 hover:bg-muted rounded-md transition-colors text-muted-foreground hover:text-foreground" title="Go Forward">
+          <button
+            type="button"
+            onClick={() => navigate(1)}
+            className="p-1.5 hover:bg-card rounded-md transition-colors text-muted-foreground hover:text-foreground"
+            title="Go Forward"
+            aria-label="Go Forward"
+          >
             <ChevronRight className="h-4 w-4" />
           </button>
-          
-          
         </div>
 
-        <div className="flex items-center justify-center flex-1 mx-2">
-          <div className="flex min-w-0 flex-col items-center leading-tight"><h1 className="font-heading text-[11px] font-extrabold tracking-wide text-foreground truncate">Mahavtaar Working</h1><span className="mt-0.5 max-w-full truncate text-[9px] font-semibold text-muted-foreground">{title}</span></div>
+        <div className="flex min-w-0 flex-1 flex-col items-center leading-tight">
+          <span className="font-heading text-xs font-extrabold tracking-tight text-foreground truncate max-w-full">
+            Mahavtaar
+          </span>
+          <span className="max-w-full truncate text-[10px] font-medium text-muted-foreground">
+            {title}
+          </span>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 shrink-0">
           <MasterSheetsSyncStatus compact />
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("mahavtaar:open-command-bar"))}
+            className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Quick Search"
+            title="Quick Search"
+          >
+            <Search className="h-4 w-4" />
+          </button>
           <ThemeToggle />
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center hover:bg-muted p-0.5 rounded-full transition-colors border border-border/50 bg-card">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold shadow-sm">
-                  {user?.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+              <button
+                type="button"
+                className="flex items-center hover:bg-muted p-0.5 rounded-lg transition-colors border border-border/80 bg-card"
+                aria-label="Account menu"
+              >
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#81258c]/15 via-[#0799cf]/15 to-[#55a94f]/15 text-primary text-xs font-bold">
+                  {initials}
                 </div>
               </button>
             </DropdownMenuTrigger>
@@ -94,25 +121,28 @@ export function MobileHeader() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+              <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-orange-500 focus:text-orange-500">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-4 w-4"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer text-amber-600 dark:text-amber-400 focus:text-amber-600"
+              >
+                <Lock className="mr-2 h-4 w-4" />
                 <span>Lock Session</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive">
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer text-destructive focus:text-destructive"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
         </div>
       </div>
-
-      
-    </div>
+    </header>
   );
 }
